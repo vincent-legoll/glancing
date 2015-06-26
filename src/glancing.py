@@ -6,11 +6,15 @@ import argparse
 import subprocess
 
 def do_argparse():
-    parser = argparse.ArgumentParser(description='Import checked VM images into glance')
+    parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
+    
+    parser.add_argument('-f', '--fullcheck', action='store_true',
+                       help='verify all available checksums, not just md5')
     parser.add_argument('files', metavar='FILE', type=argparse.FileType('r'), nargs='+',
                        help='a .json file describing a VM, from the StratusLab marketplace (https://marketplace.stratuslab.eu)')
+
     args = parser.parse_args()
-    return args.files
+    return args
 
 def check_glance_availability():
     try:
@@ -31,26 +35,24 @@ def check_glance_availability():
 def handle_one_file(f):
     tmp = json.loads(f.read())
     f.close()
-    md5 = None
-    url = None
+    ret = {}
     if type(tmp) is dict:
         for val in tmp.values():
+            # Early exit in case we found all interesting checksums
+            if len(ret) == 5:
+                return ret
             for key in val.keys():
-                if key == "http://mp.stratuslab.eu/slreq#algorithm":
-                    if val[key][0]['value'] == 'MD5':
-                        md5 = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
-                        if url is not None:
-                            return md5, url
-                elif key == 'http://mp.stratuslab.eu/slterms#location':
-                    url = val['http://mp.stratuslab.eu/slterms#location'][0]['value']
-                    if md5 is not None:
-                        return md5, url
-    return md5, url
+                if key == 'http://mp.stratuslab.eu/slterms#location':
+                    ret['url'] = val['http://mp.stratuslab.eu/slterms#location'][0]['value']
+                elif key == "http://mp.stratuslab.eu/slreq#algorithm":
+                    algo = val[key][0]['value']
+                    ret[algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
+    return ret
 
 def main():
-    files = do_argparse()
+    args = do_argparse()
     check_glance_availability()
-    for f in files:
+    for f in args.files:
         ret = handle_one_file(f)
         print(ret)
 
