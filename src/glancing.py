@@ -2,13 +2,23 @@
 
 from __future__ import print_function
 
+import os
 import sys
 import json
+import urllib
 import argparse
 import subprocess
 
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open('/dev/null', 'rw+b')
+
+# Hashing algorithm: (command line, message digest size in bits)
+_HASHES = {
+          'MD5': (['md5sum', '--binary'], 128),
+          'SHA-1': (['sha1sum', '--binary'], 160),
+          'SHA-256': (['sha256sum', '--binary'], 256),
+          'SHA-512': (['sha512sum', '--binary'], 512),
+         }
 
 def do_argparse():
     parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
@@ -37,6 +47,10 @@ def check_glance_availability():
               "variable." % (sys.argv[0],), file=sys.stderr)
         raise
 
+def get_url(url):
+    fn, hdrs = urllib.urlretrieve(url)
+    return fn
+
 def handle_one_file(f):
     tmp = json.loads(f.read())
     f.close()
@@ -54,12 +68,37 @@ def handle_one_file(f):
                     ret[algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
     return ret
 
+# VM images are gzip'ed, but checksums are for uncompressed files
+def gunzip(fn):
+    ret = subprocess.call(['gunzip', fn],
+                          stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL)
+    if ret != 0:
+        print('Failed to uncompress: ', fn)
+
+# Compute message digest for given file name with the given algorithm
+def get_hash(fn, hashing):
+    p = subprocess.Popen(hashing[0] + [fn], stdout=subprocess.PIPE)
+    out, err = p.communicate()
+    ret = p.returncode
+    if ret == 0:
+        return out[:hashing[1]*2/8]
+    return None
+
 def main():
     args = do_argparse()
     check_glance_availability()
     for f in args.files:
         ret = handle_one_file(f)
+        fn = get_url(ret['url'])
+        gunzip(fn)
+        base, ext = os.path.splitext(fn)
+        h = get_hash(base, _HASHES['MD5'])
         print(ret)
+        if (h == ret['MD5']):
+            print('OK')
+        else:
+            print('WARNING: checksum does not match:', h)
 
 if __name__ == '__main__':
     main()
