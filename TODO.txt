@@ -5,11 +5,13 @@
 
 - use glance APIs if available
 
+- use curl and / or wget insted of urllib.urlretrieve()
 
+- use hashlib algorithms
+
+- compute multiple hashes at once in block mode
 
 PIDt94ySjKEHKKvWrYijsZtclxU
-
-http://appliances.stratuslab.eu/images/base/CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz
 
 '/marketplace/metadata/PIDt94ySjKEHKKvWrYijsZtclxU/Konstantin.Skaburskas@cern.ch/2015-05-18T21:24:08Z?media=json'
 
