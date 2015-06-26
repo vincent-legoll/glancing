@@ -1,9 +1,14 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
+
+from __future__ import print_function
 
 import sys
 import json
 import argparse
 import subprocess
+
+if 'DEVNULL' not in dir(subprocess):
+    subprocess.DEVNULL = open('/dev/null', 'rw+b')
 
 def do_argparse():
     parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
@@ -26,11 +31,11 @@ def check_glance_availability():
             print("%s: Cannot execute 'glance', please check it is properly"
                   " installed." % (sys.argv[0],), file=sys.stderr)
             sys.exit(ret)
-    except FileNotFoundError as e:
+    except:
         print("%s: Cannot execute 'glance', please check it is properly"
               " installed, and available in your PATH environment "
               "variable." % (sys.argv[0],), file=sys.stderr)
-        sys.exit(-1)
+        raise
 
 def handle_one_file(f):
     tmp = json.loads(f.read())
