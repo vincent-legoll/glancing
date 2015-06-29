@@ -21,11 +21,13 @@ _HASHES = {
           'SHA-512': (['sha512sum', '--binary'], 512),
          }
 
+_GLANCE_CMD = ['glance']
+
 # Handle CLI options
 def do_argparse():
     parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
 
-    parser.add_argument('-k', '--keep-temps', action='store_true',
+    parser.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
                        help='keep temporary VM image files')
     parser.add_argument('-v', '--verbose', action='store_true',
                        help='display additional information')
@@ -43,21 +45,25 @@ def do_argparse():
     return args
 
 # Ensure we can run glance
-def check_glance_availability():
+def check_glance_availability(verbose=False):
     try:
-        ret = subprocess.call(['glance', '--version'],
+        subprocess.check_call(_GLANCE_CMD,
                               stdin=subprocess.DEVNULL,
                               stdout=subprocess.DEVNULL,
                               stderr=subprocess.DEVNULL)
-        if ret != 0:
-            print("%s: Cannot execute 'glance', please check it is properly"
-                  " installed." % (sys.argv[0],), file=sys.stderr)
-            sys.exit(ret)
-    except:
-        print("%s: Cannot execute 'glance', please check it is properly"
-              " installed, and available in your PATH environment "
-              "variable." % (sys.argv[0],), file=sys.stderr)
-        raise
+    except OSError as e:
+        print("%s: Cannot execute '%s', please check it is properly"
+              " installed, and available through your PATH environment "
+              "variable." % (sys.argv[0], _GLANCE_CMD[0]), file=sys.stderr)
+        if verbose:
+            print(e)
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print("%s: '%s' does not run properly." % (sys.argv[0],
+              _GLANCE_CMD[0]), file=sys.stderr)
+        if verbose:
+            print(e)
+        sys.exit(e.returncode)
 
 # Get uncompressed VM image file from the given url
 def get_url(url):
@@ -109,18 +115,18 @@ def glance_import(base):
 def main():
     args = do_argparse()
     if not args.dryrun:
-        check_glance_availability()
+        check_glance_availability(args.verbose)
     for f in args.files:
         ret = get_metadata(f)
         base = get_url(ret['url'])
         if args.verbose:
-            print(f.name, ': downloaded image into', base)
+            print(f.name, ': downloaded image into :', base)
         verified = 0
         if (args.fullcheck):
             hashes = list(set(ret.keys()) - set(['url']))
         else:
             hashes = ['MD5']
-        for hashfn in hashes:
+        for hashfn in sorted(hashes):
             h = get_hash(base, _HASHES[hashfn])
             if h == ret[hashfn]:
                 if args.verbose:
@@ -128,12 +134,16 @@ def main():
                 verified += 1
             else:
                 if args.verbose:
-                    print(f.name, ': WARNING: checksum does not match', hashfn)
-                    print(f.name, ': WARNING:     expected =', ret[hashfn])
-                    print(f.name, ': WARNING:     computed =', h)
+                    print(f.name, ': WARNING : checksum does not match', hashfn)
+                    print(f.name, ': WARNING :     expected =', ret[hashfn])
+                    print(f.name, ': WARNING :     computed =', h)
         if not args.dryrun:
             if args.force or len(hashes) == verified:
                 glance_import(base)
+        if not args.keeptemps:
+            if args.verbose:
+                print(f.name, ': deleting temporary file :', base)
+            os.remove(base)
 
 if __name__ == '__main__':
     main()
