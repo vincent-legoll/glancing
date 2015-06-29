@@ -113,7 +113,7 @@ def get_hash(fn, hashing):
 
 # Import VM image into glance
 def glance_import(base, md5):
-    cmd = _GLANCE_CMD + ['create-image', '--file', base, '--checksum', md5]
+    cmd = _GLANCE_CMD + ['image-create', '--disk-format', 'raw', '--file', base, '--checksum', md5]
     ret = subprocess.call(cmd,
                           stdin=subprocess.DEVNULL,
                           stdout=subprocess.DEVNULL)
