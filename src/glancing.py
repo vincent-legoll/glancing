@@ -68,7 +68,9 @@ def check_glance_availability(verbose=False):
 # Get uncompressed VM image file from the given url
 def get_url(url):
     fn, hdrs = urllib.urlretrieve(url)
-    gunzip(fn)
+    ret = gunzip(fn)
+    if ret != 0:
+        return None
     base, ext = os.path.splitext(fn)
     return base
 
@@ -97,7 +99,8 @@ def gunzip(fn):
                           stdin=subprocess.DEVNULL,
                           stdout=subprocess.DEVNULL)
     if ret != 0:
-        print('Failed to uncompress: ', fn, file=sys.stderr)
+        print('%s: Failed to uncompress: %s' % (sys.argv[0], fn), file=sys.stderr)
+    return ret
 
 # Compute message digest for given file name with the given algorithm
 def get_hash(fn, hashing):
@@ -109,8 +112,14 @@ def get_hash(fn, hashing):
     return None
 
 # Import VM image into glance
-def glance_import(base):
-    pass
+def glance_import(base, md5):
+    cmd = _GLANCE_CMD + ['create-image', '--file', base, '--checksum', md5]
+    ret = subprocess.call(cmd,
+                          stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL)
+    if ret != 0:
+        print('%s: Failed to import image into glance' % (sys.argv[0],), file=sys.stderr)
+    return ret
 
 def main():
     args = do_argparse()
@@ -119,15 +128,20 @@ def main():
     for f in args.files:
         ret = get_metadata(f)
         base = get_url(ret['url'])
+        if base is None:
+            continue
         if args.verbose:
             print(f.name, ': downloaded image into :', base)
         verified = 0
+        md5 = None
         if (args.fullcheck):
             hashes = list(set(ret.keys()) - set(['url']))
         else:
             hashes = ['MD5']
         for hashfn in sorted(hashes):
             h = get_hash(base, _HASHES[hashfn])
+            if hashfn == 'MD5':
+                md5 = h
             if h == ret[hashfn]:
                 if args.verbose:
                     print(f.name, ': OK :', hashfn)
@@ -138,8 +152,8 @@ def main():
                     print(f.name, ': WARNING :     expected =', ret[hashfn])
                     print(f.name, ': WARNING :     computed =', h)
         if not args.dryrun:
-            if args.force or len(hashes) == verified:
-                glance_import(base)
+            if len(hashes) == verified or args.force:
+                glance_import(base, md5)
         if not args.keeptemps:
             if args.verbose:
                 print(f.name, ': deleting temporary file :', base)
