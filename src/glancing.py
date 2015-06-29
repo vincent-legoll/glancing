@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import urllib
+import urlparse
 import argparse
 import subprocess
 
@@ -20,17 +21,28 @@ _HASHES = {
           'SHA-512': (['sha512sum', '--binary'], 512),
          }
 
+# Handle CLI options
 def do_argparse():
     parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
-    
-    parser.add_argument('-f', '--fullcheck', action='store_true',
+
+    parser.add_argument('-k', '--keep-temps', action='store_true',
+                       help='keep temporary VM image files')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                       help='display additional information')
+    parser.add_argument('-f', '--force', action='store_true',
+                       help='force import into glance, even if checksum verification failed')
+    parser.add_argument('-d', '--dry-run', dest='dryrun', action='store_true',
+                       help='only download and verify checksums, do not import into glance')
+    parser.add_argument('-c', '--check-all', dest='fullcheck', action='store_true',
                        help='verify all available checksums, not just md5')
+
     parser.add_argument('files', metavar='FILE', type=argparse.FileType('r'), nargs='+',
                        help='a .json file describing a VM, from the StratusLab marketplace (https://marketplace.stratuslab.eu)')
 
     args = parser.parse_args()
     return args
 
+# Ensure we can run glance
 def check_glance_availability():
     try:
         ret = subprocess.call(['glance', '--version'],
@@ -47,18 +59,23 @@ def check_glance_availability():
               "variable." % (sys.argv[0],), file=sys.stderr)
         raise
 
+# Get uncompressed VM image file from the given url
 def get_url(url):
     fn, hdrs = urllib.urlretrieve(url)
-    return fn
+    gunzip(fn)
+    base, ext = os.path.splitext(fn)
+    return base
 
-def handle_one_file(f):
+# Parse the metadata .json file, from the stratuslab marketplace
+def get_metadata(f):
     tmp = json.loads(f.read())
     f.close()
     ret = {}
     if type(tmp) is dict:
         for val in tmp.values():
-            # Early exit in case we found all interesting checksums
-            if len(ret) == 5:
+            # Early exit in case we found all interesting checksums and
+            # the VM image file url
+            if len(ret) == len(_HASHES) + 1:
                 return ret
             for key in val.keys():
                 if key == 'http://mp.stratuslab.eu/slterms#location':
@@ -74,7 +91,7 @@ def gunzip(fn):
                           stdin=subprocess.DEVNULL,
                           stdout=subprocess.DEVNULL)
     if ret != 0:
-        print('Failed to uncompress: ', fn)
+        print('Failed to uncompress: ', fn, file=sys.stderr)
 
 # Compute message digest for given file name with the given algorithm
 def get_hash(fn, hashing):
@@ -85,20 +102,38 @@ def get_hash(fn, hashing):
         return out[:hashing[1]*2/8]
     return None
 
+# Import VM image into glance
+def glance_import(base):
+    pass
+
 def main():
     args = do_argparse()
-    check_glance_availability()
+    if not args.dryrun:
+        check_glance_availability()
     for f in args.files:
-        ret = handle_one_file(f)
-        fn = get_url(ret['url'])
-        gunzip(fn)
-        base, ext = os.path.splitext(fn)
-        h = get_hash(base, _HASHES['MD5'])
-        print(ret)
-        if (h == ret['MD5']):
-            print('OK')
+        ret = get_metadata(f)
+        base = get_url(ret['url'])
+        if args.verbose:
+            print(f.name, ': downloaded image into', base)
+        verified = 0
+        if (args.fullcheck):
+            hashes = list(set(ret.keys()) - set(['url']))
         else:
-            print('WARNING: checksum does not match:', h)
+            hashes = ['MD5']
+        for hashfn in hashes:
+            h = get_hash(base, _HASHES[hashfn])
+            if h == ret[hashfn]:
+                if args.verbose:
+                    print(f.name, ': OK :', hashfn)
+                verified += 1
+            else:
+                if args.verbose:
+                    print(f.name, ': WARNING: checksum does not match', hashfn)
+                    print(f.name, ': WARNING:     expected =', ret[hashfn])
+                    print(f.name, ': WARNING:     computed =', h)
+        if not args.dryrun:
+            if args.force or len(hashes) == verified:
+                glance_import(base)
 
 if __name__ == '__main__':
     main()
