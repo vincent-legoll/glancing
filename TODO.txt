@@ -1,8 +1,6 @@
 - allow importing from (name, url, checksum)
   glance already does that : passthrough
 
-- allow importing from .json from stratuslab marketplace
-
 - use glance APIs if available
 
 - use curl and / or wget insted of urllib.urlretrieve()
@@ -10,6 +8,8 @@
 - use hashlib algorithms
 
 - compute multiple hashes at once in block mode
+
+- use python gzip module
 
 PIDt94ySjKEHKKvWrYijsZtclxU
 
