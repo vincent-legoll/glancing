@@ -1,6 +1,3 @@
-- allow importing from (name, url, checksum)
-  glance already does that : passthrough
-
 - use glance APIs if available
 
 - use curl and / or wget insted of urllib.urlretrieve()
@@ -11,10 +8,8 @@
 
 - use python gzip module
 
-- case-insensitive checksum comparison
-
-PIDt94ySjKEHKKvWrYijsZtclxU
-
-'/marketplace/metadata/PIDt94ySjKEHKKvWrYijsZtclxU/Konstantin.Skaburskas@cern.ch/2015-05-18T21:24:08Z?media=json'
+- get metadata from url:
+'/marketplace/metadata/%s/' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) => ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
+'/marketplace/metadata/%s/%s/%s?media=json' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) + ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
 
 
