@@ -256,15 +256,17 @@ def main():
                 metadata['checksums'][halg] = dig
 
     # Verify image size
-    size_expected = metadata['size']
-    size_actual = os.path.getsize(local_image_file)
-    size_ok = size_expected == size_actual
+    size_ok = True
+    if args.image_type == 'json':
+        size_expected = metadata['size']
+        size_actual = os.path.getsize(local_image_file)
+        size_ok = size_expected == size_actual
 
-    if size_ok:
-        vprint('%s: size: OK' % (local_image_file,))
-    else:
-        vprint('%s: size: expected: %d' % (local_image_file, size_expected))
-        vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
+        if size_ok:
+            vprint('%s: size: OK' % (local_image_file,))
+        else:
+            vprint('%s: size: expected: %d' % (local_image_file, size_expected))
+            vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
 
     # Verify image file
     if size_ok:
