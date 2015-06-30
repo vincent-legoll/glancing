@@ -11,6 +11,8 @@
 
 - use python gzip module
 
+- case-insensitive checksum comparison
+
 PIDt94ySjKEHKKvWrYijsZtclxU
 
 '/marketplace/metadata/PIDt94ySjKEHKKvWrYijsZtclxU/Konstantin.Skaburskas@cern.ch/2015-05-18T21:24:08Z?media=json'
