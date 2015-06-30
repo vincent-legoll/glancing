@@ -138,6 +138,12 @@ def get_metadata(f):
                     ret['compression'] = val[key][0]['value']
                 elif key == 'http://purl.org/dc/terms/format':
                     ret['diskformat'] = val[key][0]['value']
+                elif key == 'http://mp.stratuslab.eu/slterms#os':
+                    ret['ostype'] = val[key][0]['value']
+                elif key == 'http://mp.stratuslab.eu/slterms#os-arch':
+                    ret['osarch'] = val[key][0]['value']
+                elif key == 'http://mp.stratuslab.eu/slterms#os-version':
+                    ret['osver'] = val[key][0]['value']
                 elif key == "http://mp.stratuslab.eu/slreq#algorithm":
                     if 'checksums' not in ret:
                         ret['checksums'] = {}
@@ -204,6 +210,7 @@ def main():
     if not args.dryrun:
         check_glance_availability()
 
+    # Default values
     metadata = {'compression': None, 'checksums': {}, 'diskformat': 'raw'}
 
     # Retrieve image in a local file
@@ -228,6 +235,17 @@ def main():
             sys.exit(1)
         local_image_file, ext = os.path.splitext(local_image_file)
         vprint(local_image_file + ': uncompressed file')
+
+    # Choose VM image name
+    name = args.name
+    if name is None:
+        if args.image_type == 'image':
+            name, ext = os.path.splitext(os.path.basename(local_image_file))
+        elif args.image_type == 'url':
+            name, ext = os.path.splitext(urlparse.urlsplit(args.url)[2])
+        else:
+            name = '%s-%s-%s' % (metadata['ostype'], metadata['osver'], metadata['osarch'])
+    vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to de verified
     if args.image_type != 'json' and args.digests:
@@ -258,10 +276,6 @@ def main():
     # Import image into glance
     if not args.dryrun:
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
-            name = args.name
-            if name is None and args.image_type == 'image':
-                name, ext = os.path.splitext(local_image_file)
-                name = os.path.basename(name)
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
             glance_import(local_image_file, md5, name, metadata['diskformat'])
 
