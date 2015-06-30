@@ -13,6 +13,11 @@ import subprocess
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open('/dev/null', 'rw+b')
 
+_COMPRESSION = {
+                'gz':  ['gunzip'],
+                'bz2': ['bunzip2'],
+               }
+
 # Hashing algorithm: (command line, message digest size in bits)
 _HASHES = {
            'MD5':     (['md5sum',    '--binary'], 128),
@@ -114,11 +119,7 @@ def check_glance_availability():
 # Get uncompressed VM image file from the given url
 def get_url(url):
     fn, hdrs = urllib.urlretrieve(url)
-    ret = gunzip(fn)
-    if ret != 0:
-        return None
-    base, ext = os.path.splitext(fn)
-    return base
+    return fn
 
 # Parse the metadata .json file, from the stratuslab marketplace
 # Extract interesting data: url and message digests
@@ -131,14 +132,20 @@ def get_metadata(f):
             for key in val.keys():
                 if key == 'http://mp.stratuslab.eu/slterms#location':
                     ret['url'] = val['http://mp.stratuslab.eu/slterms#location'][0]['value']
+                elif key == 'http://mp.stratuslab.eu/slreq#bytes':
+                    ret['size'] = int(val[key][0]['value'])
+                elif key == 'http://purl.org/dc/terms/compression':
+                    ret['compression'] = val[key][0]['value']
                 elif key == "http://mp.stratuslab.eu/slreq#algorithm":
+                    if 'checksums' not in ret:
+                        ret['checksums'] = {}
                     algo = val[key][0]['value']
-                    ret[algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
+                    ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
     return ret
 
-# VM images are gzip'ed, but checksums are for uncompressed files
-def gunzip(fn):
-    ret = subprocess.call(['gunzip', fn],
+# VM images are compressed, but checksums are for uncompressed files
+def uncompress(fn, uncompress):
+    ret = subprocess.call(uncompress + [fn],
                           stdin=subprocess.DEVNULL,
                           stdout=subprocess.DEVNULL)
     if ret != 0:
@@ -155,14 +162,15 @@ def get_hash(fn, hashing):
     return None
 
 # Check all message digests of the image file
-def check_digests(hashes, local_image_file, metadata):
+def check_digests(local_image_file, metadata):
     verified = 0
     md5 = None
+    hashes = metadata['checksums']
     for hashfn in sorted(hashes):
         digest_computed = get_hash(local_image_file, _HASHES[hashfn])
         if hashfn == 'MD5':
             md5 = digest_computed
-        digest_expected = metadata[hashfn]
+        digest_expected = hashes[hashfn]
         if digest_computed.lower() == digest_expected.lower():
             verified += 1
             vprint('%s: %s: OK' % (local_image_file, hashfn))
@@ -192,7 +200,7 @@ def main():
     if not args.dryrun:
         check_glance_availability()
 
-    metadata = {}
+    metadata = {'compression': None, 'checksums': {},}
 
     # Retrieve image in a local file
     if args.image_type == 'image':
@@ -209,28 +217,33 @@ def main():
         local_image_file = get_url(url)
         vprint(local_image_file + ': downloaded image')
 
+    # Uncompress downloaded file
+    if metadata['compression'] is not None:
+        ret = uncompress(local_image_file, _COMPRESSION[metadata['compression']])
+        if ret != 0:
+            sys.exit(1)
+        local_image_file, ext = os.path.splitext(local_image_file)
+        vprint(local_image_file + ': uncompressed file')
+
     # Populate metadata message digests to de verified
     if args.image_type != 'json' and args.digests:
         for dig in args.digests.split(':'):
             dig_len = 4 * len(dig)
             if dig_len in _FIND_HASH:
                 halg = _FIND_HASH[dig_len]
-                metadata[halg] = dig
+                metadata['checksums'][halg] = dig
 
     # Verify image file
-    verified = 0
-    md5 = None
-    hashes = list(set(metadata.keys()) - set(['url']))
-    if hashes:
-        vprint(local_image_file + ': verifying checksums')
-        verified, md5 = check_digests(hashes, local_image_file, metadata)
+    vprint(local_image_file + ': verifying checksums')
+    verified, md5 = check_digests(local_image_file, metadata)
 
     # Import image into glance
     if not args.dryrun:
-        if len(hashes) == verified or args.force:
+        if len(metadata['checksums']) == verified or args.force:
             name = args.name
             if name is None and args.image_type == 'image':
                 name, ext = os.path.splitext(local_image_file)
+                name = os.path.basename(name)
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
             glance_import(local_image_file, md5, name)
 
