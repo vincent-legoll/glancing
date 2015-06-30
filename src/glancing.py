@@ -136,6 +136,8 @@ def get_metadata(f):
                     ret['size'] = int(val[key][0]['value'])
                 elif key == 'http://purl.org/dc/terms/compression':
                     ret['compression'] = val[key][0]['value']
+                elif key == 'http://purl.org/dc/terms/format':
+                    ret['diskformat'] = val[key][0]['value']
                 elif key == "http://mp.stratuslab.eu/slreq#algorithm":
                     if 'checksums' not in ret:
                         ret['checksums'] = {}
@@ -180,8 +182,10 @@ def check_digests(local_image_file, metadata):
     return verified, md5
 
 # Import VM image into glance
-def glance_import(base, md5=None, name=None):
-    cmd = _GLANCE_CMD + ['image-create', '--disk-format', 'raw', '--container-format', 'bare', '--file', base]
+def glance_import(base, md5=None, name=None, diskformat=None):
+    cmd = _GLANCE_CMD + ['image-create', '--container-format', 'bare', '--file', base]
+    if diskformat is not None:
+        cmd += ['--disk-format', diskformat]
     if name is not None:
         cmd += ['--name', name]
     if md5 is not None:
@@ -200,7 +204,7 @@ def main():
     if not args.dryrun:
         check_glance_availability()
 
-    metadata = {'compression': None, 'checksums': {},}
+    metadata = {'compression': None, 'checksums': {}, 'diskformat': 'raw'}
 
     # Retrieve image in a local file
     if args.image_type == 'image':
@@ -233,19 +237,33 @@ def main():
                 halg = _FIND_HASH[dig_len]
                 metadata['checksums'][halg] = dig
 
+    # Verify image size
+    size_expected = metadata['size']
+    size_actual = os.path.getsize(local_image_file)
+    size_ok = size_expected == size_actual
+
+    if size_ok:
+        vprint('%s: size: OK' % (local_image_file,))
+    else:
+        vprint('%s: size: expected: %d' % (local_image_file, size_expected))
+        vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
+
     # Verify image file
-    vprint(local_image_file + ': verifying checksums')
-    verified, md5 = check_digests(local_image_file, metadata)
+    if size_ok:
+        vprint(local_image_file + ': verifying checksums')
+        verified, md5 = check_digests(local_image_file, metadata)
+    else:
+        vprint(local_image_file + ': size differ, not verifying checksums')
 
     # Import image into glance
     if not args.dryrun:
-        if len(metadata['checksums']) == verified or args.force:
+        if (size_ok and len(metadata['checksums']) == verified) or args.force:
             name = args.name
             if name is None and args.image_type == 'image':
                 name, ext = os.path.splitext(local_image_file)
                 name = os.path.basename(name)
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
-            glance_import(local_image_file, md5, name)
+            glance_import(local_image_file, md5, name, metadata['diskformat'])
 
     # Keep downloaded image file
     if not args.image_type == 'image' and not args.keeptemps:
