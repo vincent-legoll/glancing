@@ -10,6 +10,8 @@ import urlparse
 import argparse
 import subprocess
 
+import multihash
+
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open('/dev/null', 'rw+b')
 
@@ -17,19 +19,6 @@ _COMPRESSION = {
                 'gz':  ['gunzip'],
                 'bz2': ['bunzip2'],
                }
-
-# Hashing algorithm: (command line, message digest size in bits)
-_HASHES = {
-           'MD5':     (['md5sum',    '--binary'], 128),
-           'SHA-1':   (['sha1sum',   '--binary'], 160),
-           'SHA-224': (['sha224sum', '--binary'], 224),
-           'SHA-256': (['sha256sum', '--binary'], 256),
-           'SHA-384': (['sha384sum', '--binary'], 384),
-           'SHA-512': (['sha512sum', '--binary'], 512),
-          }
-
-# Mapping from digest lengths to algorithms
-_FIND_HASH = {_HASHES[alg][1]: alg for alg in _HASHES.keys()}
 
 _GLANCE_CMD = ['glance']
 
@@ -121,6 +110,10 @@ def get_url(url):
     fn, hdrs = urllib.urlretrieve(url)
     return fn
 
+# Translate Stratuslab market place hash names to hashlib ones
+def sl_to_hashlib(hash_name):
+    return hash_name.replace('-', '').lower()
+
 # Parse the metadata .json file, from the stratuslab marketplace
 # Extract interesting data: url and message digests
 def get_metadata(f):
@@ -147,7 +140,7 @@ def get_metadata(f):
                 elif key == "http://mp.stratuslab.eu/slreq#algorithm":
                     if 'checksums' not in ret:
                         ret['checksums'] = {}
-                    algo = val[key][0]['value']
+                    algo = sl_to_hashlib(val[key][0]['value'])
                     ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
     return ret
 
@@ -160,23 +153,17 @@ def uncompress(fn, uncompress):
         print('%s: Failed to uncompress: %s' % (sys.argv[0], fn), file=sys.stderr)
     return ret
 
-# Compute message digest for given file name with the given algorithm
-def get_hash(fn, hashing):
-    p = subprocess.Popen(hashing[0] + [fn], stdout=subprocess.PIPE)
-    out, err = p.communicate()
-    ret = p.returncode
-    if ret == 0:
-        return out[:hashing[1]*2/8]
-    return None
-
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata):
     verified = 0
     md5 = None
     hashes = metadata['checksums']
+    mh = multihash.multihash_hashlib(hashes)
+    mh.hash_file(local_image_file)
+    hds = mh.hexdigests()
     for hashfn in sorted(hashes):
-        digest_computed = get_hash(local_image_file, _HASHES[hashfn])
-        if hashfn == 'MD5':
+        digest_computed = hds[hashfn]
+        if hashfn == 'md5':
             md5 = digest_computed
         digest_expected = hashes[hashfn]
         if digest_computed.lower() == digest_expected.lower():
@@ -250,9 +237,9 @@ def main():
     # Populate metadata message digests to de verified
     if args.image_type != 'json' and args.digests:
         for dig in args.digests.split(':'):
-            dig_len = 4 * len(dig)
-            if dig_len in _FIND_HASH:
-                halg = _FIND_HASH[dig_len]
+            dig_len = len(dig)
+            if dig_len in multihash._LEN_TO_HASH:
+                halg = multihash._LEN_TO_HASH[dig_len]
                 metadata['checksums'][halg] = dig
 
     # Verify image size
@@ -270,8 +257,13 @@ def main():
 
     # Verify image checksums
     if size_ok:
-        vprint(local_image_file + ': verifying checksums')
-        verified, md5 = check_digests(local_image_file, metadata)
+        if len(metadata['checksums']) > 0:
+            vprint(local_image_file + ': verifying checksums')
+            verified, md5 = check_digests(local_image_file, metadata)
+        elif args.image_type != 'json':
+            vprint(local_image_file + ': no checksum to  verify (forgot "-s" CLI option ?)')
+        else:
+            vprint(local_image_file + ': no checksum to  verify found in metadata file...')
     else:
         vprint(local_image_file + ': size differ, not verifying checksums')
 
