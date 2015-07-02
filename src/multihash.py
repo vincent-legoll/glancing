@@ -3,6 +3,12 @@
 import hashlib
 import subprocess
 
+# Mapping from algorithm to digest length
+_HASH_TO_LEN = {hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms}
+
+# Mapping from digest length to algorithm
+_LEN_TO_HASH = {hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in hashlib.algorithms}
+
 class multihash_hashlib(object):
     '''Compute multiple message digests at once
     '''
@@ -28,8 +34,6 @@ class multihash_hashlib(object):
 class multihash_serial_exec(object):
     '''Compute multiple message digests, one at a time, using external programs
     '''
-    
-    _HASH_LEN = {hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms}
 
     def __init__(self, hash_names=hashlib.algorithms):
         self.hexdigests_data = {hash_name: '' for hash_name in hash_names}
@@ -48,7 +52,7 @@ class multihash_serial_exec(object):
         out, err = p.communicate()
         ret = p.returncode
         if ret == 0:
-            return out[:self._HASH_LEN[hash_name]]
+            return out[:_HASH_TO_LEN[hash_name]]
         return None
 
 def test_serial_exec():
@@ -67,6 +71,7 @@ def test_hashlib():
         mh.hash_file(arg)
         print mh.hexdigests()
 
+    print
     mh = multihash_hashlib()
     mh.update('toto')
     print mh.hexdigests()
