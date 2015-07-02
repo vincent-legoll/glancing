@@ -1,0 +1,209 @@
+{ 
+  "_:62d97f9e:148ec197b77:-7fa3" : { 
+    "http://mp.stratuslab.eu/slreq#algorithm" : [ { 
+      "type" : "literal" ,
+      "value" : "SHA-1"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#value" : [ { 
+      "type" : "literal" ,
+      "value" : "f203b7de324a32841ca2af5ab6228ec66d725c54"
+    }
+     ]
+  }
+   ,
+  "_:62d97f9e:148ec197b77:-7fa2" : { 
+    "http://mp.stratuslab.eu/slreq#algorithm" : [ { 
+      "type" : "literal" ,
+      "value" : "SHA-256"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#value" : [ { 
+      "type" : "literal" ,
+      "value" : "2bb968d2a2ecb47bab36922838599df27eeb30ad19cc5435741435ac3a09c095"
+    }
+     ]
+  }
+   ,
+  "_:62d97f9e:148ec197b77:-7f9f" : { 
+    "http://mp.stratuslab.eu/slreq#email" : [ { 
+      "type" : "literal" ,
+      "value" : "Konstantin.Skaburskas@cern.ch"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#issuer" : [ { 
+      "type" : "literal" ,
+      "value" : "CN=CERN Trusted Certification Authority,DC=cern,DC=ch"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#subject" : [ { 
+      "type" : "literal" ,
+      "value" : "CN=Konstantin Skaburskas,CN=658461,CN=kskaburs,OU=Users,OU=Organic Units,DC=cern,DC=ch"
+    }
+     ]
+  }
+   ,
+  "_:62d97f9e:148ec197b77:-7fa0" : { 
+    "http://purl.org/dc/terms/created" : [ { 
+      "type" : "literal" ,
+      "value" : "2015-05-18T21:24:08Z"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#endorser" : [ { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7f9f"
+    }
+     ]
+  }
+   ,
+  "_:62d97f9e:148ec197b77:-7fa1" : { 
+    "http://mp.stratuslab.eu/slreq#algorithm" : [ { 
+      "type" : "literal" ,
+      "value" : "SHA-512"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#value" : [ { 
+      "type" : "literal" ,
+      "value" : "41700f669e892fae106f94309bbcb0b9bac1f65e3b4200d6ba6074619200ea53f43252a66a1198539de4335199a984b2499e8c4c1360b82c9b1245ba02d16c9d"
+    }
+     ]
+  }
+   ,
+  "http://mp.stratuslab.eu/#PIDt94ySjKEHKKvWrYijsZtclxU" : { 
+    "http://purl.org/dc/terms/type" : [ { 
+      "type" : "literal" ,
+      "value" : "base"
+    }
+     ] ,
+    "http://purl.org/dc/terms/identifier" : [ { 
+      "type" : "literal" ,
+      "value" : "PIDt94ySjKEHKKvWrYijsZtclxU"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#endorsement" : [ { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7fa0"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#os" : [ { 
+      "type" : "literal" ,
+      "value" : "CentOS"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#disks-bus" : [ { 
+      "type" : "literal" ,
+      "value" : "virtio"
+    }
+     ] ,
+    "http://purl.org/dc/terms/valid" : [ { 
+      "type" : "literal" ,
+      "value" : "2015-12-31T15:41:05Z"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#checksum" : [ { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7fa3"
+    }
+    , { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7fa2"
+    }
+    , { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7fa1"
+    }
+    , { 
+      "type" : "bnode" ,
+      "value" : "_:62d97f9e:148ec197b77:-7fa4"
+    }
+     ] ,
+    "http://purl.org/dc/terms/created" : [ { 
+      "type" : "literal" ,
+      "value" : "2014-11-17T15:41:05Z"
+    }
+     ] ,
+    "http://purl.org/dc/terms/creator" : [ { 
+      "type" : "literal" ,
+      "value" : "StratusLab"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#location" : [ { 
+      "type" : "literal" ,
+      "value" : "http://appliances.stratuslab.eu/images/base/CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#kind" : [ { 
+      "type" : "literal" ,
+      "value" : "machine"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#hypervisor" : [ { 
+      "type" : "literal" ,
+      "value" : "kvm"
+    }
+     ] ,
+    "http://purl.org/dc/terms/title" : [ { 
+      "type" : "literal" ,
+      "value" : ""
+    }
+     ] ,
+    "http://purl.org/dc/terms/format" : [ { 
+      "type" : "literal" ,
+      "value" : "raw"
+    }
+     ] ,
+    "http://purl.org/dc/terms/compression" : [ { 
+      "type" : "literal" ,
+      "value" : "gz"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#os-version" : [ { 
+      "type" : "literal" ,
+      "value" : "7.0"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#bytes" : [ { 
+      "type" : "literal" ,
+      "value" : "5368709120"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#os-arch" : [ { 
+      "type" : "literal" ,
+      "value" : "x86_64"
+    }
+     ] ,
+    "http://purl.org/dc/terms/alternative" : [ { 
+      "type" : "literal" ,
+      "value" : "centos-7"
+    }
+     ] ,
+    "http://purl.org/dc/terms/publisher" : [ { 
+      "type" : "literal" ,
+      "value" : "StratusLab"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slterms#version" : [ { 
+      "type" : "literal" ,
+      "value" : "1.1"
+    }
+     ] ,
+    "http://purl.org/dc/terms/description" : [ { 
+      "type" : "literal" ,
+      "value" : "CentOS 7.0 (CentOS7.0) base image automatically created by StratusLab. Configured only with a root user. The firewall in the image is enabled, IPv6 is enabled, and SELinux enabled. Allows both standard StratusLab and cloud-init contextualization mechanisms. No swap volume is provided."
+    }
+     ]
+  }
+   ,
+  "_:62d97f9e:148ec197b77:-7fa4" : { 
+    "http://mp.stratuslab.eu/slreq#value" : [ { 
+      "type" : "literal" ,
+      "value" : "b361bf47b68da285ca92219108349b94"
+    }
+     ] ,
+    "http://mp.stratuslab.eu/slreq#algorithm" : [ { 
+      "type" : "literal" ,
+      "value" : "MD5"
+    }
+     ]
+  }
+}
