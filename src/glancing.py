@@ -268,7 +268,7 @@ def main():
             vprint('%s: size: expected: %d' % (local_image_file, size_expected))
             vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
 
-    # Verify image file
+    # Verify image checksums
     if size_ok:
         vprint(local_image_file + ': verifying checksums')
         verified, md5 = check_digests(local_image_file, metadata)
