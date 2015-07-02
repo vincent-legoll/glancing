@@ -261,9 +261,9 @@ def main():
             vprint(local_image_file + ': verifying checksums')
             verified, md5 = check_digests(local_image_file, metadata)
         elif args.image_type != 'json':
-            vprint(local_image_file + ': no checksum to  verify (forgot "-s" CLI option ?)')
+            vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
-            vprint(local_image_file + ': no checksum to  verify found in metadata file...')
+            vprint(local_image_file + ': no checksum to verify found in metadata file...')
     else:
         vprint(local_image_file + ': size differ, not verifying checksums')
 
