@@ -2,14 +2,6 @@
 
 - use curl and / or wget insted of urllib.urlretrieve()
 
-- use hashlib algorithms
-
-- compute multiple hashes at once in block mode
-
-- use python gzip module
-
 - get metadata from url:
 '/marketplace/metadata/%s/' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) => ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
 '/marketplace/metadata/%s/%s/%s?media=json' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) + ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
-
-
