@@ -11,14 +11,10 @@ import argparse
 import subprocess
 
 import multihash
+import decompressor
 
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open('/dev/null', 'rw+b')
-
-_COMPRESSION = {
-                'gz':  ['gunzip'],
-                'bz2': ['bunzip2'],
-               }
 
 _GLANCE_CMD = ['glance']
 
@@ -144,15 +140,6 @@ def get_metadata(f):
                     ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
     return ret
 
-# VM images are compressed, but checksums are for uncompressed files
-def uncompress(fn, uncompress):
-    ret = subprocess.call(uncompress + [fn],
-                          stdin=subprocess.DEVNULL,
-                          stdout=subprocess.DEVNULL)
-    if ret != 0:
-        print('%s: Failed to uncompress: %s' % (sys.argv[0], fn), file=sys.stderr)
-    return ret
-
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata):
     verified = 0
@@ -216,10 +203,11 @@ def main():
         vprint(local_image_file + ': downloaded image')
 
     # Uncompress downloaded file
+    # VM images are compressed, but checksums are for uncompressed files
     if metadata['compression'] is not None:
-        ret = uncompress(local_image_file, _COMPRESSION[metadata['compression']])
-        if ret != 0:
-            sys.exit(1)
+        chext = '.' + metadata['compression']
+        d = decompressor.decompressor(local_image_file, ext=chext)
+        d.doit(delete=True)
         local_image_file, ext = os.path.splitext(local_image_file)
         vprint(local_image_file + ': uncompressed file')
 
