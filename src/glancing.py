@@ -231,8 +231,8 @@ def main():
 
     # Verify image size
     size_ok = True
-    if args.image_type == 'json':
-        size_expected = metadata['size']
+    size_expected = metadata.get('size', None)
+    if size_expected is not None:
         size_actual = os.path.getsize(local_image_file)
         size_ok = size_expected == size_actual
 
