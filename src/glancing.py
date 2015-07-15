@@ -11,6 +11,7 @@ import urlparse
 import argparse
 import subprocess
 
+import metadata
 import multihash
 import decompressor
 
@@ -105,40 +106,6 @@ def get_url(url):
     fn, hdrs = urllib.urlretrieve(url)
     return fn
 
-# Translate Stratuslab market place hash names to hashlib ones
-def sl_to_hashlib(hash_name):
-    return hash_name.replace('-', '').lower()
-
-# Parse the metadata .json file, from the stratuslab marketplace
-# Extract interesting data: url and message digests
-def get_metadata(f):
-    tmp = json.loads(f.read())
-    f.close()
-    ret = {}
-    if type(tmp) is dict:
-        for val in tmp.values():
-            for key in val.keys():
-                if key == 'http://mp.stratuslab.eu/slterms#location':
-                    ret['url'] = val['http://mp.stratuslab.eu/slterms#location'][0]['value']
-                elif key == 'http://mp.stratuslab.eu/slreq#bytes':
-                    ret['size'] = int(val[key][0]['value'])
-                elif key == 'http://purl.org/dc/terms/compression':
-                    ret['compression'] = val[key][0]['value']
-                elif key == 'http://purl.org/dc/terms/format':
-                    ret['diskformat'] = val[key][0]['value']
-                elif key == 'http://mp.stratuslab.eu/slterms#os':
-                    ret['ostype'] = val[key][0]['value']
-                elif key == 'http://mp.stratuslab.eu/slterms#os-arch':
-                    ret['osarch'] = val[key][0]['value']
-                elif key == 'http://mp.stratuslab.eu/slterms#os-version':
-                    ret['osver'] = val[key][0]['value']
-                elif key == "http://mp.stratuslab.eu/slreq#algorithm":
-                    if 'checksums' not in ret:
-                        ret['checksums'] = {}
-                    algo = sl_to_hashlib(val[key][0]['value'])
-                    ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
-    return ret
-
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata):
     verified = 0
@@ -194,7 +161,7 @@ def main():
             sys.exit(1)
     else:
         if args.image_type == 'json':
-            metadata = get_metadata(args.jsonfile)
+            metadata = MetaStratusLab(args.jsonfile).get_metadata()
             url = metadata['url']
         elif args.image_type == 'url':
             url = args.url
@@ -231,8 +198,8 @@ def main():
 
     # Verify image size
     size_ok = True
-    size_expected = metadata.get('size', None)
-    if size_expected is not None:
+    if 'size' in metadata:
+        size_expected = int(metadata['size'])
         size_actual = os.path.getsize(local_image_file)
         size_ok = size_expected == size_actual
 
