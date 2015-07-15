@@ -150,22 +150,25 @@ def main():
     if not args.dryrun:
         check_glance_availability()
 
-    # Default values
-    metadata = {'checksums': {}, 'diskformat': 'raw'}
+    # Prepare VM image metadata
+    if args.image_type == 'json':
+        metadata = MetaStratusLab(args.jsonfile).get_metadata()
+    else:
+        metadata = {'checksums': {}, 'diskformat': 'raw'}
 
     # Retrieve image in a local file
     if args.image_type == 'image':
+        # Already a local file
         local_image_file = args.imagefile
         if not os.path.exists(local_image_file):
             vprint(local_image_file + ': file not found')
             sys.exit(1)
     else:
+        # Download from network location
         if args.image_type == 'json':
-            metadata = MetaStratusLab(args.jsonfile).get_metadata()
-            url = metadata['url']
+            local_image_file = get_url(metadata['url'])
         elif args.image_type == 'url':
-            url = args.url
-        local_image_file = get_url(url)
+            local_image_file = get_url(args.url)
         vprint(local_image_file + ': downloaded image')
 
     # Uncompress downloaded file
