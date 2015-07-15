@@ -193,11 +193,13 @@ def main():
 
     # Populate metadata message digests to de verified
     if args.image_type != 'json' and args.digests:
-        for dig in args.digests.split(':'):
+        for dig in filter(args.digests.split(':')):
             dig_len = len(dig)
             if dig_len in multihash._LEN_TO_HASH:
                 halg = multihash._LEN_TO_HASH[dig_len]
                 metadata['checksums'][halg] = dig
+            else:
+                vprint('unrecognized digest : ' + dig)
 
     # Verify image size
     size_ok = True
