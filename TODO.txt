@@ -1,7 +1,14 @@
 - use glance APIs if available
+  or glancepush directly
 
 - use curl and / or wget insted of urllib.urlretrieve()
 
 - get metadata from url:
 '/marketplace/metadata/%s/' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) => ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
 '/marketplace/metadata/%s/%s/%s?media=json' % ('PIDt94ySjKEHKKvWrYijsZtclxU',) + ('Konstantin.Skaburskas@cern.ch', 2015-05-18T21:24:08Z)
+
+High priority list:
+
+- backup images to be replaced
+- output EGI marketplace-compliant json
+- filter image updates according to a subscription list
