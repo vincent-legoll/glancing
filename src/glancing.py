@@ -151,7 +151,7 @@ def main():
         check_glance_availability()
 
     # Default values
-    metadata = {'compression': None, 'checksums': {}, 'diskformat': 'raw'}
+    metadata = {'checksums': {}, 'diskformat': 'raw'}
 
     # Retrieve image in a local file
     if args.image_type == 'image':
@@ -170,7 +170,7 @@ def main():
 
     # Uncompress downloaded file
     # VM images are compressed, but checksums are for uncompressed files
-    if metadata['compression'] is not None:
+    if 'compression' in metadata:
         chext = '.' + metadata['compression']
         d = decompressor.decompressor(local_image_file, ext=chext)
         d.doit(delete=True)
