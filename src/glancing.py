@@ -6,6 +6,7 @@ import os
 import sys
 import json
 import urllib
+import textwrap
 import urlparse
 import argparse
 import subprocess
@@ -53,25 +54,23 @@ def do_argparse():
     parser_json.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
                        help='keep temporary VM image files')
 
+    digests_help = textwrap.dedent('''
+            colon-separated list of message digests of the image, algorithms are deduced 
+            from checksum lengths, for example, an MD5 (32 chars) and a SHA-1 (40 chars):
+            "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
+        ''').strip()
+
     # Local file-specific options
     parser_imag.add_argument(dest='imagefile', metavar='FILE',
                        help='a local VM image file, raw format')
-    parser_imag.add_argument('-s', '--digests', dest='digests',
-                       help='comma-separated list of message digests of the image, '
-                            'algorithm is deduced from size, for example, an MD5 and a SHA-1: '
-                            '"3bea57666cdead13f0ed4a91beef2b98,'
-                            '1b5229d5dad92bc6662553be01608af2180eafbe"')
+    parser_imag.add_argument('-s', '--digests', dest='digests', help=digests_help)
 
     # Network url-specific options
     parser_url.add_argument(dest='url', metavar='URL',
                        help='a network url VM image to download, raw format')
     parser_url.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
                        help='keep temporary VM image files')
-    parser_url.add_argument('-s', '--digests', dest='digests',
-                       help='comma-separated list of message digests of the image, '
-                            'algorithm is deduced from size, for example, an MD5 and a SHA-1: '
-                            '"3bea57666cdead13f0ed4a91beef2b98,'
-                            '1b5229d5dad92bc6662553be01608af2180eafbe"')
+    parser_url.add_argument('-s', '--digests', dest='digests', help=digests_help)
 
     args = parser.parse_args()
 
