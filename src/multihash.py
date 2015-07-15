@@ -4,10 +4,10 @@ import hashlib
 import subprocess
 
 # Mapping from algorithm to digest length
-_HASH_TO_LEN = {hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms}
+_HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms }
 
 # Mapping from digest length to algorithm
-_LEN_TO_HASH = {hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in hashlib.algorithms}
+_LEN_TO_HASH = { hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in hashlib.algorithms }
 
 class multihash_hashlib(object):
     '''Compute multiple message digests at once
