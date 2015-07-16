@@ -4,10 +4,10 @@ import sys
 
 from utils import get_local_path
 
-# Setup PYTHONPATH for glancing
+# Setup PYTHONPATH for multihash
 sys.path.append(get_local_path('..', '..', 'src'))
 
-import glancing
+import multihash
 
-def glancing_test():
+def multihash_test():
     pass

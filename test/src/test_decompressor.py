@@ -4,10 +4,10 @@ import sys
 
 from utils import get_local_path
 
-# Setup PYTHONPATH for glancing
+# Setup PYTHONPATH for decompressor
 sys.path.append(get_local_path('..', '..', 'src'))
 
-import glancing
+import decompressor
 
-def glancing_test():
+def decompressor_test():
     pass
