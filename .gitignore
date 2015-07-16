@@ -1,3 +1,5 @@
 *.pyc
 test/data/*.bin
+test/data/*.bz2
+test/data/*.gz
 test/images
