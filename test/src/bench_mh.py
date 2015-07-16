@@ -21,6 +21,7 @@ import multihash
 mh = multihash.multihash_%s(%s)
 '''
 
+# This is not S.I. compliant prefix, this is power-of-two based
 _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
 
 def unit_prefix(n):
