@@ -10,16 +10,10 @@ import argparse
 import matplotlib.pyplot as plt
 import matplotlib.markers
 
-# Only usable in a script module, not in an imported package
-# as sys.argv[0] will not be right, maybe use __file__ instead
-def mod_path():
-    ret_path = os.path.dirname(sys.argv[0])
-    if not os.path.isabs(ret_path):
-        ret_path = os.path.join(os.getcwd(), ret_path)
-    return os.path.realpath(ret_path)
+from utils import get_local_path
 
 # Setup PYTHONPATH for multihash
-sys.path.append(os.path.realpath(os.path.join(mod_path(), '..', '..', 'src')))
+sys.path.append(get_local_path('..', '..', 'src'))
 
 _SETUP = \
 '''
@@ -59,7 +53,7 @@ def bench_files(files):
             res.append(bench_one(fn, _SETUP % ('hashlib', 'block_size=%d' % size)))
     return lengths, times_sh, times_mh
 
-def plotit(lengths, times_sh, times_mh):
+def plotit(lengths, times_sh, times_mh, image_file, display):
     plt.title('Benchmark multiple hash computing implementations')
     plt.xlabel('File size in MB')
     plt.ylabel('Time in seconds')
@@ -90,36 +84,54 @@ def plotit(lengths, times_sh, times_mh):
     # Put legend in top left corner
     plt.legend(loc=2)
 
-    # Save a visual
-    plt.savefig('multihash.svg')
+    # Save an image of the plotted data
+    if image_file:
+        plt.savefig(image_file)
 
     # Display resulting figure
-    plt.show()
+    if display:
+        plt.show()
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Benchmark multihash')
+
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-l', '--load', dest='load', metavar='FILE',
+                       help='load data from specified file')
+    group.add_argument('-s', '--store', dest='store', metavar='FILE',
+                       help='store data into specified file')
+
+    parser.add_argument(dest='files', metavar='DATAFILE', nargs='*',
+                        help='files to compute checksums of')
+
+    parser.add_argument('-d', '--display', dest='display', action='store_true',
+                        help='display plot data')
+    parser.add_argument('-p', '--plot', dest='plot', metavar='FILE',
+                        help='save plot data to .svg image file')
+
+    return parser
 
 def main():
-    parser = argparse.ArgumentParser(description='Benchmark multihash')
-    group = parser.add_mutually_exclusive_group(required=False)
-
-    group.add_argument('-l', '--load', dest='load', metavar='FILE',
-                       help='')
-    group.add_argument('-s', '--store', dest='store', metavar='FILE',
-                       help='')
-
-    parser.add_argument(dest='files', metavar='FILE', nargs='*',
-                       help='')
-
+    parser = parse_args()
     args = parser.parse_args()
-
     if args.load:
+        if args.files:
+            print "\nIgnoring DATAFILE(s) parameters, loading data from:", args.load
         with open(args.load, 'rb') as fin:
             lengths, times_sh, times_mh = pickle.load(fin)
-            plotit(lengths, times_sh, times_mh)
     else:
         if args.files:
-            lengths, times_sh, times_mh = bench_files(files)
+            lengths, times_sh, times_mh = bench_files(args.files)
             if args.store:
-                with open(args.store) as fout:
+                with open(args.store, 'wb+') as fout:
                     pickle.dump((lengths, times_sh, times_mh), fout)
+        else:
+            parser.print_help()
+            print "\nMissing DATAFILE(s) parameters"
+            sys.exit(1)
+            
+    if args.display or args.plot:
+        plotit(lengths, times_sh, times_mh, args.plot, args.display)
 
 if __name__ == '__main__':
     main()
