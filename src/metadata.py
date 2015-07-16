@@ -39,15 +39,3 @@ class MetaStratusLab(object):
                         algo = sl_to_hashlib(value)
                         ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
         return ret
-
-class MetaEGI(object):
-    pass
-
-def main():
-    fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
-    f = open('../test/stratuslab/' + fn, 'rb')
-    m = MetaStratusLab(f)
-    print(m.get_metadata())
-
-if __name__ == '__main__':
-    main()
