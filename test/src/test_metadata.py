@@ -15,8 +15,7 @@ class TestMetaData(unittest.TestCase):
     def metadata_test(self):
         fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
         jsonfile = get_local_path('..', 'stratuslab', fn)
-        f = open(jsonfile, 'rb')
-        m = metadata.MetaStratusLab(f)
+        m = metadata.MetaStratusLab(jsonfile)
         md = m.get_metadata()
         self.assertIn('url', md)
         self.assertEqual(md['url'],
