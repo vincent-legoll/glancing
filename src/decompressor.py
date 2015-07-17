@@ -3,6 +3,7 @@
 import os
 import bz2
 import gzip
+import zipfile
 
 class FileExistsError(Exception):
     pass
@@ -10,9 +11,15 @@ class FileExistsError(Exception):
 class FileExtensionError(Exception):
     pass
 
+def zip_opener(fn, mode):
+    zf = zipfile.ZipFile(fn, 'r')
+    unfn, ext = os.path.splitext(fn)
+    return zf.open(os.path.basename(unfn))
+
 _EXT_MAP = {
     '.gz': gzip.open,
     '.bz2': bz2.BZ2File,
+    '.zip': zip_opener,
 }
 
 class Decompressor(object):
