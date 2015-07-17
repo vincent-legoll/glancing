@@ -8,13 +8,16 @@ if [ ! -f random_1M_gz.bin.gz ]; then
   cp -f random_1M.bin random_1M_gz.bin
   gzip random_1M_gz.bin
 fi
+rm -f random_1M_gz.bin
 
 if [ ! -f random_1M_bz2.bin.bz2 ]; then
   cp -f random_1M.bin random_1M_bz2.bin
   bzip2 random_1M_bz2.bin
 fi
+rm -f random_1M_bz2.bin
 
 if [ ! -f random_1M_zip.bin.zip ]; then
   cp -f random_1M.bin random_1M_zip.bin
   zip random_1M_zip.bin.zip random_1M_zip.bin
 fi
+rm -f random_1M_zip.bin
