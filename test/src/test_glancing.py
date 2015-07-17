@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import sys
+import unittest
 
 from utils import get_local_path
 
@@ -9,5 +10,9 @@ sys.path.append(get_local_path('..', '..', 'src'))
 
 import glancing
 
-def glancing_test():
-    pass
+class TestGlancing(unittest.TestCase):
+
+    def glancing_test(self):
+        pass
+
+# args.digests : wrong size
