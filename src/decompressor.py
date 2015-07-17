@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import os
-import sys
 import bz2
 import gzip
 
@@ -14,6 +13,9 @@ _EXT_MAP = {
 }
 
 class Decompressor(object):
+    '''A class able to handle differently compressed file formats
+    '''
+
     def __init__(self, filename, ext=None, block_size=4096):
         self.fin_name = filename
         self.block_size = block_size
@@ -38,6 +40,7 @@ class Decompressor(object):
             os.remove(self.fin_name)
 
 def main():
+    import sys
     for fn in sys.argv[1:]:
         d = Decompressor(fn)
         d.doit()
