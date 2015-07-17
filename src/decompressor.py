@@ -13,7 +13,7 @@ _EXT_MAP = {
     '.bz2': bz2.BZ2File,
 }
 
-class decompressor(object):
+class Decompressor(object):
     def __init__(self, filename, ext=None, block_size=4096):
         self.fin_name = filename
         self.block_size = block_size
@@ -39,7 +39,7 @@ class decompressor(object):
 
 def main():
     for fn in sys.argv[1:]:
-        d = decompressor(fn)
+        d = Decompressor(fn)
         d.doit()
 
 if __name__ == '__main__':

@@ -175,7 +175,7 @@ def main():
     # VM images are compressed, but checksums are for uncompressed files
     if 'compression' in metadata:
         chext = '.' + metadata['compression']
-        d = decompressor.decompressor(local_image_file, ext=chext)
+        d = decompressor.Decompressor(local_image_file, ext=chext)
         d.doit(delete=True)
         local_image_file, ext = os.path.splitext(local_image_file)
         vprint(local_image_file + ': uncompressed file')
