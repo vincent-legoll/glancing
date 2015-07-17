@@ -18,24 +18,31 @@ _URLKEY_TO_RETKEY = {
 def sl_to_hashlib(hash_name):
     return hash_name.replace('-', '').lower()
 
-class MetaStratusLab(object):
-    def __init__(self, fileobj):
-        self.fileobj = fileobj
+class MetaData(object):
+
+    def __init__(self, filename):
+        with open(filename, 'rb') as fileobj:
+            self.json_obj = json.loads(fileobj.read())
+            if not type(self.json_obj) is dict:
+                raise ValueError('Cannnot load json data from: ' + filename)
         self.data = { 'checksums': {} }
 
-    # Parse the metadata .json file, from the stratuslab marketplace
-    # Extract interesting data: url and message digests
+class MetaStratusLab(MetaData):
+    '''Parse the metadata .json file, from the stratuslab marketplace
+       Extract interesting data: url and message digests
+    '''
+
     def get_metadata(self):
-        tmp = json.loads(self.fileobj.read())
-        self.fileobj.close()
         ret = self.data
-        if type(tmp) is dict:
-            for val in tmp.values():
-                for key in val:
-                    value = val[key][0]['value']
-                    if key in _URLKEY_TO_RETKEY:
-                        ret[_URLKEY_TO_RETKEY[key]] = value
-                    elif key == "http://mp.stratuslab.eu/slreq#algorithm":
-                        algo = sl_to_hashlib(value)
-                        ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
+        for val in self.json_obj.values():
+            for key in val:
+                value = val[key][0]['value']
+                if key in _URLKEY_TO_RETKEY:
+                    ret[_URLKEY_TO_RETKEY[key]] = value
+                elif key == "http://mp.stratuslab.eu/slreq#algorithm":
+                    algo = sl_to_hashlib(value)
+                    ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
         return ret
+
+class MetaCern(MetaData):
+    pass
