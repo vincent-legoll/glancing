@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import sys
 
 from utils import get_local_path
@@ -29,11 +30,12 @@ def multihash_test_string_hashlib():
 def multihash_test_string_serial():
     mh = multihash.multihash_serial_exec()
     with open('test.txt', 'wb') as test_file:
-         test_file.write('toto')
-         test_file.flush()
-         mh.hash_file('test.txt')
-         assert mh.hexdigests()['md5'] == 'f71dbe52628a3f83a77ab494817525c6'
-         test_file.write('titi')
-         test_file.flush()
-         mh.hash_file('test.txt')
-         assert mh.hexdigests()['md5'] == '92fdff5b8595ef3f9ac0de664ce21532'
+        test_file.write('toto')
+        test_file.flush()
+        mh.hash_file('test.txt')
+        assert mh.hexdigests()['md5'] == 'f71dbe52628a3f83a77ab494817525c6'
+        test_file.write('titi')
+        test_file.flush()
+        mh.hash_file('test.txt')
+        assert mh.hexdigests()['md5'] == '92fdff5b8595ef3f9ac0de664ce21532'
+    os.remove('test.txt')
