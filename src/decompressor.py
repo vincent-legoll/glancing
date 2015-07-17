@@ -7,6 +7,9 @@ import gzip
 class FileExistsError(Exception):
     pass
 
+class FileExtensionError(Exception):
+    pass
+
 _EXT_MAP = {
     '.gz': gzip.open,
     '.bz2': bz2.BZ2File,
@@ -23,8 +26,11 @@ class Decompressor(object):
 
         if ext is not None and sext != ext:
             raise ValueError('Extension mismatch: ' + ext)
-        if sext not in _EXT_MAP:
-            raise NotSupportedError('Unknown file extension: ' + ext)
+        if sext:
+            if sext not in _EXT_MAP:
+                raise FileExtensionError('Unknown file extension: ' + str(ext))
+        else:
+            raise FileExtensionError('No file extension: ' + filename)
         if os.path.exists(self.fout_name):
             raise FileExistsError('File exists: ' + self.fout_name)
         self.opener = _EXT_MAP[sext]
