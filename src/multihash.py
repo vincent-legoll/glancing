@@ -1,5 +1,15 @@
 #! /usr/bin/env python
 
+'''Two classes implementing checksum computations with different methods:
+- parallel block computation with python's hashlib
+- sequential computation by execution of external programs, such as md5sum
+  and its cousins.
+
+For big files, parallel hashlib implementation beats serialized execution,
+because the source file is only read once. It will also be nicer for the
+operating system caches...
+'''
+
 import hashlib
 import subprocess
 
@@ -10,7 +20,7 @@ _HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for ha
 _LEN_TO_HASH = { hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in hashlib.algorithms }
 
 class multihash_hashlib(object):
-    '''Compute multiple message digests at once
+    '''Compute multiple message digests in parallel, using python's hashlib
     '''
 
     def __init__(self, hash_names=hashlib.algorithms, block_size=4096):
