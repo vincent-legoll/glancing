@@ -9,7 +9,7 @@ sys.path.append(get_local_path('..', '..', 'src'))
 
 import metadata
 
-def MetaStratusLab_test():
+def metadata_test():
     fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
     jsonfile = get_local_path('..', 'stratuslab', fn)
     f = open(jsonfile, 'rb')
