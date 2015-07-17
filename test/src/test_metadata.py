@@ -11,6 +11,7 @@ sys.path.append(get_local_path('..', '..', 'src'))
 import metadata
 
 class TestMetaData(unittest.TestCase):
+
     def metadata_test(self):
         fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
         jsonfile = get_local_path('..', 'stratuslab', fn)
