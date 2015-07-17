@@ -1,5 +1,8 @@
 *.pyc
 test/data/*.bin
+test/data/*.zip
 test/data/*.bz2
 test/data/*.gz
 test/images
+cover
+.coverage
