@@ -10,6 +10,7 @@ because the source file is only read once. It will also be nicer for the
 operating system caches...
 '''
 
+import os
 import hashlib
 import subprocess
 
@@ -55,6 +56,8 @@ class multihash_serial_exec(object):
         return self.hexdigests_data
 
     def hash_file(self, filename):
+        if not os.path.exists(filename):
+            raise IOError('[Errno 2] No such file or directory: ' + filename)
         for hash_name in self.hexdigests_data.keys():
             h = self.get_hash(filename, hash_name)
             self.hexdigests_data[hash_name] = h
