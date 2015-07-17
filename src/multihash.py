@@ -13,6 +13,9 @@ operating system caches...
 import hashlib
 import subprocess
 
+if 'DEVNULL' not in dir(subprocess):
+    subprocess.DEVNULL = open('/dev/null', 'rw+b')
+
 # Mapping from algorithm to digest length
 _HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms }
 
@@ -58,7 +61,9 @@ class multihash_serial_exec(object):
 
     # Compute message digest for given file name with the given algorithm
     def get_hash(self, fn, hash_name):
-        p = subprocess.Popen([hash_name + 'sum', '--binary', fn], stdout=subprocess.PIPE)
+        p = subprocess.Popen([hash_name + 'sum', '--binary', fn],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.DEVNULL)
         out, err = p.communicate()
         ret = p.returncode
         if ret == 0:
