@@ -55,33 +55,12 @@ class multihash_serial_exec(object):
             return out[:_HASH_TO_LEN[hash_name]]
         return None
 
-def test_serial_exec():
+def main():
     import sys
-    print 'test_serial_exec()'
-    for arg in sys.argv[1:]:
-        mh = multihash_serial_exec()
-        mh.hash_file(arg)
-        print mh.hexdigests()
-
-def test_hashlib():
-    import sys
-    print 'test_hashlib()'
     for arg in sys.argv[1:]:
         mh = multihash_hashlib()
         mh.hash_file(arg)
         print mh.hexdigests()
-
-    print
-    mh = multihash_hashlib()
-    mh.update('toto')
-    print mh.hexdigests()
-    mh.update('titi')
-    print mh.hexdigests()
-
-def main():
-    test_serial_exec()
-    print
-    test_hashlib()
 
 if __name__ == '__main__':
     main()
