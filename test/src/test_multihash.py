@@ -76,5 +76,5 @@ class TestMultihash(unittest.TestCase):
             'sha384': '528e21e7f2a439309a46147b8070c4256d74f4bfb56acdede004f5736b7c32c43421a43c26e608ac0dd45bc3f768b65a',
             'sha512': '694ad2de81ea9dadf6f08dce8c0f52aaed5fadca7a98055e69b3bed2a733193a1557d6a75a50f01c064af5761385d95cc3cfe6eebf1a7e8fc6ede1d8f1991ae6',
         }
-        self.assertEqual([devnull_checksums, random_checksums],
-            multihash.main(['/dev/null', get_local_path('..', 'data', 'random_1M.bin')]))
+        files_to_hash = ['/dev/null', get_local_path('..', 'data', 'random_1M.bin')]
+        self.assertEqual([devnull_checksums, random_checksums], multihash.main(files_to_hash))
