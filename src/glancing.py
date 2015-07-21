@@ -11,9 +11,9 @@ import urlparse
 import argparse
 import subprocess
 
-import metadata
 import multihash
 import decompressor
+from metadata import MetaStratusLab
 
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open('/dev/null', 'rw+b')
@@ -27,12 +27,12 @@ def vprint(msg):
         print("%s: %s" % (sys.argv[0], msg))
 
 # Handle CLI options
-def do_argparse():
+def do_argparse(sys_argv):
     parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
 
     # Global options
     parser.add_argument('-v', '--verbose', action='store_true',
-                       help='display additional information')
+                        help='display additional information')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-f', '--force', action='store_true',
@@ -41,39 +41,39 @@ def do_argparse():
                        help='do not import image into glance')
 
     parser.add_argument('-n', '--name', dest='name', default=None,
-                       help='glance name of the image. Default value derived from image file name.')
+                        help='glance name of the image. Default value derived from image file name.')
 
     # Sub parsers for local image, url or stratuslab json metadata
     subparsers = parser.add_subparsers(dest='image_type')
-    parser_imag  = subparsers.add_parser('image', help='import a VM image from a local file')
-    parser_url   = subparsers.add_parser('url',   help='import a VM image from a network location (URL)')
-    parser_json  = subparsers.add_parser('json',  help='import a VM image described by a json metadata file from the StratusLab marketplace (https://marketplace.stratuslab.eu)')
+    parser_imag = subparsers.add_parser('image', help='import a VM image from a local file')
+    parser_url = subparsers.add_parser('url', help='import a VM image from a network location (URL)')
+    parser_json = subparsers.add_parser('json', help='import a VM image described by a json metadata file from the StratusLab marketplace (https://marketplace.stratuslab.eu)')
 
     # JSON-specific options
-    parser_json.add_argument('jsonfile', metavar='FILE', type=argparse.FileType('r'),
-                       help='a .json metadata file describing a VM image')
+    parser_json.add_argument('jsonfile', metavar='FILE',
+                             help='a .json metadata file describing a VM image')
     parser_json.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
-                       help='keep temporary VM image files')
+                             help='keep temporary VM image files')
 
     digests_help = textwrap.dedent('''
-            colon-separated list of message digests of the image, algorithms are deduced 
+            colon-separated list of message digests of the image, algorithms are deduced
             from checksum lengths, for example, an MD5 (32 chars) and a SHA-1 (40 chars):
             "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
         ''').strip()
 
     # Local file-specific options
     parser_imag.add_argument(dest='imagefile', metavar='FILE',
-                       help='a local VM image file, raw format')
+                             help='a local VM image file, raw format')
     parser_imag.add_argument('-s', '--digests', dest='digests', help=digests_help)
 
     # Network url-specific options
     parser_url.add_argument(dest='url', metavar='URL',
-                       help='a network url VM image to download, raw format')
+                            help='a network url VM image to download, raw format')
     parser_url.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
-                       help='keep temporary VM image files')
+                            help='keep temporary VM image files')
     parser_url.add_argument('-s', '--digests', dest='digests', help=digests_help)
 
-    args = parser.parse_args()
+    args = parser.parse_args(sys_argv)
 
     if args.verbose:
         global _VERBOSE
@@ -83,41 +83,41 @@ def do_argparse():
     return args
 
 # Ensure we can run glance
-def check_glance_availability():
+def check_glance_availability(glance_cmd=_GLANCE_CMD):
     try:
-        subprocess.check_call(_GLANCE_CMD,
+        subprocess.check_call(glance_cmd,
                               stdin=subprocess.DEVNULL,
                               stdout=subprocess.DEVNULL,
                               stderr=subprocess.DEVNULL)
     except OSError as e:
-        print("%s: Cannot execute '%s', please check it is properly"
-              " installed, and available through your PATH environment "
-              "variable." % (sys.argv[0], _GLANCE_CMD[0]), file=sys.stderr)
+        vprint("Cannot execute '%s', please check it is properly"
+               " installed, and available through your PATH environment "
+               "variable." % (glance_cmd[0],))
         vprint(e)
-        sys.exit(1)
+        return False
     except subprocess.CalledProcessError as e:
-        print("%s: '%s' does not run properly." % (sys.argv[0],
-              _GLANCE_CMD[0]), file=sys.stderr)
+        vprint("'%s' does not run properly." % (glance_cmd[0],))
         vprint(e)
-        sys.exit(e.returncode)
+        return False
+    return True
 
 # Get uncompressed VM image file from the given url
 def get_url(url):
-    fn, hdrs = urllib.urlretrieve(url)
+    try:
+        fn, hdrs = urllib.urlretrieve(url)
+    except IOError as e:
+        return None
     return fn
 
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata):
     verified = 0
-    md5 = None
     hashes = metadata['checksums']
     mh = multihash.multihash_hashlib(hashes)
     mh.hash_file(local_image_file)
     hds = mh.hexdigests()
     for hashfn in sorted(hashes):
         digest_computed = hds[hashfn]
-        if hashfn == 'md5':
-            md5 = digest_computed
         digest_expected = hashes[hashfn]
         if digest_computed.lower() == digest_expected.lower():
             verified += 1
@@ -125,7 +125,7 @@ def check_digests(local_image_file, metadata):
         else:
             vprint('%s: %s: expected: %s' % (local_image_file, hashfn, digest_expected))
             vprint('%s: %s: computed: %s' % (local_image_file, hashfn, digest_computed))
-    return verified, md5
+    return verified
 
 # Import VM image into glance
 def glance_import(base, md5=None, name=None, diskformat=None):
@@ -138,17 +138,21 @@ def glance_import(base, md5=None, name=None, diskformat=None):
         cmd += ['--checksum', md5]
     ret = subprocess.call(cmd,
                           stdin=subprocess.DEVNULL,
-                          stdout=subprocess.DEVNULL)
+                          stdout=subprocess.DEVNULL,
+                          stderr=subprocess.DEVNULL)
     if ret != 0:
-        print('%s: Failed to import image into glance' % (sys.argv[0],), file=sys.stderr)
-    return ret
+        vprint('failed to import image into glance')
+    return ret == 0
 
-def main():
-    args = do_argparse()
+def main(sys_argv=sys.argv):
+    args = do_argparse(sys_argv)
 
     # Check glance availability early
     if not args.dryrun:
-        check_glance_availability()
+        done = check_glance_availability()
+        if not done:
+            vprint('glance problem')
+            return False
 
     # Prepare VM image metadata
     if args.image_type == 'json':
@@ -162,18 +166,22 @@ def main():
         local_image_file = args.imagefile
         if not os.path.exists(local_image_file):
             vprint(local_image_file + ': file not found')
-            sys.exit(1)
+            return False
     else:
         # Download from network location
         if args.image_type == 'json':
-            local_image_file = get_url(metadata['url'])
-        elif args.image_type == 'url':
-            local_image_file = get_url(args.url)
-        vprint(local_image_file + ': downloaded image')
+            url = metadata['url']
+        else: # if args.image_type == 'url':
+            url = args.url
+        local_image_file = get_url(url)
+        if not local_image_file:
+            vprint('cannot download from: ' + url)
+            return False
+        vprint(local_image_file + ': downloaded image from: ' + url)
 
     # Uncompress downloaded file
     # VM images are compressed, but checksums are for uncompressed files
-    if 'compression' in metadata:
+    if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
         d = decompressor.Decompressor(local_image_file, ext=chext)
         d.doit(delete=True)
@@ -193,13 +201,21 @@ def main():
 
     # Populate metadata message digests to de verified
     if args.image_type != 'json' and args.digests:
-        for dig in filter(args.digests.split(':')):
+        for dig in filter(None, args.digests.split(':')):
             dig_len = len(dig)
             if dig_len in multihash._LEN_TO_HASH:
                 halg = multihash._LEN_TO_HASH[dig_len]
-                metadata['checksums'][halg] = dig
+                if halg in metadata['checksums']:
+                    if dig == metadata['checksums'][halg]:
+                        vprint('duplicate digest, computing only once: ' + dig)
+                    else:
+                        vprint('conflicting digests: ' + dig + ':' + metadata['checksums'][halg])
+                        return False
+                else:
+                    metadata['checksums'][halg] = dig
             else:
-                vprint('unrecognized digest : ' + dig)
+                vprint('unrecognized digest: ' + dig)
+                return False
 
     # Verify image size
     size_ok = True
@@ -213,12 +229,15 @@ def main():
         else:
             vprint('%s: size: expected: %d' % (local_image_file, size_expected))
             vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
+            if not args.force:
+                return False
 
     # Verify image checksums
+    verified = 0
     if size_ok:
         if len(metadata['checksums']) > 0:
             vprint(local_image_file + ': verifying checksums')
-            verified, md5 = check_digests(local_image_file, metadata)
+            verified = check_digests(local_image_file, metadata)
         elif args.image_type != 'json':
             vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
@@ -230,12 +249,20 @@ def main():
     if not args.dryrun:
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
-            glance_import(local_image_file, md5, name, metadata['diskformat'])
+            md5 = metadata['checksums'].get('md5', None)
+            ret = glance_import(local_image_file, md5, name, metadata['diskformat'])
+            return ret
+        else:
+            return False
+    else:
+        if not args.force and (not size_ok or not len(metadata['checksums']) == verified):
+            return False
 
     # Keep downloaded image file
     if not args.image_type == 'image' and not args.keeptemps:
         vprint(local_image_file + ': deleting temporary file')
         os.remove(local_image_file)
+    return True
 
 if __name__ == '__main__':
     main()
