@@ -24,7 +24,7 @@ class TestGlancingMisc(unittest.TestCase):
         self.assertFalse(glancing.check_glance_availability(['g l a n c e']))
 
     def glancing_test_main_glance_availability(self):
-        with environ('PATH', None):
+        with environ('PATH'):
             self.assertFalse(glancing.main(['image', '/dev/null', '-s', '### NOCHECKSUM ###']))
 
 class TestGlancingImage(unittest.TestCase):
