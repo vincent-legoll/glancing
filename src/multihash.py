@@ -11,6 +11,7 @@ operating system caches...
 '''
 
 import os
+import sys
 import hashlib
 import subprocess
 
@@ -73,12 +74,13 @@ class multihash_serial_exec(object):
             return out[:_HASH_TO_LEN[hash_name]]
         return None
 
-def main():
-    import sys
-    for arg in sys.argv[1:]:
+def main(args=sys.argv[1:]):
+    ret = []
+    for arg in args:
         mh = multihash_hashlib()
         mh.hash_file(arg)
-        print mh.hexdigests()
+        ret.append(mh.hexdigests())
+    return ret
 
 if __name__ == '__main__':
-    main()
+    print main()
