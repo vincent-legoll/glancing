@@ -17,7 +17,7 @@ _TEST_FILES = ['random_1M_bz2.bin.bz2', 'random_1M_gz.bin.gz', 'random_1M_zip.bi
 class TestDecompressorSimple(unittest.TestCase):
 
     testdir = '/tmp/TestDecompressorSimple'
-    
+
     def setUp(self):
         if os.path.exists(self.testdir):
             shutil.rmtree(self.testdir)
