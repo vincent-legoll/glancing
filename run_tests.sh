@@ -1,12 +1,18 @@
 #!/bin/sh
 
-COVERAGE_OPTS="--with-coverage --cover-branches --cover-html --cover-inclusive --cover-tests --cover-package=glancing,multihash,metadata,decompressor,utils,test_glancing,test_multihash,test_metadata,test_decompressor"
-PROFILE_OPTS="" # --with-profile
+PACKAGES="glancing,multihash,metadata,decompressor,utils,test_glancing,test_multihash,test_metadata,test_decompressor"
+
+COVERAGE_OPTS="--with-coverage --cover-branches --cover-html --cover-inclusive --cover-tests --cover-package=${PACKAGES}"
+PROFILE_OPTS= # "--with-profile"
+TISSUE_IGNORES="--tissue-ignore=E302,E501,E261,E201,E202,E241" # I disagree with those
+TISSUE_OPTS="--with-tissue --cover-inclusive --tissue-package=${PACKAGES} ${TISSUE_IGNORES}" # pip install --user tissue
+
+ALL_OPTS="${COVERAGE_OPTS} ${PROFILE_OPTS} ${TISSUE_OPTS}"
 
 # If our local cloud is running, use it
 ps faux | grep [c]7-ctrl > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  . ~/openstack/cloud_auth_local.sh
+  . ~/openstack/admin_local.sh
 fi
 
-nosetests --exe ${COVERAGE_OPTS} ${PROFILE_OPTS} $*
+nosetests --exe ${ALL_OPTS} $*
