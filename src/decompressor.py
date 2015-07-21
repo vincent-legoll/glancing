@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
 import os
+import sys
+
 import bz2
 import gzip
 import zipfile
@@ -52,11 +54,11 @@ class Decompressor(object):
         if delete:
             os.remove(self.fin_name)
 
-def main():
-    import sys
-    for fn in sys.argv[1:]:
+def main(args=sys.argv[1:]):
+    for fn in args:
         d = Decompressor(fn)
         d.doit()
+    return True
 
 if __name__ == '__main__':
     main()
