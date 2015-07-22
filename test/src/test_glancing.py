@@ -93,8 +93,10 @@ class TestGlancingImage(unittest.TestCase):
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_image_import_noname(self):
-        self.assertTrue(glancing.main(['-f', 'image', self._TTYLINUX_FILE,
-                                       '-s', self._TTYLINUX_MD5]))
+        name, ext = os.path.splitext(os.path.basename(self._TTYLINUX_FILE))
+        with cleanup(['glance', 'image-delete', name]):
+            self.assertTrue(glancing.main(['-f', 'image', self._TTYLINUX_FILE,
+                                           '-s', self._TTYLINUX_MD5]))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_image_import_name(self):
@@ -215,7 +217,9 @@ class TestGlancingUrlDryRun(BaseGlancingUrl):
 class TestGlancingUrlImport(BaseGlancingUrl):
 
     def glancing_test_url_import_no_name(self):
-        self.assertTrue(glancing.main(['url', self._CIRROS_URL]))
+        name, ext = os.path.splitext(os.path.basename(self._CIRROS_URL))
+        with cleanup(['glance', 'image-delete', name]):
+            self.assertTrue(glancing.main(['url', self._CIRROS_URL]))
 
     def glancing_test_url_import_bad_md5(self):
         with cleanup(['glance', 'image-delete', test_name()]):
