@@ -34,10 +34,8 @@ def run(cmd, out=False, err=False):
     stderr = subprocess.PIPE if err else subprocess.DEVNULL
     stdoutdata, stderrdata = None, None
     try:
-        subp = subprocess.Popen(cmd,
-                         stdin=subprocess.DEVNULL,
-                         stdout=stdout,
-                         stderr=stderr)
+        subp = subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
+                                stdout=stdout, stderr=stderr)
         stdoutdata, stderrdata = subp.communicate()
         return subp.returncode == 0, subp.returncode, stdoutdata if out else None, stderrdata if err else None
     except OSError as e:
