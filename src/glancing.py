@@ -74,10 +74,6 @@ def do_argparse(sys_argv):
 
     return args
 
-# Ensure we can run glance
-def check_glance_availability(glance_cmd=_GLANCE_CMD):
-    return utils.run(glance_cmd)[0]
-
 # Get uncompressed VM image file from the given url
 def get_url(url):
     try:
@@ -127,7 +123,7 @@ def main(sys_argv=sys.argv):
 
     # Check glance availability early
     if not args.dryrun:
-        done = check_glance_availability()
+        done, _unused = utils.run(glance_cmd)
         if not done:
             vprint('glance problem')
             return False

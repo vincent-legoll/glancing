@@ -25,9 +25,6 @@ _HEAVY_TESTS = False
 
 class TestGlancingMisc(unittest.TestCase):
 
-    def glancing_test_check_glance_availability(self):
-        self.assertFalse(glancing.check_glance_availability(['g l a n c e']))
-
     def glancing_test_main_glance_availability(self):
         with environ('PATH'):
             self.assertFalse(glancing.main(['image', '/dev/null']))
