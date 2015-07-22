@@ -6,16 +6,14 @@ import os
 import sys
 import unittest
 
+from tutils import get_local_path
+
+# Setup PYTHONPATH for utils
+sys.path.append(get_local_path('..', '..', 'src'))
+
 import utils
 
 class TestUtils(unittest.TestCase):
-
-    def utils_test_mod_path(self):
-        self.assertTrue(utils.mod_path().endswith('/glancing/test/src'))
-
-    def utils_test_get_local_path(self):
-        lp = utils.get_local_path('toto', 'titi.txt')
-        self.assertTrue(lp.endswith('/glancing/test/src/toto/titi.txt'))
 
     def utils_test_test_name(self):
         self.assertEqual(utils.test_name(), 'utils_test_test_name')
