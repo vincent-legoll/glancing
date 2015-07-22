@@ -10,7 +10,7 @@ import argparse
 import matplotlib.pyplot as plt
 import matplotlib.markers
 
-from utils import get_local_path
+from tutils import get_local_path
 
 # Setup PYTHONPATH for multihash
 sys.path.append(get_local_path('..', '..', 'src'))
