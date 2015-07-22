@@ -217,7 +217,12 @@ def main(sys_argv=sys.argv):
         else:
             vprint(local_image_file + ': no checksum to verify found in metadata file...')
     else:
-        vprint(local_image_file + ': size differ, not verifying checksums')
+        if args.force:
+            vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
+            metadata['checksums'] = { 'md5': '0' * 32 }
+            check_digests(local_image_file, metadata, args.force)
+        else:
+            vprint(local_image_file + ': size differ, not verifying checksums')
 
     # Import image into glance
     if not args.dryrun:
