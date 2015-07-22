@@ -4,8 +4,26 @@ from __future__ import print_function
 
 import os
 import sys
+import inspect
+import subprocess
 
 from contextlib import contextmanager
+
+if 'DEVNULL' not in dir(subprocess):
+    subprocess.DEVNULL = open(os.devnull, 'rw+b')
+
+_VERBOSE = False
+
+def set_verbose(v=None):
+    global _VERBOSE
+    if v is None:
+        _VERBOSE = not _VERBOSE
+    else:
+        _VERBOSE = True if v else False
+
+def vprint(msg, prog=sys.argv[0]):
+    if _VERBOSE:
+        print("%s: %s" % (prog, msg))
 
 def mod_path():
     file_myself = __file__ or sys.argv[0]
@@ -16,6 +34,30 @@ def mod_path():
 
 def get_local_path(*args):
     return os.path.realpath(os.path.join(mod_path(), *args))
+
+def test_name():
+    return inspect.stack()[1][3]
+
+def run(cmd, out=False, err=False):
+    stdout = subprocess.PIPE if out else subprocess.DEVNULL
+    stderr = subprocess.PIPE if err else subprocess.DEVNULL
+    stdoutdata, stderrdata = None, None
+    try:
+        subp = subprocess.Popen(cmd,
+                         stdin=subprocess.DEVNULL,
+                         stdout=stdout,
+                         stderr=stderr)
+        stdoutdata, stderrdata = subp.communicate()
+        return subp.returncode == 0, subp.returncode, stdoutdata if out else None, stderrdata if err else None
+    except OSError as e:
+        vprint("'%s': Cannot execute, please check it is properly"
+               " installed, and available through your PATH environment "
+               "variable." % (cmd[0],))
+        vprint(e)
+    except subprocess.CalledProcessError as e:
+        vprint("'%s': Does not run properly." % (cmd[0],))
+        vprint(e)
+    return False, None, None, None
 
 class devnull(object):
 
@@ -58,3 +100,16 @@ class environ(object):
             del os.environ[self._envvar_name]
         else:
             os.environ[self._envvar_name] = self._old_envvar_val
+
+class cleanup(object):
+
+    def __init__(self, cleanup_cmd):
+        # Prepare
+        self._cleanup_cmd = cleanup_cmd
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Restore
+        run(self._cleanup_cmd)

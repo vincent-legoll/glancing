@@ -17,6 +17,40 @@ class TestUtils(unittest.TestCase):
         lp = utils.get_local_path('toto', 'titi.txt')
         self.assertTrue(lp.endswith('/glancing/test/src/toto/titi.txt'))
 
+    def utils_test_test_name(self):
+        self.assertEqual(utils.test_name(), 'utils_test_test_name')
+
+    def utils_test_run_true(self):
+        self.assertTrue(utils.run(['true'])[0])
+
+    def utils_test_run_no_exe(self):
+        self.assertFalse(utils.run(['n o t h i n g'])[0])
+
+    def utils_test_run_false(self):
+        utils.set_verbose(True)
+        self.assertFalse(utils.run(['false'])[0])
+        utils.set_verbose(False)
+
+    def utils_test_run_not_in_path(self):
+        with utils.environ('PATH'):
+            self.assertFalse(utils.run(['true'])[0])
+
+    def utils_test_run_file(self):
+        test_file = '/tmp/' + utils.test_name()
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        self.assertTrue(utils.run(['touch', test_file])[0])
+        self.assertTrue(os.path.exists(test_file))
+        self.assertTrue(utils.run(['rm', test_file])[0])
+        self.assertFalse(os.path.exists(test_file))
+
+    def utils_test_run_output(self):
+        good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True)
+        self.assertTrue(good)
+        self.assertTrue(retcode == 0)
+        self.assertEqual(out, 'TOTO')
+        self.assertIsNone(err)
+
 class TestUtilsDevnull(unittest.TestCase):
 
     def _cleanup_files(self):
@@ -113,3 +147,13 @@ class TestUtilsEnviron(unittest.TestCase):
         with utils.environ('TOTO'):
             self.assertEqual('', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
+
+class TestUtilsCleanup(unittest.TestCase):
+
+    def utils_test_cleanup(self):
+        test_file = '/tmp/' + utils.test_name()
+        self.assertFalse(os.path.exists(test_file))
+        with utils.cleanup(['rm', test_file]):
+            utils.run(['touch', test_file])
+            self.assertTrue(os.path.exists(test_file))
+        self.assertFalse(os.path.exists(test_file))
