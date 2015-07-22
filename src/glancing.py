@@ -9,22 +9,15 @@ import urllib
 import textwrap
 import urlparse
 import argparse
-import subprocess
 
+import utils
 import multihash
 import decompressor
+
+from utils import vprint
 from metadata import MetaStratusLab
 
-if 'DEVNULL' not in dir(subprocess):
-    subprocess.DEVNULL = open('/dev/null', 'rw+b')
-
 _GLANCE_CMD = ['glance']
-
-_VERBOSE = False
-
-def vprint(msg):
-    if _VERBOSE:
-        print("%s: %s" % (sys.argv[0], msg))
 
 # Handle CLI options
 def do_argparse(sys_argv):
@@ -76,30 +69,14 @@ def do_argparse(sys_argv):
     args = parser.parse_args(sys_argv)
 
     if args.verbose:
-        global _VERBOSE
-        _VERBOSE = True
+        utils.set_verbose(True)
         vprint('verbose mode')
 
     return args
 
 # Ensure we can run glance
 def check_glance_availability(glance_cmd=_GLANCE_CMD):
-    try:
-        subprocess.check_call(glance_cmd,
-                              stdin=subprocess.DEVNULL,
-                              stdout=subprocess.DEVNULL,
-                              stderr=subprocess.DEVNULL)
-    except OSError as e:
-        vprint("Cannot execute '%s', please check it is properly"
-               " installed, and available through your PATH environment "
-               "variable." % (glance_cmd[0],))
-        vprint(e)
-        return False
-    except subprocess.CalledProcessError as e:
-        vprint("'%s' does not run properly." % (glance_cmd[0],))
-        vprint(e)
-        return False
-    return True
+    return utils.run(glance_cmd)[0]
 
 # Get uncompressed VM image file from the given url
 def get_url(url):
@@ -110,7 +87,7 @@ def get_url(url):
     return fn
 
 # Check all message digests of the image file
-def check_digests(local_image_file, metadata):
+def check_digests(local_image_file, metadata, replace_bads=False):
     verified = 0
     hashes = metadata['checksums']
     mh = multihash.multihash_hashlib(hashes)
@@ -125,6 +102,8 @@ def check_digests(local_image_file, metadata):
         else:
             vprint('%s: %s: expected: %s' % (local_image_file, hashfn, digest_expected))
             vprint('%s: %s: computed: %s' % (local_image_file, hashfn, digest_computed))
+            if replace_bads:
+                hashes[hashfn] = digest_computed
     return verified
 
 # Import VM image into glance
@@ -136,13 +115,12 @@ def glance_import(base, md5=None, name=None, diskformat=None):
         cmd += ['--name', name]
     if md5 is not None:
         cmd += ['--checksum', md5]
-    ret = subprocess.call(cmd,
-                          stdin=subprocess.DEVNULL,
-                          stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL)
-    if ret != 0:
+    ok, retcode, out, err = utils.run(cmd, out=True, err=True)
+    if retcode != 0:
         vprint('failed to import image into glance')
-    return ret == 0
+        vprint('stdout=' + out)
+        vprint('stderr=' + err)
+    return ok
 
 def main(sys_argv=sys.argv):
     args = do_argparse(sys_argv)
@@ -194,8 +172,8 @@ def main(sys_argv=sys.argv):
         if args.image_type == 'image':
             name, ext = os.path.splitext(os.path.basename(local_image_file))
         elif args.image_type == 'url':
-            name, ext = os.path.splitext(urlparse.urlsplit(args.url)[2])
-        else:
+            name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(args.url)[2]))
+        else: # if args.image_type == 'json':
             name = '%s-%s-%s' % (metadata['ostype'], metadata['osver'], metadata['osarch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
@@ -237,7 +215,7 @@ def main(sys_argv=sys.argv):
     if size_ok:
         if len(metadata['checksums']) > 0:
             vprint(local_image_file + ': verifying checksums')
-            verified = check_digests(local_image_file, metadata)
+            verified = check_digests(local_image_file, metadata, args.force)
         elif args.image_type != 'json':
             vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
