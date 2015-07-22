@@ -17,52 +17,99 @@ class TestUtils(unittest.TestCase):
         lp = utils.get_local_path('toto', 'titi.txt')
         self.assertTrue(lp.endswith('/glancing/test/src/toto/titi.txt'))
 
-    def utils_test_devnull(self):
+class TestUtilsDevnull(unittest.TestCase):
+
+    def _cleanup_files(self):
         if os.path.exists('test_devnull_out.txt'):
             os.remove('test_devnull_out.txt')
         if os.path.exists('test_devnull_err.txt'):
             os.remove('test_devnull_err.txt')
-        with open('test_devnull_out.txt', 'wb') as out:
-            with open('test_devnull_err.txt', 'wb') as err:
-                old_out = sys.stdout
-                old_err = sys.stderr
-                sys.stdout = out
-                sys.stderr = err
 
-                print('samarche', file=sys.stdout)
-                with utils.devnull('stdout'):
-                    print('sareum', file=sys.stdout)
-                    print('sonreup', file=sys.stderr)
-                print('samarchedenouveau', file=sys.stdout)
+    def _commit(self):
+        self.out.flush()
+        self.err.flush()
+        os.fsync(self.out.fileno())
+        os.fsync(self.err.fileno())
 
-                sys.stdout = old_out
-                sys.stderr = old_err
+    def setUp(self):
+        self._cleanup_files()
+        self.out = open('test_devnull_out.txt', 'wb')
+        self.err = open('test_devnull_err.txt', 'wb')
+        self.old_out = sys.stdout
+        self.old_err = sys.stderr
+        sys.stdout = self.out
+        sys.stderr = self.err
+
+    def tearDown(self):
+        sys.stdout = self.old_out
+        sys.stderr = self.old_err
+        self.out.close()
+        self.err.close()
+        self._cleanup_files()
+
+    def utils_test_devnull_print(self):
+
+        print('samarche', file=sys.stdout)
+        with utils.devnull('stdout'):
+            print('sareum', file=sys.stdout)
+            print('sonreup', file=sys.stderr)
+        print('samarchedenouveau', file=sys.stdout)
+
+        self._commit()
 
         self.assertEqual(open('test_devnull_err.txt', 'rb').read(), 'sonreup\n')
         self.assertEqual(open('test_devnull_out.txt', 'rb').read(), 'samarche\nsamarchedenouveau\n')
-        if os.path.exists('test_devnull_out.txt'):
-            os.remove('test_devnull_out.txt')
-        if os.path.exists('test_devnull_err.txt'):
-            os.remove('test_devnull_err.txt')
+
+    def utils_test_devnull_write(self):
+
+        sys.stdout.write('samarche')
+        with utils.devnull('stdout'):
+            sys.stdout.write('sareum')
+            sys.stderr.write('sonreup')
+        sys.stdout.write('samarchedenouveau')
+
+        self._commit()
+
+        self.assertEqual(open('test_devnull_err.txt', 'rb').read(), 'sonreup')
+        self.assertEqual(open('test_devnull_out.txt', 'rb').read(), 'samarchesamarchedenouveau')
+
+class TestUtilsEnviron(unittest.TestCase):
+
+    def setUp(self):
+        self._old_toto_was_here = False
+        if 'TOTO' in os.environ:
+            self._old_toto_was_here = True
+            self._old_toto_val = os.environ['TOTO']
+            del os.environ['TOTO']
+
+    def tearDown(self):
+        if self._old_toto_was_here:
+            os.environ['TOTO'] = self._old_toto_val
 
     def utils_test_environ_not_existent_val(self):
-        self.assertTrue('TOTO' not in os.environ)
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
         with utils.environ('TOTO', 'titi'):
             self.assertEqual('titi', os.environ['TOTO'])
         self.assertTrue('TOTO' not in os.environ)
 
     def utils_test_environ_not_existent_no_val(self):
-        self.assertTrue('TOTO' not in os.environ)
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
         with utils.environ('TOTO'):
             self.assertEqual('', os.environ['TOTO'])
         self.assertTrue('TOTO' not in os.environ)
 
     def utils_test_environ_existent_val(self):
-        self.assertTrue('TOTO' not in os.environ)
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
         os.environ['TOTO'] = 'tutu'
         self.assertEqual('tutu', os.environ['TOTO'])
         with utils.environ('TOTO', 'titi'):
             self.assertEqual('titi', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
-        del os.environ['TOTO']
-        self.assertTrue('TOTO' not in os.environ)
+
+    def utils_test_environ_existent_no_val(self):
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
+        os.environ['TOTO'] = 'tutu'
+        self.assertEqual('tutu', os.environ['TOTO'])
+        with utils.environ('TOTO'):
+            self.assertEqual('', os.environ['TOTO'])
+        self.assertEqual('tutu', os.environ['TOTO'])
