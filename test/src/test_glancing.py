@@ -144,7 +144,7 @@ class TestGlancingMetadata(unittest.TestCase):
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     def glancing_test_metadata_three(self):
-        # Size mismatch: 375 MB -> 492 MB
+        # Size & checksum mismatch: 375 MB -> 492 MB
         fn = 'ME4iRTemHRwhABKV5AgrkQfDerA.json'
         mdfile = get_local_path('..', 'stratuslab', fn)
         self.assertFalse(glancing.main(['-d', 'json', mdfile]))
@@ -152,7 +152,7 @@ class TestGlancingMetadata(unittest.TestCase):
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_metadata_three(self):
-        # Size mismatch: 375 MB -> 492 MB
+        # Size & checksum mismatch: 375 MB -> 492 MB
         fn = 'ME4iRTemHRwhABKV5AgrkQfDerA.json'
         mdfile = get_local_path('..', 'stratuslab', fn)
         with cleanup(['glance', 'image-delete', test_name()]):
