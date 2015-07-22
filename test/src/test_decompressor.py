@@ -5,7 +5,7 @@ import sys
 import shutil
 import unittest
 
-from utils import get_local_path
+from tutils import get_local_path
 
 # Setup PYTHONPATH for decompressor
 sys.path.append(get_local_path('..', '..', 'src'))
