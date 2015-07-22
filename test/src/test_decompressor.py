@@ -62,9 +62,11 @@ class TestDecompressorErrors(unittest.TestCase):
 
             d = decompressor.Decompressor('/tmp/nonexistent' + ext)
 
-    def decompressor_test_bad_ext(self):
+    def decompressor_test_bad_ext_param(self):
         with self.assertRaises(ValueError):
             d = decompressor.Decompressor('/dev/null', '.txt')
+
+    def decompressor_test_bad_ext(self):
         with self.assertRaises(decompressor.FileExtensionError):
             d = decompressor.Decompressor('/tmp/nonexistent.txt')
 
