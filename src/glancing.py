@@ -123,7 +123,7 @@ def main(sys_argv=sys.argv):
 
     # Check glance availability early
     if not args.dryrun:
-        done, _unused = utils.run(glance_cmd)
+        done, retcode, out, err = utils.run(_GLANCE_CMD)
         if not done:
             vprint('glance problem')
             return False
