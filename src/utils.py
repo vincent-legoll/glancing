@@ -47,9 +47,6 @@ def run(cmd, out=False, err=False):
                " installed, and available through your PATH environment "
                "variable." % (cmd[0],))
         vprint(e)
-    except subprocess.CalledProcessError as e:
-        vprint("'%s': Does not run properly." % (cmd[0],))
-        vprint(e)
     return False, None, None, None
 
 class devnull(object):
