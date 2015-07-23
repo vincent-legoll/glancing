@@ -50,23 +50,35 @@ def run(cmd, out=False, err=False):
         vprint(e)
     return False, None, None, None
 
-class devnull(object):
+class redirect(object):
 
-    def __init__(self, iodesc_name):
+    def __init__(self, iodesc_name, iofile=None):
         # Prepare
         self._oldiodesc_name = iodesc_name
+        if iofile is None:
+            self._opened = True
+            self._iofile = open(os.devnull, 'w+b')
+        else:
+            self._opened = False
+            self._iofile = iofile
 
     def __enter__(self):
         # Backup
         self._oldiodesc = sys.__dict__[self._oldiodesc_name]
         # Modify
-        sys.__dict__[self._oldiodesc_name] = open(os.devnull, 'w+b')
+        sys.__dict__[self._oldiodesc_name] = self._iofile
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Cleanup
-        sys.__dict__[self._oldiodesc_name].close()
+        if self._opened:
+            self._iofile.close()
         # Restore
         sys.__dict__[self._oldiodesc_name] = self._oldiodesc
+
+class devnull(redirect):
+
+    def __init__(self, iodesc_name):
+        super(devnull, self).__init__(iodesc_name, None)
 
 class environ(object):
 
