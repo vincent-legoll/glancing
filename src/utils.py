@@ -6,6 +6,7 @@ from __future__ import print_function
 import os
 import sys
 import inspect
+import StringIO
 import subprocess
 
 from contextlib import contextmanager
@@ -103,3 +104,14 @@ class cleanup(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Restore
         run(self._cleanup_cmd)
+
+class stringio(object):
+
+    def __init__(self):
+        self._iofile = StringIO.StringIO()
+
+    def __enter__(self):
+        return self._iofile
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._iofile.close()
