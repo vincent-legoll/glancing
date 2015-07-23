@@ -22,6 +22,10 @@ def set_verbose(v=None):
     else:
         _VERBOSE = True if v else False
 
+def get_verbose():
+    global _VERBOSE
+    return _VERBOSE
+
 def vprint(msg, prog=sys.argv[0]):
     if _VERBOSE:
         print("%s: %s" % (prog, msg))
