@@ -205,6 +205,14 @@ def main(sys_argv=sys.argv):
         else:
             vprint(local_image_file + ': size differ, not verifying checksums')
 
+    # Check pre-existing image
+    if glance.glance_exists(name):
+        _BACKUP_DIR = '/tmp/glancing'
+        fn_local = os.path.join(_BACKUP_DIR, name)
+        ok = glance.glance_download(name, fn_local)
+        if not ok:
+            return False
+
     # Import image into glance
     if not args.dryrun:
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
