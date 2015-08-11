@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PACKAGES="glancing,multihash,metadata,decompressor,utils,tutils,test_glancing,test_multihash,test_metadata,test_decompressor,test_utils,test_tutils"
+PACKAGES="glancing,glance,multihash,metadata,decompressor,utils,tutils,test_glancing,test_multihash,test_metadata,test_decompressor,test_utils,test_tutils,test_glance"
 
 COVERAGE_OPTS="--with-coverage --cover-branches --cover-html --cover-inclusive --cover-tests --cover-package=${PACKAGES}"
 PROFILE_OPTS= # "--with-profile"
