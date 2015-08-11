@@ -11,13 +11,12 @@ import urlparse
 import argparse
 
 import utils
+import glance
 import multihash
 import decompressor
 
 from utils import vprint
 from metadata import MetaStratusLab
-
-_GLANCE_CMD = ['glance']
 
 # Handle CLI options
 def do_argparse(sys_argv):
@@ -102,31 +101,13 @@ def check_digests(local_image_file, metadata, replace_bads=False):
                 hashes[hashfn] = digest_computed
     return verified
 
-# Import VM image into glance
-def glance_import(base, md5=None, name=None, diskformat=None):
-    cmd = _GLANCE_CMD + ['image-create', '--container-format', 'bare', '--file', base]
-    if diskformat is not None:
-        cmd += ['--disk-format', diskformat]
-    if name is not None:
-        cmd += ['--name', name]
-    if md5 is not None:
-        cmd += ['--checksum', md5]
-    ok, retcode, out, err = utils.run(cmd, out=True, err=True)
-    if retcode != 0:
-        vprint('failed to import image into glance')
-        vprint('stdout=' + out)
-        vprint('stderr=' + err)
-    return ok
-
 def main(sys_argv=sys.argv):
     args = do_argparse(sys_argv)
 
     # Check glance availability early
-    if not args.dryrun:
-        done, retcode, out, err = utils.run(_GLANCE_CMD)
-        if not done:
-            vprint('glance problem')
-            return False
+    if not args.dryrun and not glance.glance_ok():
+        vprint('glance problem')
+        return False
 
     # Prepare VM image metadata
     if args.image_type == 'json':
@@ -229,8 +210,9 @@ def main(sys_argv=sys.argv):
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
             md5 = metadata['checksums'].get('md5', None)
-            ret = glance_import(local_image_file, md5, name, metadata['diskformat'])
-            return ret
+            ret = glance.glance_import(local_image_file, md5, name, metadata['diskformat'])
+            if not ret:
+                return False
         else:
             return False
     else:
