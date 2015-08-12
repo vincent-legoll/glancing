@@ -88,7 +88,7 @@ class TestGlancingImage(unittest.TestCase):
     def glancing_test_image_two(self):
         fn = 'coreos_production_qemu_image.img'
         imgfile = get_local_path('..', 'images', fn)
-        md5 = 'c9bc62eabccf1e4566cf216083fa3510'
+        md5 = '1b0d8f7e4ff1128e3527ad6e15ae0855'
         self.assertTrue(glancing.main(['-d', 'image', imgfile, '-s', md5 + ':' + md5]))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")

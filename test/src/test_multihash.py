@@ -69,12 +69,12 @@ class TestMultihash(unittest.TestCase):
             'sha512': 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
         }
         random_checksums = {
-            'md5': 'bbca8754698f5eafc1d709611ee768e3',
-            'sha1': '40ce448e9c72cb3daae50902b6b08372feed46c6',
-            'sha224': '006b8bd373007dd71bbb23788fbf7cdd585671ace5da4b11730b7d3c',
-            'sha256': '4b00863c104b00012f6adb6580f92c04b0b25cae36a4da289e4f528587b55a48',
-            'sha384': '528e21e7f2a439309a46147b8070c4256d74f4bfb56acdede004f5736b7c32c43421a43c26e608ac0dd45bc3f768b65a',
-            'sha512': '694ad2de81ea9dadf6f08dce8c0f52aaed5fadca7a98055e69b3bed2a733193a1557d6a75a50f01c064af5761385d95cc3cfe6eebf1a7e8fc6ede1d8f1991ae6',
+            'md5': '25cc288d4cead968ebe5c9fa3c4f9991',
+            'sha1': '4245f235023adb28e25d9130a2063c5f35594cd8',
+            'sha224': '6b636c9320f6574e6d33c087969b3de4f2c8983fc568e09ebadf0729',
+            'sha256': 'd608c014160b577ffd6a7aa8b048cdf3afcdbc23f186dc30646a2b9cfc481120',
+            'sha384': '4f51eaa6864f9e5079885a3ac30565581522669bd89e42d5a479433d897a1bf222337ae46125575c969fbc2b78c60e86',
+            'sha512': 'd91fa3b083266ba7a651570acc4803e07e1910bcacceae303eb3684e4119907170888997cc13aeea2effa823d51b3dff965800942893ef7db8513cb339e55ae6',
         }
         files_to_hash = ['/dev/null', get_local_path('..', 'data', 'random_1M.bin')]
         self.assertEqual([devnull_checksums, random_checksums], multihash.main(files_to_hash))
