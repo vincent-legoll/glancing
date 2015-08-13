@@ -382,3 +382,40 @@ class TestComparableExc(unittest.TestCase):
                 self.assertNotIn(e, {1: ce_zde})
                 self.assertNotIn(e, {1: ce_ae})
                 self.assertIn(e, {1: ce_ae, 2: ce_zde})
+
+    def utils_test_cexc_cmp_excs(self):
+        
+        try:
+            0 / 0
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs([
+                (ZeroDivisionError, 'integer division or modulo by zero'),
+                (ArithmeticError, 'integer division or modulo by zero'),]))
+
+    def utils_test_cexc_cmp_excs_notin(self):
+        
+        try:
+            raise NotImplementedError('n i m b y')
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (NotImplementedError, ''),
+                ]))
+
+    def utils_test_cexc_cmp_excs_in(self):
+        
+        try:
+            raise NotImplementedError('n i m b y')
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (NotImplementedError, 'n i m b y'),
+                ]))
