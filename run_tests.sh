@@ -12,7 +12,7 @@ ALL_OPTS="${COVERAGE_OPTS} ${PROFILE_OPTS} ${TISSUE_OPTS}"
 # If our local cloud is running, use it
 ps faux | grep [c]7-ctrl > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  . ~/openstack/admin_local.sh
+  . test/openstack/admin.sh
 fi
 
 nosetests --exe ${ALL_OPTS} $*
