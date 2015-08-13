@@ -101,6 +101,14 @@ def check_digests(local_image_file, metadata, replace_bads=False):
                 hashes[hashfn] = digest_computed
     return verified
 
+_BACKUP_DIR = os.path.join('/', 'tmp', 'glancing')
+
+def backup_dir():
+    if not os.path.exists(_BACKUP_DIR):
+        os.mkdir(_BACKUP_DIR)
+    elif not os.path.isdir(_BACKUP_DIR):
+        vprint(_BACKUP_DIR + ' exists but is not a direstory, sorry cannot backup old image...')
+
 def main(sys_argv=sys.argv):
     args = do_argparse(sys_argv)
 
@@ -207,7 +215,7 @@ def main(sys_argv=sys.argv):
 
     # Check pre-existing image
     if glance.glance_exists(name):
-        _BACKUP_DIR = os.path.join('/', 'tmp', 'glancing')
+        backup_dir()
         fn_local = os.path.join(_BACKUP_DIR, name)
         ok = glance.glance_download(name, fn_local)
         if not ok:
