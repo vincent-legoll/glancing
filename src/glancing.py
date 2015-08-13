@@ -207,7 +207,7 @@ def main(sys_argv=sys.argv):
 
     # Check pre-existing image
     if glance.glance_exists(name):
-        _BACKUP_DIR = '/tmp/glancing'
+        _BACKUP_DIR = os.path.join('/', 'tmp', 'glancing')
         fn_local = os.path.join(_BACKUP_DIR, name)
         ok = glance.glance_download(name, fn_local)
         if not ok:
