@@ -283,3 +283,102 @@ class TestUtilsCleanup(unittest.TestCase):
             utils.run(['touch', test_file])
             self.assertTrue(os.path.exists(test_file))
         self.assertFalse(os.path.exists(test_file))
+
+ce_zde = utils.ComparableExc(ZeroDivisionError, ('integer division or modulo by zero',))
+ce_ae = utils.ComparableExc(ArithmeticError, ('integer division or modulo by zero',))
+
+class TestComparableExc(unittest.TestCase):
+
+    def utils_test_cexc_simple(self):
+        
+        try:
+            0 / 0
+        except Exception as e:
+
+            self.assertEqual(e, ce_zde)
+            self.assertNotEqual(e, ce_ae)
+
+            # Need both, as there's 2 methods to test __eq__() & __ne__()
+            self.assertTrue(e == ce_zde)
+            self.assertFalse(e != ce_zde)
+
+            # Need both, as there's 2 methods to test __eq__() & __ne__()
+            self.assertFalse(e == ce_ae)
+            self.assertTrue(e != ce_ae)
+
+            # Empty iterables
+            self.assertNotIn(e, [])
+            self.assertNotIn(e, tuple())
+            self.assertNotIn(e, set())
+            self.assertNotIn(e, {})
+
+            # iterables containing it
+            self.assertIn(e, [ce_zde])
+            self.assertIn(e, (ce_zde,))
+
+            # iterables not containing it
+            self.assertNotIn(e, [ce_ae])
+            self.assertNotIn(e, (ce_ae,))
+
+            # iterables containing it and others
+            self.assertIn(e, [ce_ae, ce_zde])
+            self.assertIn(e, (ce_ae, ce_zde))
+
+    @unittest.skip('unhashable')
+    def utils_test_cexc_sets(self):
+        
+        try:
+            0 / 0
+        except Exception as e:
+
+            # containing it
+            self.assertIn(e, set((ce_zde,)))
+            self.assertIn(e, set([ce_zde]))
+
+            # not containing it
+            self.assertNotIn(e, set((ce_ae,)))
+            self.assertNotIn(e, set([ce_ae]))
+
+            # containing it and others
+            self.assertIn(e, set((ce_ae, ce_zde)))
+            self.assertIn(e, set([ce_ae, ce_zde]))
+
+    @unittest.skip('unhashable')
+    def utils_test_cexc_frozensets(self):
+        
+        try:
+            0 / 0
+        except Exception as e:
+
+            # containing it
+            self.assertIn(e, frozenset((ce_zde,)))
+            self.assertIn(e, frozenset([ce_zde]))
+
+            # not containing it
+            self.assertNotIn(e, frozenset((ce_ae,)))
+            self.assertNotIn(e, frozenset([ce_ae]))
+
+            # containing it and others
+            self.assertIn(e, frozenset((ce_ae, ce_zde)))
+            self.assertIn(e, frozenset([ce_ae, ce_zde]))
+
+    @unittest.skip('unhashable')
+    def utils_test_cexc_hashes(self):
+        
+        try:
+            0 / 0
+        except Exception as e:
+
+            try:
+                0 / 0
+            except Exception as f:
+
+                self.assertFalse(e is f)
+                self.assertTrue(e == f)
+                self.assertIn(e, {e: 1})
+                self.assertIn(e, {1: e})
+
+                self.assertIn(e, {ce_zde: 1})
+                self.assertNotIn(e, {1: ce_zde})
+                self.assertNotIn(e, {1: ce_ae})
+                self.assertIn(e, {1: ce_ae, 2: ce_zde})

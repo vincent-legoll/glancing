@@ -126,3 +126,23 @@ class stringio(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
+
+class ComparableExc(object):
+
+    # To prevent this class from being put into sets, frozensets or maps
+    # As this is not working, see skipped tests from ../test/src/test_utils.py
+    __hash__ = None
+
+    def __init__(self, cls, args):
+        self.cls = cls
+        self.args = args
+
+    def __eq__(self, other):
+        if self.cls is not type(other):
+            return False
+        if self.args != other.args:
+            return False
+        return True
+
+    def __ne__(self, other):
+        return not self == other
