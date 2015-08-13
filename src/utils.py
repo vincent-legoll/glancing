@@ -127,6 +127,9 @@ class stringio(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
 
+def cmp_excs(exc_list):
+    return (ComparableExc(cls, (arg_str,)) for cls, arg_str in exc_list)
+
 class ComparableExc(object):
 
     # To prevent this class from being put into sets, frozensets or maps
