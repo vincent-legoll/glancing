@@ -127,8 +127,12 @@ class stringio(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
 
-def cmp_excs(exc_list):
+def cmp_excs(*args):
     ret = []
+    if len(args) == 1:
+        exc_list = args[0]
+    else:
+        exc_list = args
     for item in exc_list:
         if len(item) == 2:
             cls, arg_str = item[0], (item[1],)

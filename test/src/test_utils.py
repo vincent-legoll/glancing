@@ -393,7 +393,7 @@ class TestComparableExc(unittest.TestCase):
                 (ArithmeticError, 'integer division or modulo by zero'),
             ]))
 
-    def utils_test_cexc_cmp_excs_notin(self):
+    def utils_test_cexc_cmp_excs_notin_list(self):
 
         try:
             raise NotImplementedError('n i m b y')
@@ -407,7 +407,7 @@ class TestComparableExc(unittest.TestCase):
                 (NotImplementedError, ''),
             ]))
 
-    def utils_test_cexc_cmp_excs_in(self):
+    def utils_test_cexc_cmp_excs_in_list(self):
 
         try:
             raise NotImplementedError('n i m b y')
@@ -420,6 +420,34 @@ class TestComparableExc(unittest.TestCase):
                 (NotImplementedError, None),
                 (NotImplementedError, 'n i m b y'),
             ]))
+
+    def utils_test_cexc_cmp_excs_notin_params(self):
+
+        try:
+            raise NotImplementedError('n i m b y')
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs(
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (NotImplementedError, ''),
+            ))
+
+    def utils_test_cexc_cmp_excs_in_params(self):
+
+        try:
+            raise NotImplementedError('n i m b y')
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs(
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (NotImplementedError, 'n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic0(self):
 
