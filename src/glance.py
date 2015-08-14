@@ -65,11 +65,11 @@ def glance_ids(names):
                         names.remove(name)
                         ret.add(name)
                     except Exception as e:
-                        acceptable_excs = utils.cmp_excs([
+                        acceptable_excs = utils.cmp_excs(
                             (ValueError, 'badly formed hexadecimal UUID string'),
                             (ValueError, "invalid literal for long() with base 16: '%s'" % name),
                             (TypeError, 'need one of hex, bytes, bytes_le, fields, or int'),
-                        ])
+                        )
                         if e not in acceptable_excs:
                             raise e
         # The rest (if anything left) is assumed to be "real" names
