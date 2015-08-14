@@ -128,7 +128,16 @@ class stringio(object):
         self._iofile.close()
 
 def cmp_excs(exc_list):
-    return (ComparableExc(cls, (arg_str,)) for cls, arg_str in exc_list)
+    ret = []
+    for item in exc_list:
+        if len(item) == 2:
+            cls, arg_str = item[0], (item[1],)
+        elif len(item) == 1:
+            cls, arg_str = item[0], tuple()
+        else:
+            raise ValueError('Wrong numner of elements')
+        ret.append(ComparableExc(cls, arg_str))
+    return ret
 
 class ComparableExc(object):
 
