@@ -14,6 +14,12 @@ import utils
 
 utils.set_verbose(True)
 
+# Check we have a cloud ready to import images into...
+_GLANCE_OK = False
+with utils.devnull('stderr'):
+    _GLANCE_OK = utils.run(['glance', 'image-list'])[0]
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class TestGlance(unittest.TestCase):
 
     def test_ok(self):
@@ -61,6 +67,7 @@ class TestGlanceFixture(unittest.TestCase):
     def tearDown(self):
         glance.glance_delete_all(_IMG_NAME, quiet=True)
 
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class TestGlanceMain(TestGlanceFixture):
 
     def test_main_ok(self):
@@ -95,6 +102,7 @@ class TestGlanceMain(TestGlanceFixture):
                 glance.main([_IMG_NAME])
         self.assertTrue(glance.glance_exists(_IMG_NAME))
 
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class TestGlanceMisc(TestGlanceFixture):
 
     def test_exists_import(self):
