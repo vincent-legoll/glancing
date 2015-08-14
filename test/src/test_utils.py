@@ -290,7 +290,7 @@ ce_ae = utils.ComparableExc(ArithmeticError, ('integer division or modulo by zer
 class TestComparableExc(unittest.TestCase):
 
     def utils_test_cexc_simple(self):
-        
+
         try:
             0 / 0
         except Exception as e:
@@ -326,7 +326,7 @@ class TestComparableExc(unittest.TestCase):
 
     @unittest.skip('unhashable')
     def utils_test_cexc_sets(self):
-        
+
         try:
             0 / 0
         except Exception as e:
@@ -345,7 +345,7 @@ class TestComparableExc(unittest.TestCase):
 
     @unittest.skip('unhashable')
     def utils_test_cexc_frozensets(self):
-        
+
         try:
             0 / 0
         except Exception as e:
@@ -364,7 +364,7 @@ class TestComparableExc(unittest.TestCase):
 
     @unittest.skip('unhashable')
     def utils_test_cexc_hashes(self):
-        
+
         try:
             0 / 0
         except Exception as e:
@@ -384,16 +384,17 @@ class TestComparableExc(unittest.TestCase):
                 self.assertIn(e, {1: ce_ae, 2: ce_zde})
 
     def utils_test_cexc_cmp_excs(self):
-        
+
         try:
             0 / 0
         except Exception as e:
             self.assertIn(e, utils.cmp_excs([
                 (ZeroDivisionError, 'integer division or modulo by zero'),
-                (ArithmeticError, 'integer division or modulo by zero'),]))
+                (ArithmeticError, 'integer division or modulo by zero'),
+            ]))
 
     def utils_test_cexc_cmp_excs_notin(self):
-        
+
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
@@ -404,10 +405,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (NotImplementedError, ''),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_in(self):
-        
+
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
@@ -418,10 +419,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (NotImplementedError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic0(self):
-        
+
         try:
             raise Exception
         except Exception as e:
@@ -432,10 +433,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic0bis(self):
-        
+
         try:
             raise Exception
         except Exception as e:
@@ -446,10 +447,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic0bis_simple(self):
-        
+
         try:
             raise Exception
         except Exception as e:
@@ -457,7 +458,7 @@ class TestComparableExc(unittest.TestCase):
             self.assertEqual(e, ee)
 
     def utils_test_cexc_cmp_excs_generic1(self):
-        
+
         try:
             raise Exception()
         except Exception as e:
@@ -468,10 +469,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic1bis(self):
-        
+
         try:
             raise Exception()
         except Exception as e:
@@ -482,10 +483,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic1bis_simple(self):
-        
+
         try:
             raise Exception()
         except Exception as e:
@@ -493,7 +494,7 @@ class TestComparableExc(unittest.TestCase):
             self.assertEqual(e, ee)
 
     def utils_test_cexc_cmp_excs_generic2(self):
-        
+
         try:
             raise Exception('')
         except Exception as e:
@@ -504,10 +505,10 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'n i m b y'),
-                ]))
+            ]))
 
     def utils_test_cexc_cmp_excs_generic3(self):
-        
+
         try:
             raise Exception('Yo')
         except Exception as e:
@@ -518,4 +519,4 @@ class TestComparableExc(unittest.TestCase):
                 (Exception, ''),
                 (NotImplementedError, None),
                 (ValueError, 'Yo'),
-                ]))
+            ]))

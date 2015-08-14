@@ -34,7 +34,7 @@ def parse_block(block):
             else:
                 print('wrong line length')
                 continue
-            
+
     return header, ret
 
 def map_block(block):
