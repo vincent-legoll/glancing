@@ -12,7 +12,11 @@ ALL_OPTS="${COVERAGE_OPTS} ${PROFILE_OPTS} ${TISSUE_OPTS}"
 # If our local cloud is running, use it
 ps faux | grep [c]7-ctrl > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-  . test/openstack/admin.sh
+  if [ -r test/openstack/admin.sh ]; then
+    . test/openstack/admin.sh
+  fi
+else
+  echo "### WARNING: VMs are not running..."
 fi
 
 nosetests --exe ${ALL_OPTS} $*
