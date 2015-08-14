@@ -45,7 +45,7 @@ def glance_image_list():
     cmd = _GLANCE_CMD + ['image-list']
     ok, retcode, out, err = utils.run(cmd, out=True, err=True)
     if not ok:
-        vprint('failed to get image-list from glance: ' + name)
+        vprint('failed to get image-list from glance')
         vprint('stdout=' + out)
         vprint('stderr=' + err)
         return None
