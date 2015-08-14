@@ -507,6 +507,21 @@ class TestComparableExc(unittest.TestCase):
                 (ValueError, 'n i m b y'),
             ]))
 
+    def utils_test_cexc_cmp_excs_generic2_not(self):
+
+        try:
+            raise Exception('')
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, 'TOTO'),
+                (Exception,),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+            ]))
+
     def utils_test_cexc_cmp_excs_generic3(self):
 
         try:
