@@ -419,3 +419,103 @@ class TestComparableExc(unittest.TestCase):
                 (NotImplementedError, None),
                 (NotImplementedError, 'n i m b y'),
                 ]))
+
+    def utils_test_cexc_cmp_excs_generic0(self):
+        
+        try:
+            raise Exception
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+                ]))
+
+    def utils_test_cexc_cmp_excs_generic0bis(self):
+        
+        try:
+            raise Exception
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception,),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+                ]))
+
+    def utils_test_cexc_cmp_excs_generic0bis_simple(self):
+        
+        try:
+            raise Exception
+        except Exception as e:
+            ee = utils.ComparableExc(Exception, tuple())
+            self.assertEqual(e, ee)
+
+    def utils_test_cexc_cmp_excs_generic1(self):
+        
+        try:
+            raise Exception()
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+                ]))
+
+    def utils_test_cexc_cmp_excs_generic1bis(self):
+        
+        try:
+            raise Exception()
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception,),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+                ]))
+
+    def utils_test_cexc_cmp_excs_generic1bis_simple(self):
+        
+        try:
+            raise Exception()
+        except Exception as e:
+            ee = utils.ComparableExc(Exception, tuple())
+            self.assertEqual(e, ee)
+
+    def utils_test_cexc_cmp_excs_generic2(self):
+        
+        try:
+            raise Exception('')
+        except Exception as e:
+            self.assertIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'n i m b y'),
+                ]))
+
+    def utils_test_cexc_cmp_excs_generic3(self):
+        
+        try:
+            raise Exception('Yo')
+        except Exception as e:
+            self.assertNotIn(e, utils.cmp_excs([
+                (None, None),
+                (None, ''),
+                (Exception, None),
+                (Exception, ''),
+                (NotImplementedError, None),
+                (ValueError, 'Yo'),
+                ]))
