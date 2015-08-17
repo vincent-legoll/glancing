@@ -136,7 +136,7 @@ class cexc(object):
 
     def __init__(self, exc):
         if not isinstance(exc, Exception):
-            raise ValueError('parameter has to be an instance of the Exception class: ', repr(cls))
+            raise ValueError('parameter has to be an instance of the Exception class: ', repr(exc))
         self.exc = exc
 
     def __eq__(self, other):
