@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import sys
+import types
 import inspect
 import StringIO
 import subprocess
@@ -127,38 +128,37 @@ class stringio(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
 
-def cmp_excs(*args):
-    ret = []
-    if len(args) == 1:
-        exc_list = args[0]
-    else:
-        exc_list = args
-    for item in exc_list:
-        if len(item) == 2:
-            cls, arg_str = item[0], (item[1],)
-        elif len(item) == 1:
-            cls, arg_str = item[0], tuple()
-        else:
-            raise ValueError('Wrong numner of elements')
-        ret.append(ComparableExc(cls, arg_str))
-    return ret
-
-class ComparableExc(object):
+class cexc(object):
 
     # To prevent this class from being put into sets, frozensets or maps
     # As this is not working, see skipped tests from ../test/src/test_utils.py
     __hash__ = None
 
-    def __init__(self, cls, args):
-        self.cls = cls
-        self.args = args
+    def __init__(self, exc):
+        if not isinstance(exc, Exception):
+            raise ValueError('parameter has to be an instance of the Exception class: ', repr(cls))
+        self.exc = exc
 
     def __eq__(self, other):
-        if self.cls is not type(other):
+        if self.exc.__class__ != other.__class__:
             return False
-        if self.args != other.args:
+        if self.exc.args != other.args:
             return False
         return True
 
     def __ne__(self, other):
         return not self == other
+
+    def __repr__(self):
+        return self.exc.__repr__()
+
+class Exceptions(object):
+
+    def __init__(self, *args):
+        self._excs = map(cexc, args)
+
+    def __contains__(self, other):
+        for item in self._excs:
+            if item == other:
+                return True
+        return False

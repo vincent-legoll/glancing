@@ -284,8 +284,10 @@ class TestUtilsCleanup(unittest.TestCase):
             self.assertTrue(os.path.exists(test_file))
         self.assertFalse(os.path.exists(test_file))
 
-ce_zde = utils.ComparableExc(ZeroDivisionError, ('integer division or modulo by zero',))
-ce_ae = utils.ComparableExc(ArithmeticError, ('integer division or modulo by zero',))
+ce_zde = utils.Exceptions(ZeroDivisionError('integer division or modulo by zero'))
+ce_ae = utils.Exceptions(ArithmeticError('integer division or modulo by zero'))
+cexc_zde = utils.cexc(ZeroDivisionError('integer division or modulo by zero'))
+cexc_ae = utils.cexc(ArithmeticError('integer division or modulo by zero'))
 
 class TestComparableExc(unittest.TestCase):
 
@@ -295,16 +297,44 @@ class TestComparableExc(unittest.TestCase):
             0 / 0
         except Exception as e:
 
-            self.assertEqual(e, ce_zde)
-            self.assertNotEqual(e, ce_ae)
+            self.assertIn(e, ce_zde)
+            self.assertNotIn(e, ce_ae)
 
             # Need both, as there's 2 methods to test __eq__() & __ne__()
-            self.assertTrue(e == ce_zde)
-            self.assertFalse(e != ce_zde)
+            self.assertTrue(e == cexc_zde)
+            self.assertFalse(e != cexc_zde)
+
+            self.assertTrue(cexc_zde == e)
+            self.assertFalse(cexc_zde != e)
 
             # Need both, as there's 2 methods to test __eq__() & __ne__()
-            self.assertFalse(e == ce_ae)
-            self.assertTrue(e != ce_ae)
+            self.assertFalse(e == cexc_ae)
+            self.assertTrue(e != cexc_ae)
+
+            self.assertFalse(cexc_ae == e)
+            self.assertTrue(cexc_ae != e)
+
+    def utils_test_exc_identity(self):
+
+        try:
+            0 / 0
+        except Exception as e:
+
+            try:
+                0 / 0
+            except Exception as f:
+
+                self.assertFalse(e is f) # This is OK, but...
+                self.assertFalse(e == f) # Why is that ?
+
+                self.assertFalse(f is e) # This is OK, but...
+                self.assertFalse(f == e) # Why is that ?
+
+    def utils_test_cexc_simple_empties(self):
+
+        try:
+            0 / 0
+        except Exception as e:
 
             # Empty iterables
             self.assertNotIn(e, [])
@@ -312,39 +342,65 @@ class TestComparableExc(unittest.TestCase):
             self.assertNotIn(e, set())
             self.assertNotIn(e, {})
 
+    def utils_test_cexc_simple_container(self):
+
+        try:
+            0 / 0
+        except Exception as e:
+
             # iterables containing it
-            self.assertIn(e, [ce_zde])
-            self.assertIn(e, (ce_zde,))
+            self.assertIn(e, [cexc_zde])
+            self.assertIn(e, (cexc_zde,))
 
             # iterables not containing it
-            self.assertNotIn(e, [ce_ae])
-            self.assertNotIn(e, (ce_ae,))
+            self.assertNotIn(e, [cexc_ae])
+            self.assertNotIn(e, (cexc_ae,))
 
             # iterables containing it and others
-            self.assertIn(e, [ce_ae, ce_zde])
-            self.assertIn(e, (ce_ae, ce_zde))
+            self.assertIn(e, [cexc_ae, cexc_zde])
+            self.assertIn(e, (cexc_ae, cexc_zde))
 
-    @unittest.skip('unhashable')
     def utils_test_cexc_sets(self):
 
         try:
             0 / 0
         except Exception as e:
 
-            # containing it
-            self.assertIn(e, set((ce_zde,)))
-            self.assertIn(e, set([ce_zde]))
-
-            # not containing it
-            self.assertNotIn(e, set((ce_ae,)))
-            self.assertNotIn(e, set([ce_ae]))
-
-            # containing it and others
-            self.assertIn(e, set((ce_ae, ce_zde)))
-            self.assertIn(e, set([ce_ae, ce_zde]))
+            # containing itself
+            self.assertIn(e, set((e,)))
+            self.assertIn(e, set([e]))
 
     @unittest.skip('unhashable')
+    def utils_test_cexc_sets_fail(self):
+
+        try:
+            0 / 0
+        except Exception as e:
+
+            # containing it
+            self.assertIn(e, set((cexc_zde,)))
+            self.assertIn(e, set([cexc_zde]))
+
+            # not containing it
+            self.assertNotIn(e, set((cexc_ae,)))
+            self.assertNotIn(e, set([cexc_ae]))
+
+            # containing it and others
+            self.assertIn(e, set((cexc_ae, cexc_zde)))
+            self.assertIn(e, set([cexc_ae, cexc_zde]))
+
     def utils_test_cexc_frozensets(self):
+
+        try:
+            0 / 0
+        except Exception as e:
+
+            # containing itself
+            self.assertIn(e, frozenset((e,)))
+            self.assertIn(e, frozenset([e]))
+
+    @unittest.skip('unhashable')
+    def utils_test_cexc_frozensets_fail(self):
 
         try:
             0 / 0
@@ -362,77 +418,76 @@ class TestComparableExc(unittest.TestCase):
             self.assertIn(e, frozenset((ce_ae, ce_zde)))
             self.assertIn(e, frozenset([ce_ae, ce_zde]))
 
-    @unittest.skip('unhashable')
     def utils_test_cexc_hashes(self):
 
         try:
             0 / 0
         except Exception as e:
 
-            try:
-                0 / 0
-            except Exception as f:
+            # containing itself
+            self.assertIn(e, {e: 1})
+            self.assertNotIn(e, {1: e})
 
-                self.assertFalse(e is f)
-                self.assertTrue(e == f)
-                self.assertIn(e, {e: 1})
-                self.assertIn(e, {1: e})
+    @unittest.skip('unhashable')
+    def utils_test_cexc_hashes_fail(self):
 
-                self.assertIn(e, {ce_zde: 1})
-                self.assertNotIn(e, {1: ce_zde})
-                self.assertNotIn(e, {1: ce_ae})
-                self.assertIn(e, {1: ce_ae, 2: ce_zde})
+        try:
+            0 / 0
+        except Exception as e:
+
+            self.assertIn(e, {ce_zde: 1})
+            self.assertNotIn(e, {1: ce_zde})
+
+            self.assertNotIn(e, {ce_ae: 1})
+            self.assertNotIn(e, {1: ce_ae})
+
+            self.assertNotIn(e, {1: ce_ae, 2: ce_zde})
+            self.assertIn(e, {ce_ae: 1, ce_zde: 2})
 
     def utils_test_cexc_cmp_excs(self):
 
         try:
             0 / 0
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs([
-                (ZeroDivisionError, 'integer division or modulo by zero'),
-                (ArithmeticError, 'integer division or modulo by zero'),
-            ]))
+            self.assertIn(e, utils.Exceptions(
+                ZeroDivisionError('integer division or modulo by zero'),
+                ArithmeticError('integer division or modulo by zero'),
+            ))
 
     def utils_test_cexc_cmp_excs_notin_list(self):
 
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (NotImplementedError, ''),
-            ]))
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                NotImplementedError(''),
+            ))
 
     def utils_test_cexc_cmp_excs_in_list(self):
 
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (NotImplementedError, 'n i m b y'),
-            ]))
+            self.assertIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                NotImplementedError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_notin_params(self):
 
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs(
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (NotImplementedError, ''),
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                NotImplementedError(''),
             ))
 
     def utils_test_cexc_cmp_excs_in_params(self):
@@ -440,13 +495,11 @@ class TestComparableExc(unittest.TestCase):
         try:
             raise NotImplementedError('n i m b y')
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs(
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (NotImplementedError, 'n i m b y'),
+            self.assertIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                NotImplementedError('n i m b y'),
             ))
 
     def utils_test_cexc_cmp_excs_generic0(self):
@@ -454,112 +507,95 @@ class TestComparableExc(unittest.TestCase):
         try:
             raise Exception
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(''),
+                NotImplementedError(),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic0bis(self):
 
         try:
             raise Exception
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception,),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic0bis_simple(self):
 
         try:
             raise Exception
         except Exception as e:
-            ee = utils.ComparableExc(Exception, tuple())
-            self.assertEqual(e, ee)
+            self.assertEqual(e, utils.cexc(Exception()))
+            self.assertNotEqual(e, Exception())
 
     def utils_test_cexc_cmp_excs_generic1(self):
 
         try:
             raise Exception()
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(''),
+                NotImplementedError(),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic1bis(self):
 
         try:
             raise Exception()
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception,),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic1bis_simple(self):
 
         try:
             raise Exception()
         except Exception as e:
-            ee = utils.ComparableExc(Exception, tuple())
-            self.assertEqual(e, ee)
+            self.assertEqual(e, utils.cexc(Exception()))
+            self.assertNotEqual(e, Exception())
 
     def utils_test_cexc_cmp_excs_generic2(self):
 
         try:
             raise Exception('')
         except Exception as e:
-            self.assertIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic2_not(self):
 
         try:
             raise Exception('')
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, 'TOTO'),
-                (Exception,),
-                (NotImplementedError, None),
-                (ValueError, 'n i m b y'),
-            ]))
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(),
+                Exception('TOTO'),
+                NotImplementedError(None),
+                ValueError('n i m b y'),
+            ))
 
     def utils_test_cexc_cmp_excs_generic3(self):
 
         try:
             raise Exception('Yo')
         except Exception as e:
-            self.assertNotIn(e, utils.cmp_excs([
-                (None, None),
-                (None, ''),
-                (Exception, None),
-                (Exception, ''),
-                (NotImplementedError, None),
-                (ValueError, 'Yo'),
-            ]))
+            self.assertNotIn(e, utils.Exceptions(
+                Exception(),
+                Exception(''),
+                NotImplementedError(),
+                ValueError('Yo'),
+            ))
