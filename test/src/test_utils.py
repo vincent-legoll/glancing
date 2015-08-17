@@ -284,248 +284,106 @@ class TestUtilsCleanup(unittest.TestCase):
             self.assertTrue(os.path.exists(test_file))
         self.assertFalse(os.path.exists(test_file))
 
-ce_zde = utils.Exceptions(ZeroDivisionError('integer division or modulo by zero'))
-ce_ae = utils.Exceptions(ArithmeticError('integer division or modulo by zero'))
-cexc_zde = utils.cexc(ZeroDivisionError('integer division or modulo by zero'))
-cexc_ae = utils.cexc(ArithmeticError('integer division or modulo by zero'))
+zde = ZeroDivisionError('integer division or modulo by zero')
+ae = ArithmeticError('integer division or modulo by zero')
 
 class TestComparableExc(unittest.TestCase):
 
+    def setUp(self):
+        try:
+            0 / 0
+        except Exception as e:
+            self.e = e
+
     def utils_test_cexc_simple(self):
 
-        try:
-            0 / 0
-        except Exception as e:
+        # Need both, as there's 2 methods to test __eq__() & __ne__()
+        self.assertTrue(self.e == utils.cexc(zde))
+        self.assertFalse(self.e != utils.cexc(zde))
 
-            self.assertIn(e, ce_zde)
-            self.assertNotIn(e, ce_ae)
+        self.assertTrue(utils.cexc(zde) == self.e)
+        self.assertFalse(utils.cexc(zde) != self.e)
 
-            # Need both, as there's 2 methods to test __eq__() & __ne__()
-            self.assertTrue(e == cexc_zde)
-            self.assertFalse(e != cexc_zde)
+        # Need both, as there's 2 methods to test __eq__() & __ne__()
+        self.assertFalse(self.e == utils.cexc(ae))
+        self.assertTrue(self.e != utils.cexc(ae))
 
-            self.assertTrue(cexc_zde == e)
-            self.assertFalse(cexc_zde != e)
-
-            # Need both, as there's 2 methods to test __eq__() & __ne__()
-            self.assertFalse(e == cexc_ae)
-            self.assertTrue(e != cexc_ae)
-
-            self.assertFalse(cexc_ae == e)
-            self.assertTrue(cexc_ae != e)
-
-    def utils_test_exc_identity(self):
-
-        try:
-            0 / 0
-        except Exception as e:
-
-            try:
-                0 / 0
-            except Exception as f:
-
-                self.assertFalse(e is f) # This is OK, but...
-                self.assertFalse(e == f) # Why is that ?
-
-                self.assertFalse(f is e) # This is OK, but...
-                self.assertFalse(f == e) # Why is that ?
+        self.assertFalse(utils.cexc(ae) == self.e)
+        self.assertTrue(utils.cexc(ae) != self.e)
 
     def utils_test_cexc_simple_empties(self):
 
-        try:
-            0 / 0
-        except Exception as e:
+        # Empty iterables
+        self.assertNotIn(self.e, [])
+        self.assertNotIn(self.e, tuple())
+        self.assertNotIn(self.e, set())
+        self.assertNotIn(self.e, frozenset())
+        self.assertNotIn(self.e, {})
 
-            # Empty iterables
-            self.assertNotIn(e, [])
-            self.assertNotIn(e, tuple())
-            self.assertNotIn(e, set())
-            self.assertNotIn(e, {})
+        # containing itself
+        self.assertIn(self.e, [self.e])
+        self.assertIn(self.e, (self.e,))
+        self.assertIn(self.e, set((self.e,)))
+        self.assertIn(self.e, set([self.e]))
+        self.assertIn(self.e, frozenset((self.e,)))
+        self.assertIn(self.e, frozenset([self.e]))
+        self.assertIn(self.e, {self.e: 1})
+        self.assertNotIn(self.e, {1: self.e})
+
+    def utils_test_cexc_compatible_excs(self):
+
+        # Compatible Exceptions
+        self.assertIn(self.e, utils.Exceptions(zde))
+        self.assertNotIn(self.e, utils.Exceptions(ae))
+
+        # Those two are equivalent
+        self.assertIn(self.e, utils.Exceptions(zde, ae))
+        self.assertIn(self.e, utils.Exceptions(
+            ZeroDivisionError('integer division or modulo by zero'),
+            ArithmeticError('integer division or modulo by zero'),
+        ))
 
     def utils_test_cexc_simple_container(self):
 
-        try:
-            0 / 0
-        except Exception as e:
+        # iterables containing it
+        self.assertIn(self.e, [utils.cexc(zde)])
+        self.assertIn(self.e, (utils.cexc(zde),))
 
-            # iterables containing it
-            self.assertIn(e, [cexc_zde])
-            self.assertIn(e, (cexc_zde,))
+        # iterables not containing it
+        self.assertNotIn(self.e, [utils.cexc(ae)])
+        self.assertNotIn(self.e, (utils.cexc(ae),))
 
-            # iterables not containing it
-            self.assertNotIn(e, [cexc_ae])
-            self.assertNotIn(e, (cexc_ae,))
-
-            # iterables containing it and others
-            self.assertIn(e, [cexc_ae, cexc_zde])
-            self.assertIn(e, (cexc_ae, cexc_zde))
+        # iterables containing it and others
+        self.assertIn(self.e, [utils.cexc(ae), utils.cexc(zde)])
+        self.assertIn(self.e, (utils.cexc(ae), utils.cexc(zde)))
 
     def utils_test_cexc_sets(self):
 
-        try:
-            0 / 0
-        except Exception as e:
+        to_test_in = [(zde,), [zde], {zde}, (ae, zde), [ae, zde]]
+        to_test_not_in = [(ae,), [ae], {ae}]
 
-            # containing itself
-            self.assertIn(e, set((e,)))
-            self.assertIn(e, set([e]))
+        for it in to_test_in:
+            self.assertIn(self.e, utils.Exceptions(set(it)))
+            self.assertIn(self.e, utils.Exceptions(frozenset(it)))
 
-    @unittest.skip('unhashable')
-    def utils_test_cexc_sets_fail(self):
-
-        try:
-            0 / 0
-        except Exception as e:
-
-            # containing it
-            self.assertIn(e, set((cexc_zde,)))
-            self.assertIn(e, set([cexc_zde]))
-
-            # not containing it
-            self.assertNotIn(e, set((cexc_ae,)))
-            self.assertNotIn(e, set([cexc_ae]))
-
-            # containing it and others
-            self.assertIn(e, set((cexc_ae, cexc_zde)))
-            self.assertIn(e, set([cexc_ae, cexc_zde]))
-
-    def utils_test_cexc_frozensets(self):
-
-        try:
-            0 / 0
-        except Exception as e:
-
-            # containing itself
-            self.assertIn(e, frozenset((e,)))
-            self.assertIn(e, frozenset([e]))
-
-    @unittest.skip('unhashable')
-    def utils_test_cexc_frozensets_fail(self):
-
-        try:
-            0 / 0
-        except Exception as e:
-
-            # containing it
-            self.assertIn(e, frozenset((ce_zde,)))
-            self.assertIn(e, frozenset([ce_zde]))
-
-            # not containing it
-            self.assertNotIn(e, frozenset((ce_ae,)))
-            self.assertNotIn(e, frozenset([ce_ae]))
-
-            # containing it and others
-            self.assertIn(e, frozenset((ce_ae, ce_zde)))
-            self.assertIn(e, frozenset([ce_ae, ce_zde]))
+        for it in to_test_not_in:
+            self.assertNotIn(self.e, utils.Exceptions(set(it)))
+            self.assertNotIn(self.e, utils.Exceptions(frozenset(it)))
 
     def utils_test_cexc_hashes(self):
 
-        try:
-            0 / 0
-        except Exception as e:
+        to_test_in = [{zde: 1}, {ae: 1, zde: 2}, {zde: False, None: 0, True: 1, False: 0}]
+        to_test_not_in = [{1: zde}, {1: zde, 1: ae}, {ae: False, None: 0, True: 1, False: 0}, {ae: 1}, {1: ae}]
 
-            # containing itself
-            self.assertIn(e, {e: 1})
-            self.assertNotIn(e, {1: e})
+        for it in to_test_in:
+            self.assertIn(self.e, utils.Exceptions(it))
 
-    @unittest.skip('unhashable')
-    def utils_test_cexc_hashes_fail(self):
+        for it in to_test_not_in:
+            self.assertNotIn(self.e, utils.Exceptions(it))
 
-        try:
-            0 / 0
-        except Exception as e:
+class TestExceptions(unittest.TestCase):
 
-            self.assertIn(e, {ce_zde: 1})
-            self.assertNotIn(e, {1: ce_zde})
-
-            self.assertNotIn(e, {ce_ae: 1})
-            self.assertNotIn(e, {1: ce_ae})
-
-            self.assertNotIn(e, {1: ce_ae, 2: ce_zde})
-            self.assertIn(e, {ce_ae: 1, ce_zde: 2})
-
-    def utils_test_cexc_cmp_excs(self):
-
-        try:
-            0 / 0
-        except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                ZeroDivisionError('integer division or modulo by zero'),
-                ArithmeticError('integer division or modulo by zero'),
-            ))
-
-    def utils_test_cexc_cmp_excs_notin_list(self):
-
-        try:
-            raise NotImplementedError('n i m b y')
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                NotImplementedError(''),
-            ))
-
-    def utils_test_cexc_cmp_excs_in_list(self):
-
-        try:
-            raise NotImplementedError('n i m b y')
-        except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                NotImplementedError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_notin_params(self):
-
-        try:
-            raise NotImplementedError('n i m b y')
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                NotImplementedError(''),
-            ))
-
-    def utils_test_cexc_cmp_excs_in_params(self):
-
-        try:
-            raise NotImplementedError('n i m b y')
-        except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                NotImplementedError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic0(self):
-
-        try:
-            raise Exception
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(''),
-                NotImplementedError(),
-                ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic0bis(self):
-
-        try:
-            raise Exception
-        except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic0bis_simple(self):
+    def utils_test_cexc_raise_type(self):
 
         try:
             raise Exception
@@ -533,30 +391,7 @@ class TestComparableExc(unittest.TestCase):
             self.assertEqual(e, utils.cexc(Exception()))
             self.assertNotEqual(e, Exception())
 
-    def utils_test_cexc_cmp_excs_generic1(self):
-
-        try:
-            raise Exception()
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(''),
-                NotImplementedError(),
-                ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic1bis(self):
-
-        try:
-            raise Exception()
-        except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
-                ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic1bis_simple(self):
+    def utils_test_cexc_no_param(self):
 
         try:
             raise Exception()
@@ -564,38 +399,55 @@ class TestComparableExc(unittest.TestCase):
             self.assertEqual(e, utils.cexc(Exception()))
             self.assertNotEqual(e, Exception())
 
-    def utils_test_cexc_cmp_excs_generic2(self):
-
+    def utils_test_cexc_sets_equivalence(self):
         try:
-            raise Exception('')
+            raise Exception(set())
         except Exception as e:
-            self.assertIn(e, utils.Exceptions(
-                Exception(),
+            ces = utils.cexc(Exception(frozenset()))
+            self.assertEqual(e, ces)
+            self.assertEqual(ces, e)
+
+    excs = (
+                Exception,
+                Exception(None),
+                Exception(True),
+                Exception(False),
                 Exception(''),
+                Exception('Yo'),
                 NotImplementedError(),
+                NotImplementedError(''),
+                NotImplementedError('n i m b y'),
                 ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic2_not(self):
-
-        try:
-            raise Exception('')
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(),
-                Exception('TOTO'),
-                NotImplementedError(None),
-                ValueError('n i m b y'),
-            ))
-
-    def utils_test_cexc_cmp_excs_generic3(self):
-
-        try:
-            raise Exception('Yo')
-        except Exception as e:
-            self.assertNotIn(e, utils.Exceptions(
-                Exception(),
-                Exception(''),
-                NotImplementedError(),
                 ValueError('Yo'),
-            ))
+
+                # Containers: keep their content different, or they'll match each other
+                Exception(dict()),
+                Exception(tuple()),
+                Exception(list()),
+                Exception(set()),
+                Exception(frozenset([None])),
+                Exception({0: 2}),
+                Exception(tuple([0])),
+                Exception([0]),
+                Exception(set([0])),
+                Exception(frozenset([1])),
+                Exception({2}),
+    )
+
+    def utils_test_loop(self):
+
+        for exc in self.excs:
+            try:
+                if isinstance(exc, Exception):
+                    # Should not raise e directly, make a copy
+                    raise exc.__class__(*exc.args)
+                elif type(exc) == type(Exception):
+                    raise exc
+                else:
+                    self.assertTrue(False)
+            except Exception as e:
+                self.assertFalse(e is exc)
+                self.assertIn(e, utils.Exceptions(self.excs))
+                a = list(self.excs)
+                a.remove(exc)
+                self.assertNotIn(e, utils.Exceptions(a))

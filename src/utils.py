@@ -8,6 +8,7 @@ import types
 import inspect
 import StringIO
 import subprocess
+import collections
 
 from contextlib import contextmanager
 
@@ -135,16 +136,29 @@ class cexc(object):
     __hash__ = None
 
     def __init__(self, exc):
-        if not isinstance(exc, Exception):
-            raise ValueError('parameter has to be an instance of the Exception class: ', repr(exc))
-        self.exc = exc
+        if isinstance(exc, Exception):
+            self.exc = exc
+        elif isinstance(exc, cexc):
+            self.exc = exc.exc
+        elif type(exc) == type(Exception):
+            self.exc = exc()
+        else:
+            raise ValueError('parameter has to be an Exception: %s' % (repr(exc),))
 
     def __eq__(self, other):
-        if self.exc.__class__ != other.__class__:
-            return False
-        if self.exc.args != other.args:
-            return False
-        return True
+        if isinstance(other, Exception):
+            if self.exc.__class__ != other.__class__:
+                return False
+            if self.exc.args != other.args:
+                return False
+            return True
+        elif isinstance(other, cexc):
+            if self.exc.__class__ != other.exc.__class__:
+                return False
+            if self.exc.args != other.exc.args:
+                return False
+            return True
+        return NotImplemented
 
     def __ne__(self, other):
         return not self == other
@@ -155,7 +169,12 @@ class cexc(object):
 class Exceptions(object):
 
     def __init__(self, *args):
-        self._excs = map(cexc, args)
+        if len(args) == 1 and isinstance(args[0], collections.Iterable):
+            keys = args[0]
+        else:
+            keys = args
+        keys = (x for x in keys if isinstance(x, Exception) or type(x) == type(Exception))
+        self._excs = map(cexc, keys)
 
     def __contains__(self, other):
         for item in self._excs:
