@@ -36,17 +36,23 @@ class TestUtils(unittest.TestCase):
         utils.set_verbose(v)
         self.assertTrue(utils.get_verbose() == v)
 
-    def test_vprint(self):
+    def vprint_verbose(self, verbosity, test_name):
         v = utils.get_verbose()
         utils.set_verbose(True)
         with utils.stringio() as output:
             with utils.redirect('stdout', output):
-                utils.vprint('TOTOTITI', utils.test_name())
-                self.assertEqual(utils.test_name() + ': TOTOTITI\n', output.getvalue())
-            self.assertEqual(utils.test_name() + ': TOTOTITI\n', output.getvalue())
+                utils.vprint('TOTOTITI', test_name)
+                self.assertEqual(test_name + ': TOTOTITI\n', output.getvalue())
+            self.assertEqual(test_name + ': TOTOTITI\n', output.getvalue())
         with self.assertRaises(ValueError):
             output.getvalue()
         utils.set_verbose(v)
+
+    def test_vprint_verbose(self):
+        self.vprint_verbose(True, utils.test_name())
+
+    def test_vprint_silent(self):
+        self.vprint_verbose(False, utils.test_name())
 
     def utils_test_test_name(self):
         self.assertEqual(utils.test_name(), 'utils_test_test_name')
@@ -386,6 +392,7 @@ class TestExceptions(unittest.TestCase):
         Exception(set([0])),
         Exception(frozenset([1])),
         Exception({2}),
+        None,
     )
 
     def utils_test_loop(self):
@@ -398,7 +405,7 @@ class TestExceptions(unittest.TestCase):
                 elif type(exc) == type(Exception):
                     raise exc
                 else:
-                    self.assertTrue(False)
+                    self.assertTrue(exc is None)
             except Exception as e:
                 self.assertFalse(e is exc)
                 self.assertIn(e, utils.Exceptions(self.excs))
