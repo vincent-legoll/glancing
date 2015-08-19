@@ -13,6 +13,7 @@ operating system caches...
 import os
 import sys
 import hashlib
+import functools
 import subprocess
 
 if 'DEVNULL' not in dir(subprocess):
@@ -41,10 +42,9 @@ class multihash_hashlib(object):
 
     def hash_file(self, filename):
         with open(filename, 'rb') as f:
-            block = f.read(self.block_size)
-            while (block):
+            chunk_reader = functools.partial(f.read, self.block_size)
+            for block in iter(chunk_reader, ''):
                 self.update(block)
-                block = f.read(self.block_size)
 
 class multihash_serial_exec(object):
     '''Compute multiple message digests, one at a time, using external programs
