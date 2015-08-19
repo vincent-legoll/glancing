@@ -57,87 +57,113 @@ class TestGlance(unittest.TestCase):
         self.assertEqual(set(), glance.glance_ids([None, True, False]))
         self.assertEqual(set(), glance.glance_ids(['', '']))
 
-_IMG_NAME = 'test-glance-img'
-
 class TestGlanceFixture(unittest.TestCase):
 
-    def setUp(self):
-        glance.glance_delete_all(_IMG_NAME, quiet=True)
+    _IMG_NAME = 'test-glance-img'
 
-    def tearDown(self):
-        glance.glance_delete_all(_IMG_NAME, quiet=True)
+    def setUp(self):
+        glance.glance_delete_all(self._IMG_NAME, quiet=True)
+
+    tearDown = setUp
+
+    def common_start(self, name=None, filename=os.devnull):
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+        self.assertTrue(glance.glance_import(filename, name=name, diskformat='raw'))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class TestGlanceNoName(TestGlanceFixture):
+
+    _IMG_NAME = ''
+
+    def test_main_noname(self):
+        self.common_start()
+        self.assertTrue(glance.main(['-d', self._IMG_NAME]))
+        print(glance.glance_ids(''))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class TestGlanceMain(TestGlanceFixture):
 
+    def test_main_ok_nodelete(self):
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.main(['-v']))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+
     def test_main_ok(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.main(['-d', _IMG_NAME]))
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.main(['-d', self._IMG_NAME]))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
     def test_main_ok_verbose(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.main(['-v', '-d', _IMG_NAME]))
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.main(['-v', '-d', self._IMG_NAME]))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
     def test_main_fail_wrong_param_delete(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
         with self.assertRaises(SystemExit):
             with utils.devnull('stderr'):
                 glance.main(['-d'])
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
     def test_main_fail_wrong_param_name(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
         with self.assertRaises(SystemExit):
             with utils.devnull('stderr'):
-                glance.main([_IMG_NAME])
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
+                glance.main([self._IMG_NAME])
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class TestGlanceMisc(TestGlanceFixture):
 
     def test_exists_import(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
 
     def test_delete_all(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_delete_all(_IMG_NAME))
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.glance_import(os.devnull, name=self._IMG_NAME, diskformat='raw'))
+        self.assertTrue(glance.glance_import(os.devnull, name=self._IMG_NAME, diskformat='raw'))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        self.assertTrue(glance.glance_delete_all(self._IMG_NAME))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
-    def test_delete(self):
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import('/dev/null', name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_delete(_IMG_NAME))
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
+    def test_delete_ok(self):
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.glance_delete(self._IMG_NAME))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+    def test_delete_ok_quiet(self):
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.glance_delete(self._IMG_NAME, quiet=True))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+    def test_delete_fail(self):
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.glance_delete(self._IMG_NAME))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+        self.assertFalse(glance.glance_delete(self._IMG_NAME))
+
+    def test_delete_fail_quiet(self):
+        self.common_start(self._IMG_NAME)
+        self.assertTrue(glance.glance_delete(self._IMG_NAME, quiet=True))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+        self.assertFalse(glance.glance_delete(self._IMG_NAME, quiet=True))
 
     def test_download(self):
         _RND1M_FILE = get_local_path('..', 'data', 'random_1M.bin')
-        _DL_ED_FILE = os.path.join('/', 'tmp', _IMG_NAME)
+        _DL_ED_FILE = os.path.join('/', 'tmp', self._IMG_NAME)
 
         if os.path.exists(_DL_ED_FILE):
             os.remove(_DL_ED_FILE)
-        self.assertFalse(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_import(_RND1M_FILE, name=_IMG_NAME, diskformat='raw'))
-        self.assertTrue(glance.glance_exists(_IMG_NAME))
-        self.assertTrue(glance.glance_download(_IMG_NAME, _DL_ED_FILE))
+
+        self.common_start(self._IMG_NAME, _RND1M_FILE)
+        self.assertTrue(glance.glance_download(self._IMG_NAME, _DL_ED_FILE))
         self.assertTrue(os.path.exists(_DL_ED_FILE))
         self.assertTrue(utils.run(['cmp', _RND1M_FILE, _DL_ED_FILE])[0])
         os.remove(_DL_ED_FILE)
+        self.assertFalse(os.path.exists(_DL_ED_FILE))
         self.assertFalse(glance.glance_download('', _DL_ED_FILE))
         self.assertFalse(os.path.exists(_DL_ED_FILE))
