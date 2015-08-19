@@ -129,55 +129,26 @@ class stringio(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
 
-class cexc(object):
-
-    # To prevent this class from being put into sets, frozensets or maps
-    # As this is not working, see skipped tests from ../test/src/test_utils.py
-    __hash__ = None
-
-    def __init__(self, exc):
-        if isinstance(exc, Exception):
-            self.exc = exc
-        elif isinstance(exc, cexc):
-            self.exc = exc.exc
-        elif type(exc) == type(Exception):
-            self.exc = exc()
-        else:
-            raise ValueError('parameter has to be an Exception: %s' % (repr(exc),))
-
-    def __eq__(self, other):
-        if isinstance(other, Exception):
-            if self.exc.__class__ != other.__class__:
-                return False
-            if self.exc.args != other.args:
-                return False
-            return True
-        elif isinstance(other, cexc):
-            if self.exc.__class__ != other.exc.__class__:
-                return False
-            if self.exc.args != other.exc.args:
-                return False
-            return True
-        return NotImplemented
-
-    def __ne__(self, other):
-        return not self == other
-
-    def __repr__(self):
-        return self.exc.__repr__()
+def excs(it):
+    ret = []
+    for item in it:
+        if type(item) == type(Exception):
+            item = item()
+        if isinstance(item, Exception):
+            ret.append(item)
+    return ret
 
 class Exceptions(object):
 
     def __init__(self, *args):
         if len(args) == 1 and isinstance(args[0], collections.Iterable):
-            keys = args[0]
+            self._excs = excs(args[0])
         else:
-            keys = args
-        keys = (x for x in keys if isinstance(x, Exception) or type(x) == type(Exception))
-        self._excs = map(cexc, keys)
+            self._excs = excs(args)
 
     def __contains__(self, other):
         for item in self._excs:
-            if item == other:
+            if (item.__class__ == other.__class__ and
+               item.args == other.args):
                 return True
         return False
