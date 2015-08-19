@@ -354,30 +354,30 @@ class TestComparableExc(unittest.TestCase):
 class TestExceptions(unittest.TestCase):
 
     excs = (
-                Exception,
-                Exception(None),
-                Exception(True),
-                Exception(False),
-                Exception(''),
-                Exception('Yo'),
-                NotImplementedError(),
-                NotImplementedError(''),
-                NotImplementedError('n i m b y'),
-                ValueError('n i m b y'),
-                ValueError('Yo'),
+        Exception,
+        Exception(None),
+        Exception(True),
+        Exception(False),
+        Exception(''),
+        Exception('Yo'),
+        NotImplementedError(),
+        NotImplementedError(''),
+        NotImplementedError('n i m b y'),
+        ValueError('n i m b y'),
+        ValueError('Yo'),
 
-                # Containers: keep their content different, or they'll match each other
-                Exception(dict()),
-                Exception(tuple()),
-                Exception(list()),
-                Exception(set()),
-                Exception(frozenset([None])),
-                Exception({0: 2}),
-                Exception(tuple([0])),
-                Exception([0]),
-                Exception(set([0])),
-                Exception(frozenset([1])),
-                Exception({2}),
+        # Containers: keep their content different, or they'll match each other
+        Exception(dict()),
+        Exception(tuple()),
+        Exception(list()),
+        Exception(set()),
+        Exception(frozenset([None])),
+        Exception({0: 2}),
+        Exception(tuple([0])),
+        Exception([0]),
+        Exception(set([0])),
+        Exception(frozenset([1])),
+        Exception({2}),
     )
 
     def utils_test_loop(self):
