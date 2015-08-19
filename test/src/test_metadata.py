@@ -22,16 +22,22 @@ class TestMetaData(unittest.TestCase):
         md = m.get_metadata()
         self.assertIn('url', md)
         self.assertEqual(md['url'],
-                         'http://appliances.stratuslab.eu/images/base/CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
+            'http://appliances.stratuslab.eu/images/base/'
+            'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
+
+class TestMetaDataFixture(unittest.TestCase):
+
+    fn = 'test.json'
+
+    def setUp(self):
+        if os.path.exists(self.fn):
+            os.remove(self.fn)
+
+    tearDown = setUp
 
     def metadata_test_not_dict(self):
-        fn = 'test.json'
-        if os.path.exists(fn):
-            os.remove(fn)
-        with open(fn, 'wb') as jsonf:
+        with open(self.fn, 'wb') as jsonf:
             jsonf.write('""\n')
         with devnull('stderr'):
             with self.assertRaises(ValueError):
-                m = metadata.MetaStratusLab(fn)
-        if os.path.exists(fn):
-            os.remove(fn)
+                m = metadata.MetaStratusLab(self.fn)
