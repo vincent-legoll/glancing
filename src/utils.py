@@ -129,22 +129,19 @@ class stringio(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
 
-def excs(it):
-    ret = []
-    for item in it:
-        if type(item) == type(Exception):
-            item = item()
-        if isinstance(item, Exception):
-            ret.append(item)
-    return ret
-
 class Exceptions(object):
 
     def __init__(self, *args):
         if len(args) == 1 and isinstance(args[0], collections.Iterable):
-            self._excs = excs(args[0])
+            keys = args[0]
         else:
-            self._excs = excs(args)
+            keys = args
+        self._excs = []
+        for item in keys:
+            if type(item) == type(Exception):
+                item = item()
+            if isinstance(item, Exception):
+                self._excs.append(item)
 
     def __contains__(self, other):
         for item in self._excs:
