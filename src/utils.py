@@ -7,6 +7,7 @@ import sys
 import types
 import inspect
 import StringIO
+import functools
 import subprocess
 import collections
 
@@ -128,6 +129,15 @@ class stringio(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._iofile.close()
+
+def block_read_filename(filename, callback, block_size=4096):
+    with open(filename, 'rb') as f:
+        block_read_filedesc(f, callback, block_size)
+
+def block_read_filedesc(filedesc, callback, block_size=4096):
+    chunk_reader = functools.partial(filedesc.read, block_size)
+    for block in iter(chunk_reader, ''):
+        callback(block)
 
 class Exceptions(object):
 

@@ -51,6 +51,14 @@ class TestUtils(unittest.TestCase):
     def utils_test_test_name(self):
         self.assertEqual(utils.test_name(), 'utils_test_test_name')
 
+    @unittest.skip('TODO')
+    def utils_test_block_read_filename(self):
+        pass
+
+    @unittest.skip('TODO')
+    def utils_test_block_read_filedesc(self):
+        pass
+
 class TestUtilsRun(unittest.TestCase):
 
     def utils_test_run_true(self):
