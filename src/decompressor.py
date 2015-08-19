@@ -7,6 +7,8 @@ import bz2
 import gzip
 import zipfile
 
+import utils
+
 class FileExistsError(Exception):
     pass
 
@@ -47,10 +49,8 @@ class Decompressor(object):
     def doit(self, delete=False):
         with self.opener(self.fin_name, 'rb') as fin:
             with open(self.fout_name, 'wb+') as fout:
-                block = fin.read(self.block_size)
-                while (block):
-                    fout.write(block)
-                    block = fin.read(self.block_size)
+                utils.block_read_filedesc(fin, fout.write, self.block_size)
+
         if delete:
             os.remove(self.fin_name)
 
