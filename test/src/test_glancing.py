@@ -116,7 +116,14 @@ class TestGlancingImage(unittest.TestCase):
             self.assertTrue(glancing.main(['-f', '-n', test_name(), 'image',
                                           self._TTYLINUX_FILE, '-s', '0' * 32]))
 
-class TestGlancingMetadata(unittest.TestCase):
+@unittest.skipUnless(_HEAVY_TESTS, "image too big")
+class TestGlancingMetadataXml(unittest.TestCase):
+    def glancing_test_metadata_one(self):
+        # 463 MB
+        market_id = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB'
+        self.assertTrue(glancing.main(['-v', '-d', 'market', market_id, '-k']))
+
+class TestGlancingMetadataJson(unittest.TestCase):
 
     def glancing_test_metadata_no_param(self):
         with devnull('stderr'):
