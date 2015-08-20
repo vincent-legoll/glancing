@@ -133,7 +133,7 @@ def main(sys_argv=sys.argv):
     else:
         # Download from network location
         if args.image_type == 'json':
-            url = metadata['url']
+            url = metadata['location']
         else: # if args.image_type == 'url':
             url = args.url
         local_image_file = get_url(url)
@@ -158,7 +158,7 @@ def main(sys_argv=sys.argv):
         elif args.image_type == 'url':
             name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(args.url)[2]))
         else: # if args.image_type == 'json':
-            name = '%s-%s-%s' % (metadata['ostype'], metadata['osver'], metadata['osarch'])
+            name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to de verified
@@ -182,7 +182,7 @@ def main(sys_argv=sys.argv):
     # Verify image size
     size_ok = True
     if 'size' in metadata:
-        size_expected = int(metadata['size'])
+        size_expected = int(metadata['bytes'])
         size_actual = os.path.getsize(local_image_file)
         size_ok = size_expected == size_actual
 
@@ -226,7 +226,7 @@ def main(sys_argv=sys.argv):
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
             vprint(local_image_file + ': importing into glance as "%s"' % name or '')
             md5 = metadata['checksums'].get('md5', None)
-            ret = glance.glance_import(local_image_file, md5, name, metadata['diskformat'])
+            ret = glance.glance_import(local_image_file, md5, name, metadata['format'])
             if not ret:
                 return False
         else:

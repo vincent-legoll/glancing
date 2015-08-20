@@ -20,8 +20,8 @@ class TestMetaData(unittest.TestCase):
         jsonfile = get_local_path('..', 'stratuslab', fn)
         m = metadata.MetaStratusLab(jsonfile)
         md = m.get_metadata()
-        self.assertIn('url', md)
-        self.assertEqual(md['url'],
+        self.assertIn('location', md)
+        self.assertEqual(md['location'],
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
