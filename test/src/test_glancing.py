@@ -27,7 +27,7 @@ class TestGlancingMisc(unittest.TestCase):
 
     def glancing_test_main_glance_availability(self):
         with environ('PATH'):
-            self.assertFalse(glancing.main(['image', '/dev/null']))
+            self.assertFalse(glancing.main(['image', os.devnull]))
 
 class TestGlancingImage(unittest.TestCase):
 
@@ -43,22 +43,22 @@ class TestGlancingImage(unittest.TestCase):
     def glancing_test_image_notenough_param(self):
         with devnull('stderr'):
             with self.assertRaises(SystemExit):
-                glancing.main(['-d', 'image', '/dev/null', '-s'])
+                glancing.main(['-d', 'image', os.devnull, '-s'])
 
     def glancing_test_image_devnull_bad_sum(self):
-        self.assertFalse(glancing.main(['-d', 'image', '/dev/null', '-s', '### BAD CHECKSUM ###']))
+        self.assertFalse(glancing.main(['-d', 'image', os.devnull, '-s', '### BAD CHECKSUM ###']))
 
     def glancing_test_image_devnull_null_sum(self):
-        self.assertFalse(glancing.main(['-d', 'image', '/dev/null', '-s', '0' * 32]))
+        self.assertFalse(glancing.main(['-d', 'image', os.devnull, '-s', '0' * 32]))
 
     def glancing_test_image_devnull(self):
-        self.assertTrue(glancing.main(['-d', 'image', '/dev/null', '-s', self._DEVNULL_MD5]))
+        self.assertTrue(glancing.main(['-d', 'image', os.devnull, '-s', self._DEVNULL_MD5]))
 
     def glancing_test_image_devnull_verbose(self):
-        self.assertTrue(glancing.main(['-dv', 'image', '/dev/null', '-s', self._DEVNULL_MD5]))
+        self.assertTrue(glancing.main(['-dv', 'image', os.devnull, '-s', self._DEVNULL_MD5]))
 
     def glancing_test_image_devnull_conflicting_digests(self):
-        self.assertFalse(glancing.main(['-d', 'image', '/dev/null', '-s', self._DEVNULL_MD5 + ':' + '0' * 32]))
+        self.assertFalse(glancing.main(['-d', 'image', os.devnull, '-s', self._DEVNULL_MD5 + ':' + '0' * 32]))
 
     def glancing_test_image_notexistent(self):
         self.assertFalse(glancing.main(['-d', 'image', '/notexistent.txt']))
@@ -126,7 +126,7 @@ class TestGlancingMetadata(unittest.TestCase):
     def glancing_test_metadata_not_json(self):
         with devnull('stderr'):
             with self.assertRaises(ValueError):
-                glancing.main(['-d', 'json', '/dev/null'])
+                glancing.main(['-d', 'json', os.devnull])
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     def glancing_test_metadata_one(self):

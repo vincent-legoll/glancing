@@ -16,7 +16,7 @@ import hashlib
 import subprocess
 
 if 'DEVNULL' not in dir(subprocess):
-    subprocess.DEVNULL = open('/dev/null', 'rw+b')
+    subprocess.DEVNULL = open(os.devnull, 'rw+b')
 
 import utils
 

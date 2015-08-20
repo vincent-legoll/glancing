@@ -14,7 +14,7 @@ import multihash
 class TestMultihash(unittest.TestCase):
 
     def multihash_test_files(self):
-        files = ['/dev/null', 'random_1M.bin', 'random_5M.bin']
+        files = [os.devnull, 'random_1M.bin', 'random_5M.bin']
         for fn in files:
             local_path = get_local_path('..', 'data', fn)
             mhs = multihash.multihash_serial_exec()
@@ -41,10 +41,10 @@ class TestMultihash(unittest.TestCase):
 
     def multihash_test_gethash_serial(self):
         mh = multihash.multihash_serial_exec()
-        self.assertEquals(mh.get_hash('/dev/null', 'md5'), 'd41d8cd98f00b204e9800998ecf8427e')
+        self.assertEquals(mh.get_hash(os.devnull, 'md5'), 'd41d8cd98f00b204e9800998ecf8427e')
         self.assertIsNone(mh.get_hash('/tmp/nonexistent', 'md5'))
         with self.assertRaises(OSError):
-            mh.get_hash('/dev/null', 'nonexistent_hash_algo')
+            mh.get_hash(os.devnull, 'nonexistent_hash_algo')
 
     def multihash_test_string_serial(self):
         mh = multihash.multihash_serial_exec()
@@ -76,5 +76,5 @@ class TestMultihash(unittest.TestCase):
             'sha384': '4f51eaa6864f9e5079885a3ac30565581522669bd89e42d5a479433d897a1bf222337ae46125575c969fbc2b78c60e86',
             'sha512': 'd91fa3b083266ba7a651570acc4803e07e1910bcacceae303eb3684e4119907170888997cc13aeea2effa823d51b3dff965800942893ef7db8513cb339e55ae6',
         }
-        files_to_hash = ['/dev/null', get_local_path('..', 'data', 'random_1M.bin')]
+        files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
         self.assertEqual([devnull_checksums, random_checksums], multihash.main(files_to_hash))

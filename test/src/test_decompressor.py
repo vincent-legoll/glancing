@@ -56,7 +56,7 @@ class TestDecompressorErrors(unittest.TestCase):
     def decompressor_test_good_ext(self):
         for ext in decompressor._EXT_MAP:
             with self.assertRaises(ValueError):
-                d = decompressor.Decompressor('/dev/null', ext)
+                d = decompressor.Decompressor(os.devnull, ext)
             with self.assertRaises(ValueError):
                 d = decompressor.Decompressor('/tmp/nonexistent', ext)
 
@@ -64,7 +64,7 @@ class TestDecompressorErrors(unittest.TestCase):
 
     def decompressor_test_bad_ext_param(self):
         with self.assertRaises(ValueError):
-            d = decompressor.Decompressor('/dev/null', '.txt')
+            d = decompressor.Decompressor(os.devnull, '.txt')
 
     def decompressor_test_bad_ext(self):
         with self.assertRaises(decompressor.FileExtensionError):
