@@ -13,19 +13,41 @@ from utils import devnull
 
 import metadata
 
-class TestMetaData(unittest.TestCase):
+good_keys = set([
+    'os',
+    'bytes',
+    'format',
+    'os-arch',
+    'location',
+    'checksums',
+    'os-version',
+    'compression',
+])
+
+class TestMetaDataJson(unittest.TestCase):
 
     def metadata_test(self):
         fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
         jsonfile = get_local_path('..', 'stratuslab', fn)
-        m = metadata.MetaStratusLab(jsonfile)
+        m = metadata.MetaStratusLabJson(jsonfile)
         md = m.get_metadata()
-        self.assertIn('location', md)
+        self.assertEqual(set(md.keys()), good_keys)
         self.assertEqual(md['location'],
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
-class TestMetaDataFixture(unittest.TestCase):
+class TestMetaDataXml(unittest.TestCase):
+
+    def metadata_test(self):
+        fn = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml'
+        xmlfile = get_local_path('..', 'stratuslab', fn)
+        m = metadata.MetaStratusLabXml(xmlfile)
+        md = m.get_metadata()
+        self.assertEqual(set(md.keys()), good_keys)
+        self.assertEqual(md['location'],
+    'http://www.apc.univ-paris7.fr/Downloads/comput/CentOS7.qcow2.gz')
+
+class TestMetaDataJsonFixture(unittest.TestCase):
 
     fn = 'test.json'
 
@@ -40,4 +62,4 @@ class TestMetaDataFixture(unittest.TestCase):
             jsonf.write('""\n')
         with devnull('stderr'):
             with self.assertRaises(ValueError):
-                m = metadata.MetaStratusLab(self.fn)
+                m = metadata.MetaStratusLabJson(self.fn)
