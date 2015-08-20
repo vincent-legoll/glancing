@@ -137,12 +137,11 @@ def main(sys_argv=sys.argv):
         else: # if args.image_type == 'url':
             url = args.url
         local_image_file = get_url(url)
-        if not local_image_file:
+        if not local_image_file or not os.path.exists(local_image_file):
             vprint('cannot download from: ' + url)
             return False
         vprint(local_image_file + ': downloaded image from: ' + url)
 
-    # Uncompress downloaded file
     # VM images are compressed, but checksums are for uncompressed files
     if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
@@ -213,13 +212,14 @@ def main(sys_argv=sys.argv):
         else:
             vprint(local_image_file + ': size differ, not verifying checksums')
 
-    # Check pre-existing image
+    # If image already exists, download it to backup directory
     if glance.glance_exists(name):
         backup_dir()
         fn_local = os.path.join(_BACKUP_DIR, name)
         ok = glance.glance_download(name, fn_local)
         if not ok:
             return False
+        glance.glance_delete(name, quiet=(not utils.get_verbose()))
 
     # Import image into glance
     if not args.dryrun:
