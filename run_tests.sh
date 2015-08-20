@@ -4,7 +4,7 @@ PACKAGES="glancing,glance,multihash,metadata,decompressor,openstack_out,utils,tu
 
 COVERAGE_OPTS="--with-coverage --cover-branches --cover-html --cover-inclusive --cover-tests --cover-package=${PACKAGES}"
 PROFILE_OPTS= # "--with-profile"
-TISSUE_IGNORES="--tissue-ignore=E302,E501,E261,E201,E202,E241" # I disagree with those
+TISSUE_IGNORES="--tissue-ignore=E302,E501,E261,E201,E202,E241,E402" # I disagree with those
 TISSUE_OPTS="--with-tissue --cover-inclusive --tissue-package=${PACKAGES} ${TISSUE_IGNORES}" # pip install --user tissue
 
 ALL_OPTS="${COVERAGE_OPTS} ${PROFILE_OPTS} ${TISSUE_OPTS}"
