@@ -5,24 +5,30 @@ from __future__ import print_function
 import json
 import xml.etree.ElementTree as et
 
+class StratusLabNS(object):
+
+    _NS_TO_URL_PREFIXES = {
+        'dcterms': "http://purl.org/dc/terms/",
+        'rdf': "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        'slreq': "http://mp.stratuslab.eu/slreq#",
+        'slterms': "http://mp.stratuslab.eu/slterms#",
+        'base': "http://mp.stratuslab.eu/",
+    }
+
+    _RETKEY_TO_NS_PREFIXES = {
+        'os': 'slterms',
+        'bytes': 'slreq',
+        'format': 'dcterms',
+        'os-arch': 'slterms',
+        'location': 'slterms',
+        'algorithm': 'slreq',
+        'os-version': 'slterms',
+        'compression': 'dcterms',
+    }
+
 # Translate Stratuslab market place hash names to hashlib ones
 def sl_to_hashlib(hash_name):
     return hash_name.replace('-', '').lower()
-
-class MetaDataSL(object):
-    
-    def __init__(self):
-        super(MetaDataSL, self).__init__()
-        self.MDKEY_TO_RETKEY = {
-            item[1] + item[0]: item[0] for item in
-            self._RETKEY_TO_MDKEY_PREFIXES.iteritems()
-        }
-
-    def retkey_to_mdkey(self, key):
-        return self._RETKEY_TO_MDKEY_PREFIXES[key] + key
-
-    def mdkey_to_retkey(self, key):
-        return self.MDKEY_TO_RETKEY.get(key)
 
 class MetaDataJson(object):
 
@@ -34,53 +40,38 @@ class MetaDataJson(object):
                 raise ValueError('Cannnot load json data from: ' + filename)
         self.data = { 'checksums': {} }
 
-class MetaStratusLab(MetaDataJson, MetaDataSL):
+class MetaStratusLabJson(MetaDataJson):
     '''Parse the metadata .json file, from the stratuslab marketplace
        Extract interesting data: url and message digests
     '''
 
-    _RETKEY_TO_MDKEY_PREFIXES = {
-        'os': 'http://mp.stratuslab.eu/slterms#',
-        'bytes': 'http://mp.stratuslab.eu/slreq#',
-        'format': 'http://purl.org/dc/terms/',
-        'os-arch': 'http://mp.stratuslab.eu/slterms#',
-        'location': 'http://mp.stratuslab.eu/slterms#',
-        'algorithm': 'http://mp.stratuslab.eu/slreq#',
-        'os-version': 'http://mp.stratuslab.eu/slterms#',
-        'compression': 'http://purl.org/dc/terms/',
+    _MDKEY_TO_RETKEY = {
+        StratusLabNS._NS_TO_URL_PREFIXES[ns] + key: key
+        for key, ns in StratusLabNS._RETKEY_TO_NS_PREFIXES.items()
     }
 
     def get_metadata(self):
         ret = self.data
         for val in self.json_obj.values():
             for key in val:
-                retkey = self.mdkey_to_retkey(key)
+                retkey = self._MDKEY_TO_RETKEY.get(key)
                 value = val[key][0]['value']
                 if retkey:
-                    ret[retkey] = value
-                elif key == self.retkey_to_mdkey('algorithm'):
-                    algo = sl_to_hashlib(value)
-                    ret['checksums'][algo] = val['http://mp.stratuslab.eu/slreq#value'][0]['value']
+                    if retkey != 'algorithm':
+                        ret[retkey] = value
+                    else:
+                        ret['checksums'][sl_to_hashlib(value)] = (
+                            val['http://mp.stratuslab.eu/slreq#value']
+                            [0]['value'])
         return ret
 
 class MetaCern(MetaDataJson):
     pass
 
-class MetaStratusLabXml(MetaDataSL):
+class MetaStratusLabXml(object):
     '''Parse the metadata .xml file, from the stratuslab marketplace
        Extract interesting data: url and message digests
     '''
-
-    _RETKEY_TO_MDKEY_PREFIXES = {
-        'os': 'slterms:',
-        'bytes': 'slreq:',
-        'format': 'dcterms:',
-        'os-arch': 'slterms:',
-        'location': 'slterms:',
-        'algorithm': 'slreq:',
-        'os-version': 'slterms:',
-        'compression': 'dcterms:',
-    }
 
     def __init__(self, filename):
         super(MetaStratusLabXml, self).__init__()
@@ -88,15 +79,19 @@ class MetaStratusLabXml(MetaDataSL):
         self.data = { 'checksums': {} }
 
     def get_metadata(self):
+        ns = StratusLabNS._NS_TO_URL_PREFIXES
+        ret = self.data
         root = self.xml_obj.getroot()
-        md = root.find('metadata')
-        desc = md.find('rdf:Description')
-        for cksum in desc.findall('slreq:checksum'):
-            algo = cksum.find('slreq:algorithm')
-            val = cksum.find('slreq:value')
-            ret['checksums'][algo.text] = val.text
-        for key in self._RETKEY_TO_MDKEY_PREFIXES.keys():
-            md_key = retkey_to_mdkey(key)
-            node = desc.find(md_key)
+        rdf = root.find('rdf:RDF', ns)
+        desc = rdf.find('rdf:Description', ns)
+        for cksum in desc.findall('slreq:checksum', ns):
+            algo = cksum.find('slreq:algorithm', ns)
+            val = cksum.find('slreq:value', ns)
+            ret['checksums'][algo.text] = sl_to_hashlib(val.text)
+        for key in StratusLabNS._RETKEY_TO_NS_PREFIXES.keys():
+            if key == 'algorithm':
+                continue
+            mdkey = StratusLabNS._RETKEY_TO_NS_PREFIXES[key] + ':' + key
+            node = desc.find(mdkey, ns)
             ret[key] = node.text
         return ret
