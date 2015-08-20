@@ -87,7 +87,7 @@ class MetaStratusLabXml(object):
         for cksum in desc.findall('slreq:checksum', ns):
             algo = cksum.find('slreq:algorithm', ns)
             val = cksum.find('slreq:value', ns)
-            ret['checksums'][algo.text] = sl_to_hashlib(val.text)
+            ret['checksums'][sl_to_hashlib(algo.text)] = val.text
         for key in StratusLabNS._RETKEY_TO_NS_PREFIXES.keys():
             if key == 'algorithm':
                 continue
