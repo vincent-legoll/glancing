@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-from __future__ import print_function
-
 import os
 import sys
 import unittest
@@ -22,6 +20,7 @@ with devnull('stderr'):
 
 # Avoid heavy image download tests
 _HEAVY_TESTS = False
+_HUGE_TESTS = False # 5 GB image
 
 class TestGlancingMisc(unittest.TestCase):
 
@@ -116,54 +115,47 @@ class TestGlancingImage(unittest.TestCase):
             self.assertTrue(glancing.main(['-f', '-n', test_name(), 'image',
                                           self._TTYLINUX_FILE, '-s', '0' * 32]))
 
-@unittest.skipUnless(_HEAVY_TESTS, "image too big")
-class TestGlancingMetadataXml(unittest.TestCase):
-    def glancing_test_metadata_one(self):
-        # 463 MB
-        market_id = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB'
-        self.assertTrue(glancing.main(['-v', '-d', 'market', market_id, '-k']))
+class TestGlancingMetadata(unittest.TestCase):
 
-class TestGlancingMetadataJson(unittest.TestCase):
-
-    def glancing_test_metadata_no_param(self):
+    def glancing_test_metadata_cli_params(self):
         with devnull('stderr'):
             with self.assertRaises(SystemExit):
                 glancing.main(['-d', 'json'])
+            with self.assertRaises(SystemExit):
+                glancing.main(['-d', 'market'])
+            with self.assertRaises(IOError):
+                self.assertFalse(glancing.main(['-d', 'json', '']))
+            self.assertFalse(glancing.main(['-d', 'market', '']))
 
-    def glancing_test_metadata_not_json(self):
+    def glancing_test_metadata_cli_bad_format(self):
         with devnull('stderr'):
             with self.assertRaises(ValueError):
                 glancing.main(['-d', 'json', os.devnull])
+            self.assertFalse(glancing.main(['-d', 'market', os.devnull]))
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
-    def glancing_test_metadata_one(self):
-        # 98 MB
-        fn = 'JcqGhHxmTRAEpHMmRF-xhSTM3TO.json'
-        mdfile = get_local_path('..', 'stratuslab', fn)
-        self.assertFalse(glancing.main(['-d', 'json', mdfile]))
-
-    @unittest.skipUnless(_HEAVY_TESTS, "image too big")
-    def glancing_test_metadata_two(self):
-        # 102 MB
-        fn = 'BtSKdXa2SvHlSVTvgFgivIYDq--.json'
-        mdfile = get_local_path('..', 'stratuslab', fn)
-        self.assertTrue(glancing.main(['-d', 'json', mdfile]))
-
-    @unittest.skipUnless(_HEAVY_TESTS, "image too big")
-    def glancing_test_metadata_three(self):
-        # Size & checksum mismatch: 375 MB -> 492 MB
-        fn = 'ME4iRTemHRwhABKV5AgrkQfDerA.json'
-        mdfile = get_local_path('..', 'stratuslab', fn)
-        self.assertFalse(glancing.main(['-d', 'json', mdfile]))
+    def glancing_test_metadata_heavies(self):
+        market_ids = (
+            ('JcqGhHxmTRAEpHMmRF-xhSTM3TO', False, False), # 98 MB, size & checksum mismatch: 4 B -> 98 MB
+            ('BtSKdXa2SvHlSVTvgFgivIYDq--', True, False), # 102 MB, does not exists any more on SL marketplace
+            ('KqU_1EZFVGCDEhX9Kos9ckOaNjB', True, True), # 463 MB
+            ('ME4iRTemHRwhABKV5AgrkQfDerA', False, False), # Size & checksum mismatch: 375 MB -> 492 MB
+        )
+        for market_id, status_json, status_market in market_ids:
+            mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
+            self.assertEqual(status_json, glancing.main(['-d', 'json', mdfile]), mdfile)
+            self.assertEqual(status_market, glancing.main(['-d', 'market', market_id]), market_id)
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
-    def glancing_test_metadata_three(self):
+    def glancing_test_metadata_bad_but_force(self):
         # Size & checksum mismatch: 375 MB -> 492 MB
-        fn = 'ME4iRTemHRwhABKV5AgrkQfDerA.json'
-        mdfile = get_local_path('..', 'stratuslab', fn)
+        market_id = 'ME4iRTemHRwhABKV5AgrkQfDerA'
+        mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-f', '-n', test_name(), 'json', mdfile]))
+        with cleanup(['glance', 'image-delete', test_name()]):
+            self.assertTrue(glancing.main(['-f', '-n', test_name(), 'market', market_id]))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_metadata_cirros_import(self):
@@ -171,7 +163,7 @@ class TestGlancingMetadataJson(unittest.TestCase):
         mdfile = get_local_path('..', 'stratuslab', 'cirros.json')
         with devnull('stderr'):
             with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertTrue(glancing.main(['-n', test_name(), 'json', mdfile]))
+                self.assertTrue(glancing.main(['-v', '-n', test_name(), 'json', mdfile, '-k']))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_metadata_cirros_import_bad_size_force(self):
@@ -189,11 +181,12 @@ class TestGlancingMetadataJson(unittest.TestCase):
             with cleanup(['glance', 'image-delete', test_name()]):
                 self.assertFalse(glancing.main(['-n', test_name(), 'json', mdfile]))
 
-    @unittest.skip("image too big: 5.0 GB")
+    @unittest.skipUnless(_HUGE_TESTS, "image too big: 5.0 GB")
     def glancing_test_metadata_big(self):
-        fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
-        mdfile = get_local_path('..', 'stratuslab', fn)
+        market_id = 'PIDt94ySjKEHKKvWrYijsZtclxU'
+        mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
         self.assertFalse(glancing.main(['-d', 'json', mdfile]))
+        self.assertFalse(glancing.main(['-d', 'market', market_id]))
 
 class BaseGlancingUrl(unittest.TestCase):
 
