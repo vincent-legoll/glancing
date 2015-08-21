@@ -133,7 +133,7 @@ def main(sys_argv=sys.argv[1:]):
     elif args.image_type == 'json':
         metadata = MetaStratusLabJson(args.jsonfile).get_metadata()
     else:
-        metadata = {'checksums': {}, 'diskformat': 'raw'}
+        metadata = {'checksums': {}, 'format': 'raw'}
     if not metadata:
         vprint('Cannot retrieve metadata')
         return False
@@ -171,7 +171,7 @@ def main(sys_argv=sys.argv[1:]):
             name, ext = os.path.splitext(os.path.basename(local_image_file))
         elif args.image_type == 'url':
             name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(args.url)[2]))
-        else: # if args.image_type == 'json':
+        elif args.image_type in ('json', 'market'):
             name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
@@ -195,7 +195,7 @@ def main(sys_argv=sys.argv[1:]):
 
     # Verify image size
     size_ok = True
-    if 'size' in metadata:
+    if 'bytes' in metadata:
         size_expected = int(metadata['bytes'])
         size_actual = os.path.getsize(local_image_file)
         size_ok = size_expected == size_actual
@@ -214,10 +214,10 @@ def main(sys_argv=sys.argv[1:]):
         if len(metadata['checksums']) > 0:
             vprint(local_image_file + ': verifying checksums')
             verified = check_digests(local_image_file, metadata, args.force)
-        elif args.image_type != 'json':
+        elif args.image_type not in ('json', 'market'):
             vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
-            vprint(local_image_file + ': no checksum to verify found in metadata file...')
+            vprint(local_image_file + ': no checksum to verify found in metadata...')
     else:
         if args.force:
             vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
