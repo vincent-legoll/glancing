@@ -180,7 +180,7 @@ def main(sys_argv=sys.argv[1:]):
             name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
-    # Populate metadata message digests to de verified
+    # Populate metadata message digests to be verified
     if args.image_type not in ('json', 'market') and args.digests:
         for dig in filter(None, args.digests.split(':')):
             dig_len = len(dig)
