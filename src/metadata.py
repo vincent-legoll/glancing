@@ -75,7 +75,10 @@ class MetaStratusLabXml(object):
 
     def __init__(self, filename):
         super(MetaStratusLabXml, self).__init__()
-        self.xml_obj = et.parse(filename)
+        try:
+            self.xml_obj = et.parse(filename)
+        except et.ParseError as e:
+            self.get_metadata = lambda: None
         self.data = { 'checksums': {} }
 
     def get_metadata(self):
