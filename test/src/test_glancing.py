@@ -166,20 +166,14 @@ class TestGlancingMetadata(unittest.TestCase):
                 self.assertTrue(glancing.main(['-v', '-n', test_name(), 'json', mdfile, '-k']))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
-    def glancing_test_metadata_cirros_import_bad_size_force(self):
-        # 12 MB
-        mdfile = get_local_path('..', 'stratuslab', 'cirros_bad_size.json')
-        with devnull('stderr'):
-            with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertTrue(glancing.main(['-f', '-n', test_name(), 'json', mdfile]))
-
-    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_metadata_cirros_import_bad_size(self):
         # 12 MB
         mdfile = get_local_path('..', 'stratuslab', 'cirros_bad_size.json')
         with devnull('stderr'):
             with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertFalse(glancing.main(['-n', test_name(), 'json', mdfile]))
+                self.assertFalse(glancing.main(['-v', '-n', test_name(), 'json', mdfile]))
+            with cleanup(['glance', 'image-delete', test_name()]):
+                self.assertTrue(glancing.main(['-f', '-n', test_name(), 'json', mdfile]))
 
     @unittest.skipUnless(_HUGE_TESTS, "image too big: 5.0 GB")
     def glancing_test_metadata_big(self):
