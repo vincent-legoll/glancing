@@ -16,7 +16,7 @@ import multihash
 import decompressor
 
 from utils import vprint
-from metadata import MetaStratusLab
+from metadata import MetaStratusLabJson, MetaStratusLabXml
 
 # Handle CLI options
 def do_argparse(sys_argv):
@@ -39,7 +39,14 @@ def do_argparse(sys_argv):
     subparsers = parser.add_subparsers(dest='image_type')
     parser_imag = subparsers.add_parser('image', help='import a VM image from a local file')
     parser_url = subparsers.add_parser('url', help='import a VM image from a network location (URL)')
-    parser_json = subparsers.add_parser('json', help='import a VM image described by a json metadata file from the StratusLab marketplace (https://marketplace.stratuslab.eu)')
+    parser_json = subparsers.add_parser('json', help='import a VM image described by a metadata file (from the StratusLab marketplace) (https://marketplace.stratuslab.eu)')
+    parser_market = subparsers.add_parser('market', help='import a VM image described by an ID (from the StratusLab marketplace) (https://marketplace.stratuslab.eu)')
+
+    # StratusLab marketplace direct from UUID
+    parser_market.add_argument('market_id', metavar='UUID',
+                               help='a VM image ID from StratusLab marketplace')
+    parser_market.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
+                               help='keep temporary VM image & other files')
 
     # JSON-specific options
     parser_json.add_argument('jsonfile', metavar='FILE',
@@ -109,7 +116,7 @@ def backup_dir():
     elif not os.path.isdir(_BACKUP_DIR):
         vprint(_BACKUP_DIR + ' exists but is not a direstory, sorry cannot backup old image...')
 
-def main(sys_argv=sys.argv):
+def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
 
     # Check glance availability early
@@ -118,11 +125,18 @@ def main(sys_argv=sys.argv):
         return False
 
     # Prepare VM image metadata
-    if args.image_type == 'json':
-        metadata = MetaStratusLab(args.jsonfile).get_metadata()
+    if args.image_type == 'market':
+        # Get xml metadata file from StratusLab marketplace
+        metadata_url = 'https://marketplace.stratuslab.eu/marketplace/metadata/' + args.market_id
+        local_metadata_file = get_url(metadata_url)
+        metadata = MetaStratusLabXml(local_metadata_file).get_metadata()
+    elif args.image_type == 'json':
+        metadata = MetaStratusLabJson(args.jsonfile).get_metadata()
     else:
         metadata = {'checksums': {}, 'diskformat': 'raw'}
-
+    if not metadata:
+        vprint('Cannot retrieve metadata')
+        return False
     # Retrieve image in a local file
     if args.image_type == 'image':
         # Already a local file
@@ -132,9 +146,9 @@ def main(sys_argv=sys.argv):
             return False
     else:
         # Download from network location
-        if args.image_type == 'json':
+        if args.image_type in ('json', 'market'):
             url = metadata['location']
-        else: # if args.image_type == 'url':
+        elif args.image_type == 'url':
             url = args.url
         local_image_file = get_url(url)
         if not local_image_file or not os.path.exists(local_image_file):
@@ -162,7 +176,7 @@ def main(sys_argv=sys.argv):
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to de verified
-    if args.image_type != 'json' and args.digests:
+    if args.image_type not in ('json', 'market') and args.digests:
         for dig in filter(None, args.digests.split(':')):
             dig_len = len(dig)
             if dig_len in multihash._LEN_TO_HASH:
@@ -213,7 +227,7 @@ def main(sys_argv=sys.argv):
             vprint(local_image_file + ': size differ, not verifying checksums')
 
     # If image already exists, download it to backup directory
-    if glance.glance_exists(name):
+    if not args.dryrun and glance.glance_exists(name):
         backup_dir()
         fn_local = os.path.join(_BACKUP_DIR, name)
         ok = glance.glance_download(name, fn_local)
