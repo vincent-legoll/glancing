@@ -36,7 +36,7 @@ class MetaDataJson(object):
         super(MetaDataJson, self).__init__()
         with open(filename, 'rb') as fileobj:
             try:
-            self.json_obj = json.loads(fileobj.read())
+                self.json_obj = json.loads(fileobj.read())
             except ValueError as e:
                 self.json_obj = None
                 self.get_metadata = lambda: None
