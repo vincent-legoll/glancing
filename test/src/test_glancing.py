@@ -19,8 +19,8 @@ with devnull('stderr'):
     _GLANCE_OK = run(['glance', 'image-list'])[0]
 
 # Avoid heavy image download tests
-_HEAVY_TESTS = False
-_HUGE_TESTS = False # 5 GB image
+_HEAVY_TESTS = False # < 500 MB images, 2 min -> 6 min...
+_HUGE_TESTS = False # 1 x 5 GB image
 
 class TestGlancingMisc(unittest.TestCase):
 
