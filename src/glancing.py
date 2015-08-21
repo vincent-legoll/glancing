@@ -117,6 +117,8 @@ def backup_dir():
         vprint(_BACKUP_DIR + ' exists but is not a direstory, sorry cannot backup old image...')
 
 def main(sys_argv=sys.argv[1:]):
+
+    # Handle CLI arguments
     args = do_argparse(sys_argv)
 
     # Check glance availability early
@@ -134,9 +136,12 @@ def main(sys_argv=sys.argv[1:]):
         metadata = MetaStratusLabJson(args.jsonfile).get_metadata()
     else:
         metadata = {'checksums': {}, 'format': 'raw'}
+
+    # Ensure we have something to work on
     if not metadata:
         vprint('Cannot retrieve metadata')
         return False
+
     # Retrieve image in a local file
     if args.image_type == 'image':
         # Already a local file
@@ -253,6 +258,8 @@ def main(sys_argv=sys.argv[1:]):
     if not args.image_type == 'image' and not args.keeptemps:
         vprint(local_image_file + ': deleting temporary file')
         os.remove(local_image_file)
+
+    # That's all folks !
     return True
 
 if __name__ == '__main__':
