@@ -42,6 +42,9 @@ def do_argparse(sys_argv):
     parser.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
                         help='Keep temporary files (VM image & other)')
 
+    parser.add_argument('-c', '--cern-list', dest='cernlist',
+                        help='Image list from CERN, as a JSON file')
+
     digests_help = ('''>>>
         A colon-separated list of message digests of the image.
 
@@ -61,6 +64,7 @@ def do_argparse(sys_argv):
           * a network location (URL)
           * a StratusLab marketplace ID
           * a StratusLab marketplace metadata file (in JSON or XML format)
+          * a CERN image list ID, with the VM image list passed in as --cern-list
 
         The StratusLab marketplace is located here:
 
@@ -136,9 +140,12 @@ def main(sys_argv=sys.argv[1:]):
         else:
             image_type = 'image'
     else:
-        image_type = 'market'
-        if len(d) != 27:
-            vprint('probably invalid StratusLab ID')
+        if args.cernlist:
+            image_type = 'cern'
+        else:
+            image_type = 'market'
+            if len(d) == 27:
+                vprint('probably invalid StratusLab ID')
 
     if image_type is None:
         vprint('Cannot guess mode of operation')
@@ -150,6 +157,8 @@ def main(sys_argv=sys.argv[1:]):
         metadata_url_base = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
         local_metadata_file = get_url(metadata_url_base + args.descriptor)
         metadata = md.MetaStratusLabXml(local_metadata_file).get_metadata()
+    elif image_type == 'cern':
+        metadata = md.MetaCern(args.cernlist).get_metadata(args.descriptor)
     elif image_type == 'json':
         metadata = md.MetaStratusLabJson(args.descriptor).get_metadata()
     elif image_type == 'xml':
@@ -168,7 +177,7 @@ def main(sys_argv=sys.argv[1:]):
         local_image_file = args.descriptor
     else:
         # Download from network location
-        if image_type in ('xml', 'json', 'market'):
+        if image_type in ('xml', 'json', 'market', 'cern'):
             url = metadata['location']
         elif image_type == 'url':
             url = args.descriptor
@@ -198,7 +207,7 @@ def main(sys_argv=sys.argv[1:]):
             name, ext = os.path.splitext(os.path.basename(local_image_file))
         elif image_type == 'url':
             name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(url)[2]))
-        elif image_type in ('xml', 'json', 'market'):
+        elif image_type in ('xml', 'json', 'market', 'cern'):
             name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
@@ -241,7 +250,7 @@ def main(sys_argv=sys.argv[1:]):
         if len(metadata['checksums']) > 0:
             vprint(local_image_file + ': verifying checksums')
             verified = check_digests(local_image_file, metadata, args.force)
-        elif image_type not in ('xml', 'json', 'market'):
+        elif image_type not in ('xml', 'json', 'market', 'cern'):
             vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
             vprint(local_image_file + ': no checksum to verify found in metadata...')

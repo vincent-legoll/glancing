@@ -222,6 +222,13 @@ class TestGlancingUrlDryRun(unittest.TestCase):
         url = 'http://nulle.part.fr/nonexistent_file.txt'
         self.assertFalse(glancing.main(['-d', url]))
 
+class TestGlancingCern(unittest.TestCase):
+
+    def glancing_test_cern(self):
+        cern_id = '623b0bc7-abc2-4961-8700-53e358772a96'
+        jsonfile = get_local_path('..', 'CERN', 'hepix_signed_image_list')
+        self.assertTrue(glancing.main(['-dvk', '-c', jsonfile, cern_id]))
+
 class BaseGlancingUrl(unittest.TestCase):
 
     _CIRROS_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img'
@@ -263,3 +270,4 @@ class TestGlancingUrlImport(BaseGlancingUrl):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-n', test_name(),
                 self._CIRROS_URL, '-s', self._CIRROS_MD5]))
+

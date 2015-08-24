@@ -39,7 +39,7 @@ class TestMetaDataJson(unittest.TestCase):
 class TestMetaDataCern(unittest.TestCase):
 
     def metadata_test(self):
-        fn = 'hepix_signed_image_list' # image.list
+        fn = 'hepix_signed_image_list'
         jsonfile = get_local_path('..', 'CERN', fn)
         m = metadata.MetaCern(jsonfile)
         md = m.get_metadata('623b0bc7-abc2-4961-8700-53e358772a96')
