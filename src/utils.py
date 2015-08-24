@@ -6,6 +6,8 @@ import os
 import sys
 import types
 import inspect
+import argparse
+import textwrap
 import StringIO
 import functools
 import subprocess
@@ -159,3 +161,16 @@ class Exceptions(object):
                item.args == other.args):
                 return True
         return False
+
+class AlmostRawFormatter(argparse.HelpFormatter):
+
+    '''
+    Based on code from:
+    http://dolinked.com/questions/12720/python-argparse-how-to-insert-newline-the-help-text
+    '''
+    _PREFIX = '>>>'
+
+    def _split_lines(self, text, width):
+        if text.strip().startswith(self._PREFIX):
+            return textwrap.dedent(text[len(self._PREFIX):]).strip().splitlines()
+        return super(AlmostRawFormatter, self)._split_lines(text, width)
