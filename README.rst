@@ -1,10 +1,12 @@
-* What is this
+#. What is this
+===============
 
 This is a compilation of helper scripts to ease importing VM images
 into an OpenStack glance service. It can handle various kind of VM image
 source metadata, as well as work directly with local files.
 
-* Features
+#. Features
+===========
 
 - Import images from: local file, download from an URL, use an image JSON
   metadata file from the StratusLab marketplace, or directly download the
@@ -15,7 +17,8 @@ source metadata, as well as work directly with local files.
 
 - Backup previous versions of an image when importing the new version
 
-* How to run
+#. How to run
+=============
 
 Assuming your environment contains the appropriate variables & values for
 connecting to a glance service, see in "Automated Testing" section below.
@@ -36,8 +39,8 @@ connecting to a glance service, see in "Automated Testing" section below.
     $ ./src/glancing.py market KqU_1EZFVGCDEhX9Kos9ckOaNjB
 
 - You have browsed the StratusLab marketplace, and found the right image
-  for your project, downloaded its JSON metadata locally, then want to get
-  the VM image described inside:
+  for your project, downloaded its JSON metadata locally, then want to
+  get the VM image described inside:
 
     $ ./src/glancing.py json /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
 
@@ -46,14 +49,16 @@ image file, verify the checksum(s) but not import into glance registry.
 
     $ ./src/glancing.py -d image /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
-* Get Help
+#. Get Help
+===========
 
 The ./src/glancing.py script CLI options are documented in-line, please
 run it like the following to see the help:
 
     ./src/glancing.py --help
 
-* Automated Testing:
+#. Automated Testing
+====================
 
 In order to launch all the automated tests, just use the included script:
 
@@ -66,27 +71,33 @@ Or you can select only a single test to be run manually:
 First you give the test module test_XXX.py file, a colon, then the class,
 a dot, then the method from that class.
 
-The tests attempt to use a glance service to test images uploading, just
-populate the traditionnal OpenStack variables:
-
-    export OS_TENANT_NAME=admin
-    export OS_USERNAME=admin_account
-    export OS_PASSWORD=ADMIN_PASSWORD
-    export OS_AUTH_URL=http://ctrl:35357/v2.0
-
-Or modify the ./test/openstack/admin.sh accordingly before launching the
-test suite.
+The tests check for availability of a glance registry service to test
+images uploading. Just populate the traditionnal OpenStack variables,
+see environmentVars_. Or modify the ./test/openstack/admin.sh accordingly
+before launching the test suite.
 
 You can further extend the coverage, by modifying the following lines from
 ./test/src/test_glancing.py file. They enable more tests, but will download
-a lot of big files...
+a lot of big image files...
 
     _HEAVY_TESTS = False
     _HUGE_TESTS = False
 
-In ./run_tests.sh script you can also configure the usage of nose test
+In the run_tests.sh script you can also configure the usage of nose test
 plugins for code coverage, pep8 conformance checking and profiling.
 
-The code coverage results will be located, after a test run, in :
+The code coverage results will be located, after a test run, in:
 
     ./cover/index.html
+
+#. Environment variables
+========================
+.. _environmentVars:
+
+You can set those to configure access to your local OpenStack Glance VM
+image registry sevice:
+
+    export OS_TENANT_NAME=admin_tenant
+    export OS_USERNAME=admin_username
+    export OS_PASSWORD=ADMIN_PASSWORD
+    export OS_AUTH_URL=http://ctrl:35357/v2.0
