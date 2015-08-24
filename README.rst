@@ -1,14 +1,57 @@
 * What is this
 
-TODO
+This is a compilation of helper scripts to ease importing VM images
+into an OpenStack glance service. It can handle various kind of VM image
+source metadata, as well as work directly with local files.
+
+* Features
+
+- Import images from: local file, download from an URL, use an image JSON
+  metadata file from the StratusLab marketplace, or directly download the
+  metadata from a given ID for that marketplace.
+
+- Check image against multiple message digest algorithms to ensure no
+  tampering with them has happened.
+
+- Backup previous versions of an image when importing the new version
 
 * How to run
 
-TODO
+Assuming your environment contains the appropriate variables & values for
+connecting to a glance service, see in "Automated Testing" section below.
+
+- Local file, without checksum verification:
+
+    $ ./src/glancing.py image /tmp/cirros-0.3.4-i386-disk.img
+
+- Download image from URL, check given MD5 message digest
+
+    $ ./src/glancing.py url http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
+
+- Download XML metadata from StatusLab marketplace, then get the image
+  from the URL, and verify all the checksums that are present inside.
+
+  This one is for a CentOS v7 image...
+
+    $ ./src/glancing.py market KqU_1EZFVGCDEhX9Kos9ckOaNjB
+
+- You have browsed the StratusLab marketplace, and found the right image
+  for your project, downloaded its JSON metadata locally, then want to get
+  the VM image described inside:
+
+    $ ./src/glancing.py json /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
+
+You can use the "-d" or "--dry-run" CLI parameter to only download the VM
+image file, verify the checksum(s) but not import into glance registry.
+
+    $ ./src/glancing.py -d image /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
 * Get Help
 
-TODO
+The ./src/glancing.py script CLI options are documented in-line, please
+run it like the following to see the help:
+
+    ./src/glancing.py --help
 
 * Automated Testing:
 
