@@ -20,7 +20,7 @@ from metadata import MetaStratusLabJson, MetaStratusLabXml
 
 # Handle CLI options
 def do_argparse(sys_argv):
-    parser = argparse.ArgumentParser(description='Import VM images into glance, and verify checksum(s)')
+    parser = argparse.ArgumentParser(description='Import VM images into OpenStack glance image registry, verify checksum(s), backup old images, etc...')
 
     # Global options
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -55,10 +55,10 @@ def do_argparse(sys_argv):
                              help='keep temporary VM image files')
 
     digests_help = textwrap.dedent('''
-            colon-separated list of message digests of the image, algorithms are deduced
-            from checksum lengths, for example, an MD5 (32 chars) and a SHA-1 (40 chars):
-            "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
-        ''').strip()
+        colon-separated list of message digests of the image, algorithms are deduced
+        from checksum lengths, for example, an MD5 (32 chars) and a SHA-1 (40 chars):
+        "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
+    ''').strip()
 
     # Local file-specific options
     parser_imag.add_argument(dest='imagefile', metavar='FILE',
