@@ -28,43 +28,60 @@ class TestGlancingMisc(unittest.TestCase):
         with environ('PATH'):
             self.assertFalse(glancing.main([os.devnull]))
 
-class TestGlancingImage(unittest.TestCase):
+    def glancing_test_main_glance_availability(self):
+        with cleanup(['glance', 'image-delete', 'null']):
+            self.assertTrue(glancing.main([os.devnull]))
 
-    _TTYLINUX_FN = 'ttylinux-16.1-x86_64.img'
-    _TTYLINUX_FILE = get_local_path('..', 'images', _TTYLINUX_FN)
-    _TTYLINUX_MD5 = '3d1b4804dcf2a613f0ed4a91b9ed2b98'
-    _DEVNULL_MD5 = 'd41d8cd98f00b204e9800998ecf8427e'
+    def glancing_test_empty_cli_param(self):
+        self.assertFalse(glancing.main(['']))
+        self.assertFalse(glancing.main(['-d', '']))
 
-    def glancing_test_image_notenough_param(self):
-        with devnull('stderr'):
-            with self.assertRaises(SystemExit):
-                glancing.main(['-d', os.devnull, '-s'])
-
-    def glancing_test_image_devnull_bad_sum(self):
-        sums = ['### BAD CHECKSUM ###', '0' * 32, self._DEVNULL_MD5 +
-            ':' + '0' * 32]
-        for asum in sums:
-            self.assertFalse(glancing.main(['-d', os.devnull, '-s', asum]))
-
-    def glancing_test_image_devnull(self):
-        self.assertTrue(glancing.main(['-d', os.devnull]))
-
-    def glancing_test_image_devnull_md5(self):
-        self.assertTrue(glancing.main(['-d', os.devnull, '-s',
-            self._DEVNULL_MD5]))
-
-    def glancing_test_image_devnull_md5_verbose(self):
-        self.assertTrue(glancing.main(['-dv', os.devnull, '-s',
-            self._DEVNULL_MD5]))
+class TestGlancingImageDryRunNotExistent(unittest.TestCase):
 
     def glancing_test_image_notexistent(self):
         self.assertFalse(glancing.main(['-d', '/notexistent.txt']))
 
     def glancing_test_image_notexistent_sum(self):
         self.assertFalse(glancing.main(['-d', '/notexistent.txt',
-            '-s', self._DEVNULL_MD5]))
+            '-s', '0' * 32]))
 
-    def glancing_test_image_one(self):
+class TestGlancingImageDryRunDevnull(unittest.TestCase):
+
+    _DEVNULL_MD5 = 'd41d8cd98f00b204e9800998ecf8427e'
+
+    def glancing_test_image_devnull(self):
+        self.assertTrue(glancing.main(['-d', os.devnull]))
+
+    def glancing_test_image_notenough_param(self):
+        with devnull('stderr'):
+            with self.assertRaises(SystemExit):
+                glancing.main(['-d', os.devnull, '-s'])
+
+    def glancing_test_image_devnull_sum_bad(self):
+        sums = ['### BAD CHECKSUM ###', '0' * 32, self._DEVNULL_MD5 +
+            ':' + '0' * 32]
+        for asum in sums:
+            self.assertFalse(glancing.main(['-d', os.devnull, '-s', asum]))
+
+    def glancing_test_image_devnull_sum_empty(self):
+        self.assertTrue(glancing.main(['-d', os.devnull, '-s', '']))
+
+    def glancing_test_image_devnull_sum(self):
+        self.assertTrue(glancing.main(['-d', os.devnull, '-s',
+            self._DEVNULL_MD5]))
+
+    def glancing_test_image_devnull_sum_verbose(self):
+        self.assertTrue(glancing.main(['-dv', os.devnull, '-s',
+            self._DEVNULL_MD5]))
+
+class TestGlancingImageTtylinuxBase(unittest.TestCase):
+
+    _TTYLINUX_FILE = get_local_path('..', 'images', 'ttylinux-16.1-x86_64.img')
+    _TTYLINUX_MD5 = '3d1b4804dcf2a613f0ed4a91b9ed2b98'
+
+class TestGlancingImageDryRunTtylinux(TestGlancingImageTtylinuxBase):
+
+    def glancing_test_image_ttylinux(self):
 
         md5 = self._TTYLINUX_MD5
         sha1 = '1b5229d5dad92bc7952553be01608af2180eafbe'
@@ -88,42 +105,40 @@ class TestGlancingImage(unittest.TestCase):
             self.assertFalse(glancing.main(['-d',
                 self._TTYLINUX_FILE, '-s', chks]), chks)
 
-    def glancing_test_image_two(self):
+class TestGlancingImageDryRunCoreos(unittest.TestCase):
+
+    def glancing_test_image_coreos(self):
         fn = 'coreos_production_qemu_image.img'
         imgfile = get_local_path('..', 'images', fn)
         md5 = '1b0d8f7e4ff1128e3527ad6e15ae0855'
         self.assertTrue(glancing.main(['-d', imgfile, '-s',
             md5 + ':' + md5]))
 
-    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class TestGlancingImage(TestGlancingImageTtylinuxBase):
+
     def glancing_test_image_import_noname(self):
         name, ext = os.path.splitext(os.path.basename(self._TTYLINUX_FILE))
         with cleanup(['glance', 'image-delete', name]):
             self.assertTrue(glancing.main(['-f',
                 self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
 
-    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_image_import_name(self):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-n', test_name(),
                 self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
 
-    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_image_import_name_bad_md5(self):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertFalse(glancing.main(['-n', test_name(),
                 self._TTYLINUX_FILE, '-s', '0' * 32]))
 
-    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def glancing_test_image_import_name_force(self):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-f', '-n', test_name(),
                 self._TTYLINUX_FILE, '-s', '0' * 32]))
 
 class TestGlancingMetadata(unittest.TestCase):
-
-    def glancing_test_metadata_cli_params(self):
-        self.assertFalse(glancing.main(['-d', '']))
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     def glancing_test_metadata_heavies(self):
@@ -195,14 +210,7 @@ class TestGlancingMetadata(unittest.TestCase):
         self.assertFalse(glancing.main(['-d', mdfile]))
         self.assertFalse(glancing.main(['-d', market_id]))
 
-class BaseGlancingUrl(unittest.TestCase):
-
-    _CIRROS_FN = 'cirros-0.3.4-i386-disk.img'
-    _CIRROS_URL_DIR = 'http://download.cirros-cloud.net/0.3.4/'
-    _CIRROS_URL = _CIRROS_URL_DIR + _CIRROS_FN
-    _CIRROS_MD5 = '79b4436412283bb63c2cba4ac796bcd9'
-
-class TestGlancingUrlDryRun(BaseGlancingUrl):
+class TestGlancingUrlDryRun(unittest.TestCase):
 
     def glancing_test_url_notenough_param(self):
         with devnull('stderr'):
@@ -213,6 +221,13 @@ class TestGlancingUrlDryRun(BaseGlancingUrl):
     def glancing_test_url_notexistent(self):
         url = 'http://nulle.part.fr/nonexistent_file.txt'
         self.assertFalse(glancing.main(['-d', url]))
+
+class BaseGlancingUrl(unittest.TestCase):
+
+    _CIRROS_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img'
+    _CIRROS_MD5 = '79b4436412283bb63c2cba4ac796bcd9'
+
+class TestGlancingUrlDryRunCirros(BaseGlancingUrl):
 
     def glancing_test_url(self):
         self.assertTrue(glancing.main(['-d', self._CIRROS_URL]))
