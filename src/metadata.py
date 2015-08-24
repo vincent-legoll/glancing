@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
+import os
 import json
+import hashlib
 import xml.etree.ElementTree as et
 
 class StratusLabNS(object):
@@ -70,7 +72,33 @@ class MetaStratusLabJson(MetaDataJson):
         return ret
 
 class MetaCern(MetaDataJson):
-    pass
+
+    def __init__(self, jsonfile):
+        super(MetaCern, self).__init__(jsonfile)
+        self.all_images = {}
+        self.get_all_images()
+        self.data = None
+
+    def get_metadata(self, ident=None):
+        return self.all_images.get(ident, {})
+
+    def get_all_images(self):
+        il = self.json_obj["hv:imagelist"]["hv:images"]
+        for img_h in il:
+            img = img_h["hv:image"]
+            ret = {'checksums': {}}
+            ret['bytes'] = img["hv:size"]
+            ret['location'] = img["hv:uri"]
+            ret['format'] = 'raw'
+            ret['compression'] = os.path.splitext(ret['location'])[1].strip('.')
+            ret['os'] = img["sl:os"]
+            ret['os-arch'] = img["sl:arch"]
+            ret['os-version'] = img["sl:osversion"]
+            for algo in hashlib.algorithms:
+                key = "sl:checksum:" + algo
+                if key in img:
+                    ret['checksums'][algo] = img[key]
+            self.all_images[img["dc:identifier"]] = ret
 
 class MetaStratusLabXml(object):
     '''Parse the metadata .xml file, from the stratuslab marketplace
