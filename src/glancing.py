@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import os
 import sys
-import json
 import urllib
 import textwrap
 import urlparse
@@ -14,63 +13,60 @@ import utils
 import glance
 import multihash
 import decompressor
+import metadata as md
 
 from utils import vprint
-from metadata import MetaStratusLabJson, MetaStratusLabXml
 
 # Handle CLI options
 def do_argparse(sys_argv):
-    parser = argparse.ArgumentParser(description='Import VM images into OpenStack glance image registry, verify checksum(s), backup old images, etc...')
-
-    # Global options
-    parser.add_argument('-v', '--verbose', action='store_true',
-                        help='display additional information')
+    desc_help = textwrap.dedent('''
+        Import VM images into OpenStack glance image registry.
+        Verify checksum(s), image size, etc...
+        Backup old images being replaced.
+    ''')
+    parser = argparse.ArgumentParser(description=desc_help,
+        formatter_class=utils.AlmostRawFormatter)
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-f', '--force', action='store_true',
-                       help='import image into glance even if checksum verification failed')
+                       help='Import image into glance even if checksum verification failed')
     group.add_argument('-d', '--dry-run', dest='dryrun', action='store_true',
-                       help='do not import image into glance')
+                       help='Do not import image into glance')
+
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Display additional information')
 
     parser.add_argument('-n', '--name', dest='name', default=None,
-                        help='glance name of the image. Default value derived from image file name.')
+                        help='Name of the image in glance registry. Default value derived from image file name.')
 
-    # Sub parsers for local image, url or stratuslab json metadata
-    subparsers = parser.add_subparsers(dest='image_type')
-    parser_imag = subparsers.add_parser('image', help='import a VM image from a local file')
-    parser_url = subparsers.add_parser('url', help='import a VM image from a network location (URL)')
-    parser_json = subparsers.add_parser('json', help='import a VM image described by a metadata file (from the StratusLab marketplace) (https://marketplace.stratuslab.eu)')
-    parser_market = subparsers.add_parser('market', help='import a VM image described by an ID (from the StratusLab marketplace) (https://marketplace.stratuslab.eu)')
+    parser.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
+                        help='Keep temporary files (VM image & other)')
 
-    # StratusLab marketplace direct from UUID
-    parser_market.add_argument('market_id', metavar='UUID',
-                               help='a VM image ID from StratusLab marketplace')
-    parser_market.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
-                               help='keep temporary VM image & other files')
+    digests_help = ('''>>>
+        A colon-separated list of message digests of the image.
 
-    # JSON-specific options
-    parser_json.add_argument('jsonfile', metavar='FILE',
-                             help='a .json metadata file describing a VM image')
-    parser_json.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
-                             help='keep temporary VM image files')
+        This overrides / complements the checksums that are present in
+        metadata, if using the StratusLab marketplace.
 
-    digests_help = textwrap.dedent('''
-        colon-separated list of message digests of the image, algorithms are deduced
-        from checksum lengths, for example, an MD5 (32 chars) and a SHA-1 (40 chars):
+        Algorithms are deduced from checksum lengths.
+
+        For example, an MD5 (32 chars) and a SHA-1 (40 chars):
         "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
-    ''').strip()
+    ''')
+    parser.add_argument('-s', '--sums', dest='digests', help=digests_help)
 
-    # Local file-specific options
-    parser_imag.add_argument(dest='imagefile', metavar='FILE',
-                             help='a local VM image file, raw format')
-    parser_imag.add_argument('-s', '--digests', dest='digests', help=digests_help)
+    descriptor_help = textwrap.dedent('''>>>
+        This can be:
+          * a local VM image file (in "raw" format)
+          * a network location (URL)
+          * a StratusLab marketplace ID
+          * a StratusLab marketplace metadata file (in JSON or XML format)
 
-    # Network url-specific options
-    parser_url.add_argument(dest='url', metavar='URL',
-                            help='a network url VM image to download, raw format')
-    parser_url.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
-                            help='keep temporary VM image files')
-    parser_url.add_argument('-s', '--digests', dest='digests', help=digests_help)
+        The StratusLab marketplace is located here:
+
+          https://marketplace.stratuslab.eu
+    ''')
+    parser.add_argument('descriptor', metavar='DESC', help=descriptor_help)
 
     args = parser.parse_args(sys_argv)
 
@@ -123,17 +119,41 @@ def main(sys_argv=sys.argv[1:]):
 
     # Check glance availability early
     if not args.dryrun and not glance.glance_ok():
-        vprint('glance problem')
+        vprint('local glance command-line client problem')
+        return False
+
+    # Guess which mode are we operating in
+    image_type = None
+    d = args.descriptor
+    if d.startswith('http://') or d.startswith('https://'):
+        image_type = 'url'
+    elif os.path.exists(d):
+        ext = os.path.splitext(d)[1]
+        if ext == '.xml':
+            image_type = 'xml'
+        elif ext == '.json':
+            image_type = 'json'
+        else:
+            image_type = 'image'
+    else:
+        image_type = 'market'
+        if len(d) != 27:
+            vprint('probably invalid StratusLab ID')
+
+    if image_type is None:
+        vprint('Cannot guess mode of operation')
         return False
 
     # Prepare VM image metadata
-    if args.image_type == 'market':
+    if image_type == 'market':
         # Get xml metadata file from StratusLab marketplace
-        metadata_url = 'https://marketplace.stratuslab.eu/marketplace/metadata/' + args.market_id
-        local_metadata_file = get_url(metadata_url)
-        metadata = MetaStratusLabXml(local_metadata_file).get_metadata()
-    elif args.image_type == 'json':
-        metadata = MetaStratusLabJson(args.jsonfile).get_metadata()
+        metadata_url_base = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
+        local_metadata_file = get_url(metadata_url_base + args.descriptor)
+        metadata = md.MetaStratusLabXml(local_metadata_file).get_metadata()
+    elif image_type == 'json':
+        metadata = md.MetaStratusLabJson(args.descriptor).get_metadata()
+    elif image_type == 'xml':
+        metadata = md.MetaStratusLabXml(args.descriptor).get_metadata()
     else:
         metadata = {'checksums': {}, 'format': 'raw'}
 
@@ -143,18 +163,15 @@ def main(sys_argv=sys.argv[1:]):
         return False
 
     # Retrieve image in a local file
-    if args.image_type == 'image':
+    if image_type == 'image':
         # Already a local file
-        local_image_file = args.imagefile
-        if not os.path.exists(local_image_file):
-            vprint(local_image_file + ': file not found')
-            return False
+        local_image_file = args.descriptor
     else:
         # Download from network location
-        if args.image_type in ('json', 'market'):
+        if image_type in ('xml', 'json', 'market'):
             url = metadata['location']
-        elif args.image_type == 'url':
-            url = args.url
+        elif image_type == 'url':
+            url = args.descriptor
         local_image_file = get_url(url)
         if not local_image_file or not os.path.exists(local_image_file):
             vprint('cannot download from: ' + url)
@@ -165,23 +182,24 @@ def main(sys_argv=sys.argv[1:]):
     if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
         d = decompressor.Decompressor(local_image_file, ext=chext)
-        d.doit(delete=True)
+        d.doit(delete=(not args.keeptemps))
+        # Get rid of compression file extention
         local_image_file, ext = os.path.splitext(local_image_file)
         vprint(local_image_file + ': uncompressed file')
 
     # Choose VM image name
     name = args.name
     if name is None:
-        if args.image_type == 'image':
+        if image_type == 'image':
             name, ext = os.path.splitext(os.path.basename(local_image_file))
-        elif args.image_type == 'url':
-            name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(args.url)[2]))
-        elif args.image_type in ('json', 'market'):
+        elif image_type == 'url':
+            name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(url)[2]))
+        elif image_type in ('xml', 'json', 'market'):
             name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to be verified
-    if args.image_type not in ('json', 'market') and args.digests:
+    if args.digests:
         for dig in filter(None, args.digests.split(':')):
             dig_len = len(dig)
             if dig_len in multihash._LEN_TO_HASH:
@@ -219,7 +237,7 @@ def main(sys_argv=sys.argv[1:]):
         if len(metadata['checksums']) > 0:
             vprint(local_image_file + ': verifying checksums')
             verified = check_digests(local_image_file, metadata, args.force)
-        elif args.image_type not in ('json', 'market'):
+        elif image_type not in ('xml', 'json', 'market'):
             vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
         else:
             vprint(local_image_file + ': no checksum to verify found in metadata...')
@@ -255,7 +273,7 @@ def main(sys_argv=sys.argv[1:]):
             return False
 
     # Keep downloaded image file
-    if not args.image_type == 'image' and not args.keeptemps:
+    if not image_type == 'image' and not args.keeptemps:
         vprint(local_image_file + ': deleting temporary file')
         os.remove(local_image_file)
 
