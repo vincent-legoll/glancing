@@ -59,7 +59,7 @@ def do_argparse(sys_argv):
     ''')
     parser.add_argument('-s', '--sums', dest='digests', help=digests_help)
 
-    descriptor_help = textwrap.dedent('''>>>
+    descriptor_help = ('''>>>
         This can be:
           * a local VM image file (in "raw" format)
           * a network location (URL)
