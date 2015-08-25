@@ -158,14 +158,16 @@ def main(sys_argv=sys.argv[1:]):
     else:
         if args.cernlist:
             image_type = 'cern'
-        else:
+        elif len(d) == 27:
             image_type = 'market'
-            if len(d) == 27:
-                vprint('probably invalid StratusLab ID')
+        else:
+            vprint('probably invalid StratusLab marketplace ID')
+            return False
 
     if image_type is None:
         vprint('Cannot guess mode of operation')
         return False
+    vprint('Image type: ' + image_type)
 
     # Prepare VM image metadata
     if image_type == 'market':
