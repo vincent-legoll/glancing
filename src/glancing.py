@@ -191,7 +191,10 @@ def main(sys_argv=sys.argv[1:]):
     if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
         d = decompressor.Decompressor(local_image_file, ext=chext)
-        d.doit(delete=(not args.keeptemps))
+        res = d.doit(delete=(not args.keeptemps))
+        if not res:
+            vprint('cannot uncompress')
+            return False
         # Get rid of compression file extention
         local_image_file, ext = os.path.splitext(local_image_file)
         if ext != chext:
