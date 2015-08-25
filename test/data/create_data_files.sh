@@ -21,3 +21,24 @@ if [ ! -f random_1M_zip.bin.zip ]; then
   zip random_1M_zip.bin.zip random_1M_zip.bin
 fi
 rm -f random_1M_zip.bin
+
+ALL_DATA_FILES="random_*.bin random_*.bin.*"
+
+# One at a time
+md5sum    ${ALL_DATA_FILES} > MD5SUMS.txt
+sha1sum   ${ALL_DATA_FILES} > SHA1SUMS.txt
+sha224sum ${ALL_DATA_FILES} > SHA224SUMS.txt
+sha256sum ${ALL_DATA_FILES} > SHA256SUMS.txt
+sha384sum ${ALL_DATA_FILES} > SHA384SUMS.txt
+sha512sum ${ALL_DATA_FILES} > SHA512SUMS.txt
+
+# Do all at once
+../../src/multihash.py ${ALL_DATA_FILES}
+
+# Check validity agains system utilities generated files...
+for sum in *SUMS; do
+  cmp ${sum} ${sum}.txt || exit 42;
+done
+
+# All is good ? Remove duplicate files
+rm -f ./*SUMS.txt
