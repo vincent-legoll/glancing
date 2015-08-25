@@ -73,27 +73,34 @@ class MetaStratusLabJson(MetaDataJson):
 
 class MetaCern(MetaDataJson):
 
+    _RETKEY_TO_CERN = {
+        'bytes': "hv:size",
+        'location': "hv:uri",
+        'os': "sl:os",
+        'os-arch': "sl:arch",
+        'os-version': "sl:osversion",
+    }
+
     def __init__(self, jsonfile):
         super(MetaCern, self).__init__(jsonfile)
         self.all_images = {}
         self.get_all_images()
         self.data = None
 
-    def get_metadata(self, ident=None):
+    def get_metadata(self, ident):
         return self.all_images.get(ident, {})
 
     def get_all_images(self):
         il = self.json_obj["hv:imagelist"]["hv:images"]
         for img_h in il:
             img = img_h["hv:image"]
-            ret = {'checksums': {}}
-            ret['bytes'] = img["hv:size"]
-            ret['location'] = img["hv:uri"]
-            ret['format'] = 'raw'
-            ret['compression'] = os.path.splitext(ret['location'])[1].strip('.')
-            ret['os'] = img["sl:os"]
-            ret['os-arch'] = img["sl:arch"]
-            ret['os-version'] = img["sl:osversion"]
+            ret = {
+                'checksums': {},
+                'format': 'raw',
+                'compression': os.path.splitext(img["hv:uri"])[1].strip('.'),
+            }
+            for (key, val) in self._RETKEY_TO_CERN.iteritems():
+                ret[key] = img[val]
             for algo in hashlib.algorithms:
                 key = "sl:checksum:" + algo
                 if key in img:
