@@ -4,7 +4,8 @@ from __future__ import print_function
 
 import os
 import sys
-import urllib
+import urllib2
+import tempfile
 import textwrap
 import urlparse
 import argparse
@@ -80,13 +81,28 @@ def do_argparse(sys_argv):
 
     return args
 
-# Get uncompressed VM image file from the given url
+# Get compressed VM image file from the given url
 def get_url(url):
-    try:
-        fn, hdrs = urllib.urlretrieve(url)
-    except IOError as e:
+    if not url:
         return None
-    return fn
+    try:
+        url_f = urllib2.urlopen(url)
+    except urllib2.HTTPError as e:
+        if e.code == 404 and e.reason == 'Not Found':
+            vprint('404 Not found: ' + url)
+            return None
+        raise e
+    except urllib2.URLError as e:
+        vprint(str(e))
+        return None
+    with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
+        try:
+            utils.block_read_filedesc(url_f, fout.write, 4096)
+        except IOError as e:
+            vprint('cannot write temp file: ' + fout.name)
+            os.remove(fout_name)
+            return None
+    return fout.name
 
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata, replace_bads=False):
