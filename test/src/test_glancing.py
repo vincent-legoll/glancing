@@ -222,6 +222,8 @@ class TestGlancingUrlDryRun(unittest.TestCase):
         url = 'http://nulle.part.fr/nonexistent_file.txt'
         self.assertFalse(glancing.main(['-d', url]))
 
+# FIXME: get a new image list
+@unittest.skip("Obsolete CERN VM list file")
 class TestGlancingCern(unittest.TestCase):
 
     def glancing_test_cern(self):
