@@ -1,4 +1,6 @@
 *.pyc
+test/data/*SUMS
+test/data/*SUMS.txt
 test/data/*.bin
 test/data/*.zip
 test/data/*.bz2
