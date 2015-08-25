@@ -47,12 +47,23 @@ class Decompressor(object):
         self.opener = _EXT_MAP[sext]
 
     def doit(self, delete=False):
+        ret = True
         with self.opener(self.fin_name, 'rb') as fin:
+            delout = False
             with open(self.fout_name, 'wb+') as fout:
-                utils.block_read_filedesc(fin, fout.write, self.block_size)
+                try:
+                    utils.block_read_filedesc(fin, fout.write, self.block_size)
+                except IOError as e:
+                    if e not in utils.Exceptions(IOError('Not a gzipped file')):
+                        raise e
+                    delout = True
+                    ret = False
+            if delout:
+                os.remove(self.fout_name)
 
         if delete:
             os.remove(self.fin_name)
+        return ret
 
 def main(args=sys.argv[1:]):
     for fn in args:
