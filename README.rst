@@ -60,25 +60,36 @@ run it like the following to see the help:
 #. Automated Testing
 ====================
 
-In order to launch all the automated tests, just use the included script:
+Both `nose` & `py.test` can be used to run the test suite
+
+In order to launch all the automated tests, just use the included script,
+which use `nose` to collect the tests to run:
 
     $ ./run_tests.sh
 
+or just use:
+
+    $ py.test
+
 Or you can select only a single test to be run manually:
 
-    $ ./run_tests.sh test/src/test_glancing.py:TestGlancingMetadata.glancing_test_metadata_cirros_import_no_cksum
+    $ ./run_tests.sh test/src/test_utils.py:UtilsRunTest.test_utils_run_true
 
 First you give the test module test_XXX.py file, a colon, then the class,
 a dot, then the method from that class.
+
+The py.test way of doing manual test selection:
+
+    $ py.test test/src/test_utils.py::UtilsRunTest::test_utils_run_true
 
 The tests check for availability of a glance registry service to test
 images uploading. Just populate the traditionnal OpenStack variables,
 see environmentVars_. Or modify the ./test/openstack/admin.sh accordingly
 before launching the test suite.
 
-You can further extend the coverage, by modifying the following lines from
-./test/src/test_glancing.py file. They enable more tests, but will download
-a lot of big image files...
+You can further extend the coverage of the test suite, by modifying the
+following lines from ./test/src/test_glancing.py file. They enable more
+tests, but will download a lot of big image files...
 
     _HEAVY_TESTS = False
     _HUGE_TESTS = False
