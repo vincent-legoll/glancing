@@ -77,4 +77,5 @@ class TestMultihash(unittest.TestCase):
             'sha512': 'd91fa3b083266ba7a651570acc4803e07e1910bcacceae303eb3684e4119907170888997cc13aeea2effa823d51b3dff965800942893ef7db8513cb339e55ae6',
         }
         files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
-        self.assertEqual([devnull_checksums, random_checksums], multihash.main(files_to_hash))
+        expected = dict(zip(files_to_hash, [devnull_checksums, random_checksums]))
+        self.assertEqual(expected, multihash.main(files_to_hash))

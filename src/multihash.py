@@ -14,6 +14,7 @@ import os
 import sys
 import hashlib
 import subprocess
+import collections
 
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open(os.devnull, 'rw+b')
@@ -72,13 +73,31 @@ class multihash_serial_exec(object):
             return out[:_HASH_TO_LEN[hash_name]]
         return None
 
+def multisum(digs):
+    '''Emulate md5sum & its family, but computing all the message
+       digests in parallel, only reading each file once.
+    '''
+    data = collections.OrderedDict()
+    for (filename, digests) in digs.iteritems():
+        for (hash_alg, digest) in digests.iteritems():
+            fn = hash_alg.upper() + 'SUMS'
+            lst_files = data.get(fn, [])
+            lst_files.append(digest + '  ' + filename + '\n')
+            data[fn] = lst_files
+    for (filename, lines) in data.iteritems():
+        if os.path.exists(filename):
+            print('ERROR: file already exists:', filename)
+            sys.exit(2)
+        with open(filename, 'wb') as fout:
+            fout.writelines(lines)
+
 def main(args=sys.argv[1:]):
-    ret = []
+    ret = collections.OrderedDict()
     for arg in args:
         mh = multihash_hashlib()
         mh.hash_file(arg)
-        ret.append(mh.hexdigests())
+        ret[arg] = mh.hexdigests()
     return ret
 
 if __name__ == '__main__':
-    print main()
+    multisum(main())
