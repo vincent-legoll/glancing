@@ -14,20 +14,20 @@ sys.path.append(get_local_path('..', '..', 'src'))
 
 import utils
 
-class TestUtils(unittest.TestCase):
+class UtilsTest(unittest.TestCase):
 
-    def test_get_verbose_is_boolean(self):
+    def test_utils_get_verbose_is_boolean(self):
         v = utils.get_verbose()
         self.assertTrue((v is True) or (v is False))
 
-    def test_set_verbose_toggle(self):
+    def test_utils_set_verbose_toggle(self):
         v = utils.get_verbose()
         utils.set_verbose()
         self.assertFalse(v == utils.get_verbose())
         utils.set_verbose()
         self.assertTrue(v == utils.get_verbose())
 
-    def test_set_verbose_value(self):
+    def test_utils_set_verbose_value(self):
         v = utils.get_verbose()
         utils.set_verbose(True)
         self.assertTrue(utils.get_verbose() is True)
@@ -48,46 +48,46 @@ class TestUtils(unittest.TestCase):
             output.getvalue()
         utils.set_verbose(v)
 
-    def test_vprint_verbose(self):
+    def test_utils_vprint_verbose(self):
         self.vprint_verbose(True, utils.test_name())
 
-    def test_vprint_silent(self):
+    def test_utils_vprint_silent(self):
         self.vprint_verbose(False, utils.test_name())
 
-    def utils_test_test_name(self):
-        self.assertEqual(utils.test_name(), 'utils_test_test_name')
+    def test_utils_test_name(self):
+        self.assertEqual(utils.test_name(), 'test_utils_test_name')
 
     @unittest.skip('TODO')
-    def utils_test_block_read_filename(self):
+    def test_utils_block_read_filename(self):
         pass
 
     @unittest.skip('TODO')
-    def utils_test_block_read_filedesc(self):
+    def test_utils_block_read_filedesc(self):
         pass
 
-class TestUtilsRun(unittest.TestCase):
+class UtilsRunTest(unittest.TestCase):
 
-    def utils_test_run_true(self):
+    def test_utils_run_true(self):
         self.assertTrue(utils.run(['true'])[0])
 
-    def utils_test_run_no_exe(self):
+    def test_utils_run_no_exe(self):
         self.assertFalse(utils.run(['n o t h i n g'])[0])
 
-    def utils_test_run_false(self):
+    def test_utils_run_false(self):
         self.assertFalse(utils.run(['false'])[0])
 
-    def utils_test_run_false(self):
+    def test_utils_run_false(self):
         good, retcode, out, err = utils.run(['ls', '--format'], out=True, err=True)
         self.assertFalse(good)
         self.assertFalse(0 == retcode)
         self.assertEqual('', out)
         self.assertFalse('' == err)
 
-    def utils_test_run_not_in_path(self):
+    def test_utils_run_not_in_path(self):
         with utils.environ('PATH'):
             self.assertFalse(utils.run(['true'])[0])
 
-    def utils_test_run_file(self):
+    def test_utils_run_file(self):
         test_file = '/tmp/' + utils.test_name()
         if os.path.exists(test_file):
             os.remove(test_file)
@@ -96,22 +96,22 @@ class TestUtilsRun(unittest.TestCase):
         self.assertTrue(utils.run(['rm', test_file])[0])
         self.assertFalse(os.path.exists(test_file))
 
-    def utils_test_run_output(self):
+    def test_utils_run_output(self):
         good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True)
         self.assertTrue(good)
         self.assertTrue(retcode == 0)
         self.assertEqual(out, 'TOTO')
         self.assertIsNone(err)
 
-class TestUtilsStringio(unittest.TestCase):
+class UtilsStringioTest(unittest.TestCase):
 
-    def test_stringio_write(self):
+    def test_utils_stringio_write(self):
         with utils.stringio() as out:
             out.write('TOTO')
             self.assertEqual('TOTO', out.getvalue())
         self.assertTrue(out.closed)
 
-    def test_stringio_read(self):
+    def test_utils_stringio_read(self):
         with utils.stringio() as out:
             self.assertEqual('', out.getvalue())
             self.assertEqual('', out.read())
@@ -135,7 +135,7 @@ class TestUtilsStringio(unittest.TestCase):
             self.assertEqual('TITITITI', out.read())
         self.assertTrue(out.closed)
 
-    def test_fileio_read(self):
+    def test_utils_fileio_read(self):
         test_file = 'test.txt'
         utils.run(['touch', test_file])
         with utils.cleanup(['rm', test_file]):
@@ -157,9 +157,9 @@ class TestUtilsStringio(unittest.TestCase):
                 self.assertEqual('TITITITI', out.read())
             self.assertTrue(out.closed)
 
-class TestUtilsRedirect(unittest.TestCase):
+class UtilsRedirectTest(unittest.TestCase):
 
-    def test_print(self):
+    def test_utils_print(self):
         with utils.stringio() as output:
             with utils.redirect('stdout', output):
                 print('TOTOTITI')
@@ -168,7 +168,7 @@ class TestUtilsRedirect(unittest.TestCase):
         with self.assertRaises(ValueError):
             output.getvalue()
 
-    def test_close(self):
+    def test_utils_close(self):
         tmp = None
         with utils.redirect('stdout'):
             print('toto')
@@ -178,7 +178,7 @@ class TestUtilsRedirect(unittest.TestCase):
         self.assertFalse(sys.stdout.closed)
         self.assertTrue(tmp.closed)
 
-class TestUtilsDevnull(unittest.TestCase):
+class UtilsDevnullTest(unittest.TestCase):
 
     def _cleanup_files(self):
         if os.path.exists('test_devnull_out.txt'):
@@ -208,7 +208,7 @@ class TestUtilsDevnull(unittest.TestCase):
         self.err.close()
         self._cleanup_files()
 
-    def utils_test_devnull_print(self):
+    def test_utils_devnull_print(self):
 
         print('samarche')
         with utils.devnull('stdout'):
@@ -221,7 +221,7 @@ class TestUtilsDevnull(unittest.TestCase):
         self.assertEqual(open('test_devnull_err.txt', 'rb').read(), 'sonreup\n')
         self.assertEqual(open('test_devnull_out.txt', 'rb').read(), 'samarche\nsamarchedenouveau\n')
 
-    def utils_test_devnull_print_explicit(self):
+    def test_utils_devnull_print_explicit(self):
 
         print('samarche', file=sys.stdout)
         with utils.devnull('stdout'):
@@ -234,7 +234,7 @@ class TestUtilsDevnull(unittest.TestCase):
         self.assertEqual(open('test_devnull_err.txt', 'rb').read(), 'sonreup\n')
         self.assertEqual(open('test_devnull_out.txt', 'rb').read(), 'samarche\nsamarchedenouveau\n')
 
-    def utils_test_devnull_write(self):
+    def test_utils_devnull_write(self):
 
         sys.stdout.write('samarche')
         with utils.devnull('stdout'):
@@ -247,7 +247,7 @@ class TestUtilsDevnull(unittest.TestCase):
         self.assertEqual(open('test_devnull_err.txt', 'rb').read(), 'sonreup')
         self.assertEqual(open('test_devnull_out.txt', 'rb').read(), 'samarchesamarchedenouveau')
 
-class TestUtilsEnviron(unittest.TestCase):
+class UtilsEnvironTest(unittest.TestCase):
 
     def setUp(self):
         self._old_toto_was_here = False
@@ -260,19 +260,19 @@ class TestUtilsEnviron(unittest.TestCase):
         if self._old_toto_was_here:
             os.environ['TOTO'] = self._old_toto_val
 
-    def utils_test_environ_not_existent_val(self):
+    def test_utils_environ_not_existent_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         with utils.environ('TOTO', 'titi'):
             self.assertEqual('titi', os.environ['TOTO'])
         self.assertTrue('TOTO' not in os.environ)
 
-    def utils_test_environ_not_existent_no_val(self):
+    def test_utils_environ_not_existent_no_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         with utils.environ('TOTO'):
             self.assertEqual('', os.environ['TOTO'])
         self.assertTrue('TOTO' not in os.environ)
 
-    def utils_test_environ_existent_val(self):
+    def test_utils_environ_existent_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         os.environ['TOTO'] = 'tutu'
         self.assertEqual('tutu', os.environ['TOTO'])
@@ -280,7 +280,7 @@ class TestUtilsEnviron(unittest.TestCase):
             self.assertEqual('titi', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
 
-    def utils_test_environ_existent_no_val(self):
+    def test_utils_environ_existent_no_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         os.environ['TOTO'] = 'tutu'
         self.assertEqual('tutu', os.environ['TOTO'])
@@ -288,9 +288,9 @@ class TestUtilsEnviron(unittest.TestCase):
             self.assertEqual('', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
 
-class TestUtilsCleanup(unittest.TestCase):
+class UtilsCleanupTest(unittest.TestCase):
 
-    def utils_test_cleanup(self):
+    def test_utils_cleanup(self):
         test_file = '/tmp/' + utils.test_name()
         self.assertFalse(os.path.exists(test_file))
         with utils.cleanup(['rm', test_file]):
@@ -301,7 +301,7 @@ class TestUtilsCleanup(unittest.TestCase):
 zde = ZeroDivisionError('integer division or modulo by zero')
 ae = ArithmeticError('integer division or modulo by zero')
 
-class TestComparableExc(unittest.TestCase):
+class ComparableExcTest(unittest.TestCase):
 
     def setUp(self):
         try:
@@ -309,7 +309,7 @@ class TestComparableExc(unittest.TestCase):
         except Exception as e:
             self.e = e
 
-    def utils_test_cexc_simple_empties(self):
+    def test_utils_cexc_simple_empties(self):
 
         # Empty iterables
         self.assertNotIn(self.e, [])
@@ -328,7 +328,7 @@ class TestComparableExc(unittest.TestCase):
         self.assertIn(self.e, {self.e: 1})
         self.assertNotIn(self.e, {1: self.e})
 
-    def utils_test_cexc_compatible_excs(self):
+    def test_utils_cexc_compatible_excs(self):
 
         # Compatible Exceptions
         self.assertIn(self.e, utils.Exceptions(zde))
@@ -341,7 +341,7 @@ class TestComparableExc(unittest.TestCase):
             ArithmeticError('integer division or modulo by zero'),
         ))
 
-    def utils_test_cexc_sets(self):
+    def test_utils_cexc_sets(self):
 
         to_test_in = [(zde,), [zde], {zde}, (ae, zde), [ae, zde]]
         to_test_not_in = [(ae,), [ae], {ae}]
@@ -354,7 +354,7 @@ class TestComparableExc(unittest.TestCase):
             self.assertNotIn(self.e, utils.Exceptions(set(it)))
             self.assertNotIn(self.e, utils.Exceptions(frozenset(it)))
 
-    def utils_test_cexc_hashes(self):
+    def test_utils_cexc_hashes(self):
 
         to_test_in = [{zde: 1}, {ae: 1, zde: 2}, {zde: False, None: 0, True: 1, False: 0}]
         to_test_not_in = [{1: zde}, {1: zde, 1: ae}, {ae: False, None: 0, True: 1, False: 0}, {ae: 1}, {1: ae}]
@@ -365,7 +365,7 @@ class TestComparableExc(unittest.TestCase):
         for it in to_test_not_in:
             self.assertNotIn(self.e, utils.Exceptions(it))
 
-class TestExceptions(unittest.TestCase):
+class ExceptionsTest(unittest.TestCase):
 
     excs = (
         Exception,
@@ -395,7 +395,7 @@ class TestExceptions(unittest.TestCase):
         None,
     )
 
-    def utils_test_loop(self):
+    def test_utils_loop(self):
 
         for exc in self.excs:
             try:

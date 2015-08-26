@@ -24,9 +24,9 @@ good_keys = set([
     'compression',
 ])
 
-class TestMetaDataJson(unittest.TestCase):
+class MetaDataJsonTest(unittest.TestCase):
 
-    def metadata_test(self):
+    def test_metadata_json(self):
         fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
         jsonfile = get_local_path('..', 'stratuslab', fn)
         m = metadata.MetaStratusLabJson(jsonfile)
@@ -36,9 +36,9 @@ class TestMetaDataJson(unittest.TestCase):
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
-class TestMetaDataCern(unittest.TestCase):
+class MetaDataCernTest(unittest.TestCase):
 
-    def metadata_test(self):
+    def test_metadata_cern(self):
         fn = 'hepix_signed_image_list'
         jsonfile = get_local_path('..', 'CERN', fn)
         m = metadata.MetaCern(jsonfile)
@@ -48,9 +48,9 @@ class TestMetaDataCern(unittest.TestCase):
             'https://cernvm.cern.ch/releases/25/'
             'cernvm-batch-node-2.7.2-1-2-x86_64.hdd.gz')
 
-class TestMetaDataXml(unittest.TestCase):
+class MetaDataXmlTest(unittest.TestCase):
 
-    def metadata_test(self):
+    def test_metadata_xml(self):
         fn = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml'
         xmlfile = get_local_path('..', 'stratuslab', fn)
         m = metadata.MetaStratusLabXml(xmlfile)
@@ -60,7 +60,7 @@ class TestMetaDataXml(unittest.TestCase):
             'http://www.apc.univ-paris7.fr/Downloads/comput/'
             'CentOS7.qcow2.gz')
 
-class TestMetaDataJsonFixture(unittest.TestCase):
+class MetaDataJsonFixtureTest(unittest.TestCase):
 
     fn = 'test.json'
 
@@ -70,7 +70,7 @@ class TestMetaDataJsonFixture(unittest.TestCase):
 
     tearDown = setUp
 
-    def metadata_test_not_dict(self):
+    def test_metadata_json_fixture_not_dict(self):
         with open(self.fn, 'wb') as jsonf:
             jsonf.write('""\n')
         with devnull('stderr'):

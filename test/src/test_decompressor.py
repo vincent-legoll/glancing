@@ -14,7 +14,7 @@ import decompressor
 
 _TEST_FILES = ['random_1M_bz2.bin.bz2', 'random_1M_gz.bin.gz', 'random_1M_zip.bin.zip']
 
-class TestDecompressorSimple(unittest.TestCase):
+class DecompressorSimpleTest(unittest.TestCase):
 
     testdir = '/tmp/TestDecompressorSimple'
 
@@ -29,7 +29,7 @@ class TestDecompressorSimple(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.testdir)
 
-    def decompressor_test_simple(self):
+    def test_decompressor_simple(self):
         for fn in _TEST_FILES:
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
@@ -38,7 +38,7 @@ class TestDecompressorSimple(unittest.TestCase):
             self.assertTrue(os.path.exists(name))
             self.assertTrue(os.path.exists(local_path))
 
-    def decompressor_test_simple_delete(self):
+    def test_decompressor_simple_delete(self):
         for fn in _TEST_FILES:
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
@@ -47,13 +47,13 @@ class TestDecompressorSimple(unittest.TestCase):
             self.assertTrue(os.path.exists(name))
             self.assertFalse(os.path.exists(local_path))
 
-    def decompressor_test_main(self):
+    def test_decompressor_main(self):
         test_files = [os.path.join(self.testdir, fn) for fn in _TEST_FILES]
         self.assertTrue(decompressor.main(test_files))
 
-class TestDecompressorErrors(unittest.TestCase):
+class DecompressorErrorsTest(unittest.TestCase):
 
-    def decompressor_test_good_ext(self):
+    def test_decompressor_good_ext(self):
         for ext in decompressor._EXT_MAP:
             with self.assertRaises(ValueError):
                 d = decompressor.Decompressor(os.devnull, ext)
@@ -62,14 +62,14 @@ class TestDecompressorErrors(unittest.TestCase):
 
             d = decompressor.Decompressor('/tmp/nonexistent' + ext)
 
-    def decompressor_test_bad_ext_param(self):
+    def test_decompressor_bad_ext_param(self):
         with self.assertRaises(ValueError):
             d = decompressor.Decompressor(os.devnull, '.txt')
 
-    def decompressor_test_bad_ext(self):
+    def test_decompressor_bad_ext(self):
         with self.assertRaises(decompressor.FileExtensionError):
             d = decompressor.Decompressor('/tmp/nonexistent.txt')
 
-    def decompressor_test_nonexistent(self):
+    def test_decompressor_nonexistent(self):
         with self.assertRaises(decompressor.FileExtensionError):
             d = decompressor.Decompressor('/tmp/nonexistent')

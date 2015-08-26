@@ -11,9 +11,9 @@ sys.path.append(get_local_path('..', '..', 'src'))
 
 import multihash
 
-class TestMultihash(unittest.TestCase):
+class MultihashTest(unittest.TestCase):
 
-    def multihash_test_files(self):
+    def test_multihash_files(self):
         files = [os.devnull, 'random_1M.bin', 'random_5M.bin']
         for fn in files:
             local_path = get_local_path('..', 'data', fn)
@@ -23,7 +23,7 @@ class TestMultihash(unittest.TestCase):
             mhp.hash_file(local_path)
             self.assertEquals(mhs.hexdigests(), mhp.hexdigests())
 
-    def multihash_test_nonexistent(self):
+    def test_multihash_nonexistent(self):
         mhs = multihash.multihash_serial_exec()
         with self.assertRaises(IOError):
             mhs.hash_file('/tmp/nonexistent')
@@ -32,21 +32,21 @@ class TestMultihash(unittest.TestCase):
         with self.assertRaises(IOError):
             mhp.hash_file('/tmp/nonexistent')
 
-    def multihash_test_string_hashlib(self):
+    def test_multihash_string_hashlib(self):
         mh = multihash.multihash_hashlib()
         mh.update('toto')
         self.assertEquals(mh.hexdigests()['md5'], 'f71dbe52628a3f83a77ab494817525c6')
         mh.update('titi')
         self.assertEquals(mh.hexdigests()['md5'], '92fdff5b8595ef3f9ac0de664ce21532')
 
-    def multihash_test_gethash_serial(self):
+    def test_multihash_gethash_serial(self):
         mh = multihash.multihash_serial_exec()
         self.assertEquals(mh.get_hash(os.devnull, 'md5'), 'd41d8cd98f00b204e9800998ecf8427e')
         self.assertIsNone(mh.get_hash('/tmp/nonexistent', 'md5'))
         with self.assertRaises(OSError):
             mh.get_hash(os.devnull, 'nonexistent_hash_algo')
 
-    def multihash_test_string_serial(self):
+    def test_multihash_string_serial(self):
         mh = multihash.multihash_serial_exec()
         with open('test.txt', 'wb') as test_file:
             test_file.write('toto')
@@ -59,7 +59,7 @@ class TestMultihash(unittest.TestCase):
             self.assertEquals(mh.hexdigests()['md5'], '92fdff5b8595ef3f9ac0de664ce21532')
         os.remove('test.txt')
 
-    def multihash_test_main(self):
+    def test_multihash_main(self):
         devnull_checksums = {
             'md5': 'd41d8cd98f00b204e9800998ecf8427e',
             'sha1': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',

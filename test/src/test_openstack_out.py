@@ -73,28 +73,28 @@ pb = '''\
 
 '''
 
-class TestOpenstackOutMB(unittest.TestCase):
+class OpenstackOutMBTest(unittest.TestCase):
 
-    def test_map_block_pb(self):
+    def test_openstack_out_map_block_pb(self):
         b = openstack_out.map_block(pb)
         self.assertEqual(b, {'': '', 'UN': 'DEUX'})
         # should be 3, but there are collisions in the map
         self.assertEqual(len(b), 2)
 
-    def test_map_block_gl(self):
+    def test_openstack_out_map_block_gl(self):
         b = openstack_out.map_block(glance_image_show)
         self.assertEqual(b['checksum'], 'ee1eca47dc88f4879d8a229cc70a07c6')
         self.assertEqual(b['id'], '185beafd-c5fc-4877-bbcc-e49a8d3f03ed')
         # should be 3, but there are collisions in the map
         self.assertEqual(len(b), 15)
 
-    def test_map_block_ne(self):
+    def test_openstack_out_map_block_ne(self):
         b = openstack_out.map_block(neutron_agent_list)
         self.assertEqual(b['75b1db74-fea4-46ed-8133-2eefe1155074'], ['L3 agent', 'c7-netw', 'xxx', 'True'])
         # 5 elems per line...
         self.assertEqual(len(b), 5)
 
-class TestOpenstackOutPB(unittest.TestCase):
+class OpenstackOutPBTest(unittest.TestCase):
 
     def test_openstack_out_parse_block_header_pb(self):
         h, b = openstack_out.parse_block(pb)
