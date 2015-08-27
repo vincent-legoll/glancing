@@ -412,3 +412,21 @@ class ExceptionsTest(unittest.TestCase):
                 a = list(self.excs)
                 a.remove(exc)
                 self.assertNotIn(e, utils.Exceptions(a))
+
+class AlmostRawFormatterTest(unittest.TestCase):
+
+    def test_split_lines(self):
+        rf = utils.AlmostRawFormatter('prog_name')
+        with self.assertRaises(ValueError):
+            rf._split_lines('', 0)
+        test_vals = (
+            ('', [], []),
+            ('toto', ['toto'], ['toto']),
+            ('toto\ntiti', ['toto', 'titi'], ['toto', 'titi']),
+            ('toto\ntiti\n', ['toto', 'titi'], ['toto', 'titi']),
+            ('toto\n\ntiti\n', ['toto', 'titi'], ['toto', '', 'titi']),
+            ('toto\n\n\ttiti\n', ['toto', 'titi'], ['toto', '', '\ttiti']),
+        )
+        for (test_val, expected, expected_pref) in test_vals:
+            self.assertEqual(expected, rf._split_lines(test_val, 7))
+            self.assertEqual(expected_pref, rf._split_lines(rf._PREFIX + test_val, 7))
