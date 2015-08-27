@@ -6,7 +6,7 @@ import unittest
 
 from tutils import get_local_path
 
-# Setup PYTHONPATH for glancing
+# Setup PYTHONPATH for glancing, utils
 sys.path.append(get_local_path('..', '..', 'src'))
 
 from utils import devnull, environ, test_name, run, cleanup
