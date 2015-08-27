@@ -8,3 +8,5 @@ test/data/*.gz
 test/images
 cover
 .coverage
+.tox
+Glancing.egg-info
