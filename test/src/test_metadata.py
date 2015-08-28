@@ -39,14 +39,14 @@ class MetaDataJsonTest(unittest.TestCase):
 class MetaDataCernTest(unittest.TestCase):
 
     def test_metadata_cern(self):
-        fn = 'hepix_signed_image_list'
+        fn = 'test_image_list'
         jsonfile = get_local_path('..', 'CERN', fn)
         m = metadata.MetaCern(jsonfile)
-        md = m.get_metadata('623b0bc7-abc2-4961-8700-53e358772a96')
+        md = m.get_metadata('deadbabe-f00d-beef-cafe-b1ab1ab1a666')
         self.assertEqual(set(md.keys()), good_keys)
         self.assertEqual(md['location'],
-            'https://cernvm.cern.ch/releases/25/'
-            'cernvm-batch-node-2.7.2-1-2-x86_64.hdd.gz')
+            'http://download.cirros-cloud.net/0.3.4/'
+            'cirros-0.3.4-i386-disk.img')
 
 class MetaDataXmlTest(unittest.TestCase):
 
