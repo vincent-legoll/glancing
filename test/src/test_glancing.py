@@ -139,6 +139,16 @@ class GlancingImageTest(TestGlancingImageTtylinuxBase):
             self.assertTrue(glancing.main(['-f', '-n', test_name(),
                 self._TTYLINUX_FILE, '-s', '0' * 32]))
 
+class GlancingMetadataCernTest(unittest.TestCase):
+
+    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+    def test_glancing_metadata_cern_cirros_import(self):
+        # 12 MB
+        mdfile = get_local_path('..', 'CERN', 'test_image_list')
+        with cleanup(['glance', 'image-delete', test_name()]):
+            self.assertTrue(glancing.main(['-v', '-n', test_name(), '-c',
+                mdfile, '-k', "deadbabe-f00d-beef-cafe-b1ab1ab1a666"]))
+
 class GlancingMetadataTest(unittest.TestCase):
 
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
