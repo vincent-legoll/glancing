@@ -11,6 +11,7 @@ High priority list:
   os.remove (--keep-temps=False) after import (--dry-run=False)
   no name for url, json, market
   size NOK + [no-]force
+  -s and metadata overriding checksums
 
 - take checksums from : distro files
   check gpg signature
