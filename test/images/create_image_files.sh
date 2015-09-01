@@ -21,3 +21,7 @@ fi
 if [ ! -f cirros-MD5SUMS ]; then
     wget -O cirros-MD5SUMS http://download.cirros-cloud.net/0.3.4/MD5SUMS
 fi
+
+if [ ! -f cirros-SHA1SUMS ]; then
+    sha1sum cirros-0.3.4-* > cirros-SHA1SUMS
+fi
