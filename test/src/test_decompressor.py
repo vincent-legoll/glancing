@@ -33,7 +33,7 @@ class DecompressorSimpleTest(unittest.TestCase):
         for fn in _TEST_FILES:
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
-            d.doit()
+            self.assertTrue(d.doit())
             name, sext = os.path.splitext(local_path)
             self.assertTrue(os.path.exists(name))
             self.assertTrue(os.path.exists(local_path))
@@ -42,7 +42,7 @@ class DecompressorSimpleTest(unittest.TestCase):
         for fn in _TEST_FILES:
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
-            d.doit(delete=True)
+            self.assertTrue(d.doit(delete=True))
             name, sext = os.path.splitext(local_path)
             self.assertTrue(os.path.exists(name))
             self.assertFalse(os.path.exists(local_path))
@@ -73,3 +73,7 @@ class DecompressorErrorsTest(unittest.TestCase):
     def test_decompressor_nonexistent(self):
         with self.assertRaises(decompressor.FileExtensionError):
             d = decompressor.Decompressor('/tmp/nonexistent')
+
+if __name__ == '__main__':
+    import pytest
+    pytest.main(['-x', '--pdb', __file__])
