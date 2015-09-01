@@ -115,6 +115,21 @@ class GlancingImageDryRunCoreosTest(unittest.TestCase):
         self.assertTrue(glancing.main(['-d', imgfile, '-s',
             md5 + ':' + md5]))
 
+class GlancingCirrosImageTest(unittest.TestCase):
+
+    _CIRROS_FILE = get_local_path('..', 'images', 'cirros-0.3.4-i386-disk.img')
+    _CIRROS_SUM = get_local_path('..', 'images', 'cirros-MD5SUMS')
+
+    def test_glancing_file_dryrun_good_sum(self):
+        self.assertTrue(glancing.main(['-d', '-n', test_name(),
+            self._CIRROS_FILE, '-S', self._CIRROS_SUM]))
+
+    @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+    def test_glancing_file_import_good_sum(self):
+        with cleanup(['glance', 'image-delete', test_name()]):
+            self.assertTrue(glancing.main(['-n', test_name(),
+                self._CIRROS_FILE, '-S', self._CIRROS_SUM]))
+
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlancingImageTest(TestGlancingImageTtylinuxBase):
 
@@ -245,6 +260,7 @@ class GlancingCernTest(unittest.TestCase):
 class BaseGlancingUrl(unittest.TestCase):
 
     _CIRROS_URL = 'http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img'
+    _CIRROS_SUM = 'http://download.cirros-cloud.net/0.3.4/MD5SUMS'
     _CIRROS_MD5 = '79b4436412283bb63c2cba4ac796bcd9'
 
 class GlancingUrlDryRunCirrosTest(BaseGlancingUrl):
@@ -255,6 +271,8 @@ class GlancingUrlDryRunCirrosTest(BaseGlancingUrl):
     def test_glancing_url_md5(self):
         self.assertTrue(glancing.main(['-d', self._CIRROS_URL,
                                        '-s', self._CIRROS_MD5]))
+        self.assertTrue(glancing.main(['-d', self._CIRROS_URL,
+                                       '-S', self._CIRROS_SUM]))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlancingUrlImportTest(BaseGlancingUrl):
@@ -283,4 +301,9 @@ class GlancingUrlImportTest(BaseGlancingUrl):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-n', test_name(),
                 self._CIRROS_URL, '-s', self._CIRROS_MD5]))
+
+    def test_glancing_url_import_good_sum(self):
+        with cleanup(['glance', 'image-delete', test_name()]):
+            self.assertTrue(glancing.main(['-n', test_name(),
+                self._CIRROS_URL, '-S', self._CIRROS_SUM]))
 
