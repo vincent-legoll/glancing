@@ -17,21 +17,26 @@ import subprocess
 import collections
 
 if 'DEVNULL' not in dir(subprocess):
-    subprocess.DEVNULL = open(os.devnull, 'rw+b')
+    subprocess.DEVNULL = open(os.devnull, 'r+b')
 
 import utils
 
+try:
+    _HASH_ALGOS = hashlib.algorithms
+except AttributeError:
+    _HASH_ALGOS = hashlib.algorithms_guaranteed
+
 # Mapping from algorithm to digest length
-_HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in hashlib.algorithms }
+_HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in _HASH_ALGOS }
 
 # Mapping from digest length to algorithm
-_LEN_TO_HASH = { hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in hashlib.algorithms }
+_LEN_TO_HASH = { hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in _HASH_ALGOS }
 
 class multihash_hashlib(object):
     '''Compute multiple message digests in parallel, using python's hashlib
     '''
 
-    def __init__(self, hash_names=hashlib.algorithms, block_size=4096):
+    def __init__(self, hash_names=_HASH_ALGOS, block_size=4096):
         self.data = {hash_name: hashlib.__dict__[hash_name]() for hash_name in hash_names}
         self.block_size = block_size
 
@@ -49,7 +54,7 @@ class multihash_serial_exec(object):
     '''Compute multiple message digests, one at a time, using external programs
     '''
 
-    def __init__(self, hash_names=hashlib.algorithms):
+    def __init__(self, hash_names=_HASH_ALGOS):
         self.hexdigests_data = {hash_name: '' for hash_name in hash_names}
 
     def hexdigests(self):
