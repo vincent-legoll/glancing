@@ -7,6 +7,8 @@ import json
 import hashlib
 import xml.etree.ElementTree as et
 
+import decompressor
+
 class StratusLabNS(object):
 
     _NS_TO_URL_PREFIXES = {
@@ -97,8 +99,11 @@ class MetaCern(MetaDataJson):
             ret = {
                 'checksums': {},
                 'format': 'raw',
-                'compression': os.path.splitext(img["hv:uri"])[1].strip('.'),
+                'compression': None,
             }
+            ext = os.path.splitext(img["hv:uri"])[1]
+            if ext in decompressor._EXT_MAP:
+                ret['compression'] = ext.strip('.')
             for (key, val) in self._RETKEY_TO_CERN.iteritems():
                 ret[key] = img[val]
             for algo in hashlib.algorithms:
