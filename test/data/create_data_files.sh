@@ -1,5 +1,13 @@
 #! /bin/sh
 
+if [ ! -f zero_length.bin ]; then
+  touch length_zero.bin
+fi
+
+if [ ! -f one_length.bin ]; then
+  echo > length_one.bin
+fi
+
 for i in 1 5 10 25 50 75 100 200 300 400 500 750 1000; do
   [ -f "random_${i}M.bin" ] || dd if=/dev/urandom of="random_${i}M.bin" bs=1M count=${i};
 done
