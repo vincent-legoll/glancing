@@ -8,15 +8,19 @@ import types
 import inspect
 import argparse
 import textwrap
-import StringIO
 import functools
 import subprocess
 import collections
 
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
+
 from contextlib import contextmanager
 
 if 'DEVNULL' not in dir(subprocess):
-    subprocess.DEVNULL = open(os.devnull, 'rw+b')
+    subprocess.DEVNULL = open(os.devnull, 'r+b')
 
 _VERBOSE = False
 
@@ -61,7 +65,7 @@ class redirect(object):
         self._oldiodesc_name = iodesc_name
         if iofile is None:
             self._opened = True
-            self._iofile = open(os.devnull, 'w+b')
+            self._iofile = open(os.devnull, 'r+b')
         else:
             self._opened = False
             self._iofile = iofile
