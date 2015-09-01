@@ -118,17 +118,27 @@ class GlancingImageDryRunCoreosTest(unittest.TestCase):
 class GlancingCirrosImageTest(unittest.TestCase):
 
     _CIRROS_FILE = get_local_path('..', 'images', 'cirros-0.3.4-i386-disk.img')
-    _CIRROS_SUM = get_local_path('..', 'images', 'cirros-MD5SUMS')
+    _CIRROS_MD5 = get_local_path('..', 'images', 'cirros-MD5SUMS')
+    _CIRROS_SHA1 = get_local_path('..', 'images', 'cirros-SHA1SUMS')
+    _CIRROS_CHK = '79b4436412283bb63c2cba4ac796bcd9'
 
     def test_glancing_file_dryrun_good_sum(self):
         self.assertTrue(glancing.main(['-d', '-n', test_name(),
-            self._CIRROS_FILE, '-S', self._CIRROS_SUM]))
+            self._CIRROS_FILE, '-S', self._CIRROS_MD5]))
+        self.assertTrue(glancing.main(['-d', '-n', test_name(),
+            self._CIRROS_FILE, '-S', self._CIRROS_SHA1]))
+        self.assertTrue(glancing.main(['-d', '-n', test_name(),
+            self._CIRROS_FILE, '-S', self._CIRROS_SHA1, '-S', self._CIRROS_MD5]))
+        self.assertTrue(glancing.main(['-d', '-n', test_name(),
+            self._CIRROS_FILE, '-S', self._CIRROS_MD5, '-s', self._CIRROS_CHK]))
+        self.assertTrue(glancing.main(['-d', '-n', test_name(),
+            self._CIRROS_FILE, '-s', self._CIRROS_CHK, '-S', self._CIRROS_SHA1]))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_file_import_good_sum(self):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-n', test_name(),
-                self._CIRROS_FILE, '-S', self._CIRROS_SUM]))
+                self._CIRROS_FILE, '-S', self._CIRROS_MD5]))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlancingImageTest(TestGlancingImageTtylinuxBase):
