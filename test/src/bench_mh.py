@@ -12,23 +12,16 @@ import matplotlib.markers
 
 from tutils import get_local_path
 
-# Setup PYTHONPATH for multihash
+# Setup PYTHONPATH for multihash, utils
 sys.path.append(get_local_path('..', '..', 'src'))
+
+import utils
 
 _SETUP = \
 '''
 import multihash
 mh = multihash.multihash_%s(%s)
 '''
-
-# This is not S.I. compliant prefix, this is power-of-two based
-_UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
-
-def unit_prefix(n):
-    if n == 0:
-        return 0, ''
-    exp = int(math.log(n, 2) / 10)
-    return n / (2 ** (10 * exp)), _UNIT_PREFIX[exp]
 
 def bench_one(fn, setup, repeats=1):
     return timeit.timeit('mh.hash_file("%s")' % fn, setup=setup, number=repeats)
@@ -76,7 +69,7 @@ def plotit(lengths, times_sh, times_mh, image_file, display):
     # Plot parallel hashlib data, for each block size
     for size in sorted(times_mh.keys()):
         plotter(lengths, times_mh[size], marker=mks.pop(),
-                 label='parallel hashlib, bs=%d%s' % unit_prefix(size))
+                 label='parallel hashlib, bs=%s' % (utils.size_t(size),))
 
     # Give some horizontal room
     #xmin, xmax = plt.xlim()
