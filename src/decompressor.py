@@ -9,10 +9,7 @@ import zipfile
 
 import utils
 
-class FileExistsError(Exception):
-    pass
-
-class FileExtensionError(Exception):
+class DecompressorError(Exception):
     pass
 
 def zip_opener(fn, mode):
@@ -31,39 +28,55 @@ class Decompressor(object):
     '''
 
     def __init__(self, filename, ext=None, block_size=4096):
+
+        if not os.path.exists(filename):
+            raise DecompressorError('File does not exist: ' + filename)
+            
         self.fin_name = filename
         self.block_size = block_size
         self.fout_name, sext = os.path.splitext(filename)
 
-        if ext is not None and sext != ext:
-            raise ValueError('Extension mismatch: ' + ext)
+        if ext is not None and sext and sext != ext:
+            raise DecompressorError('Extension mismatch: ' + sext + ' != ' + ext)
         if sext:
             if sext not in _EXT_MAP:
-                raise FileExtensionError('Unknown file extension: ' + str(ext))
+                raise DecompressorError('Unknown file extension: ' + str(ext))
+        elif ext is None:
+            raise DecompressorError('No file extension, and no '
+                'decompression algorithm given: ' + filename)
         else:
-            raise FileExtensionError('No file extension: ' + filename)
+            if ext not in _EXT_MAP:
+                raise DecompressorError('No file extension, and unknown'
+                    ' decompression algorithm given: ' + filename)
+            self.fout_name += '_uncompressed'
         if os.path.exists(self.fout_name):
-            raise FileExistsError('File exists: ' + self.fout_name)
-        self.opener = _EXT_MAP[sext]
+            raise DecompressorError('File exists: ' + self.fout_name)
+        self.opener = _EXT_MAP[sext or ext]
 
     def doit(self, delete=False):
         ret = True
-        with self.opener(self.fin_name, 'rb') as fin:
-            delout = False
-            with open(self.fout_name, 'wb+') as fout:
+        try:
+            with self.opener(self.fin_name, 'rb') as fin:
+                delout = False
                 try:
-                    utils.block_read_filedesc(fin, fout.write, self.block_size)
+                    with open(self.fout_name, 'wb+') as fout:
+                        try:
+                            utils.block_read_filedesc(fin, fout.write, self.block_size)
+                        except IOError as e:
+                            if e not in utils.Exceptions(IOError('Not a gzipped file')):
+                                raise e
+                            delout = True
+                            ret = False
+                    if delout:
+                        os.remove(self.fout_name)
                 except IOError as e:
-                    if e not in utils.Exceptions(IOError('Not a gzipped file')):
-                        raise e
-                    delout = True
                     ret = False
-            if delout:
-                os.remove(self.fout_name)
+        except:
+            ret = False
 
         if delete:
             os.remove(self.fin_name)
-        return ret
+        return ret, self.fout_name
 
 def main(args=sys.argv[1:]):
     for fn in args:
