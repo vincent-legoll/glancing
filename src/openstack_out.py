@@ -62,7 +62,7 @@ def map_block(block):
                 ret[b[i][0]] = b[i][1:]
     return ret
 
-def cli():
+def cli(sys_argv=sys.argv[1:]):
     desc_help = 'Select a part of an openstack command output'
     parser = argparse.ArgumentParser(description=desc_help)
 
@@ -89,12 +89,12 @@ def cli():
                         ' strings, but separated from the other parameters'
                         ' with "--"')
 
-    return parser.parse_args()
+    return parser.parse_args(sys_argv)
 
-def get_field():
+def get_field(sys_argv=sys.argv[1:]):
 
     # Handle CLI arguments
-    args = cli()
+    args = cli(sys_argv=sys_argv)
     if not args:
         return ''
 
@@ -139,8 +139,8 @@ def get_field():
 
     return ''
 
-def main():
-    for i in get_field():
+def main(sys_argv=sys.argv[1:]):
+    for i in get_field(sys_argv=sys_argv):
         print(i)
 
 if __name__ == '__main__':
