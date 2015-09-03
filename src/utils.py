@@ -4,9 +4,12 @@ from __future__ import print_function
 
 import os
 import sys
+import math
 import types
+import shutil
 import inspect
 import argparse
+import tempfile
 import textwrap
 import functools
 import subprocess
@@ -39,8 +42,30 @@ def vprint(msg, prog=sys.argv[0]):
     if _VERBOSE:
         print("%s: %s" % (prog, msg))
 
+def vprint_lines(msg, prog=sys.argv[0]):
+    for line in msg.split('\n'):
+        vprint(line, prog=prog)
+
 def test_name():
     return inspect.stack()[1][3]
+
+class size_t(object):
+
+    # This is not S.I. compliant prefix, this is power-of-two based
+    _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
+
+    # This class does no rounding: 2047 => 1K, 2048 => 2K
+    def __init__(self, n, suffix=''):
+        self._n = n
+        self.suffix = suffix
+        self.exp = int(math.log(n, 2) / 10) if n != 0 else 0
+        self.n = long(long(n) / long(2 ** long(10 * self.exp)))
+
+    def __repr__(self):
+        return '<size_t %d%s>' % (self._n, self.suffix)
+
+    def __str__(self):
+        return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
 def run(cmd, out=False, err=False):
     stdout = subprocess.PIPE if out else subprocess.DEVNULL
@@ -57,6 +82,29 @@ def run(cmd, out=False, err=False):
                "variable." % (cmd[0],))
         vprint(e)
     return False, None, None, None
+
+class chdir(object):
+    
+    def __init__(self, dir_path):
+        if not os.path.isdir(dir_path):
+            raise ValueError('Not a directory')
+        self.dir_path = dir_path
+        
+    def __enter__(self):
+        self.oldcwd = os.getcwd()
+        os.chdir(self.dir_path)
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        os.chdir(self.oldcwd)
+
+class tempdir(chdir):
+
+    def __init__(self, prefix='glancing-'):
+        super(tempdir, self).__init__(tempfile.mkdtemp(prefix=prefix))
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        super(tempdir, self).__exit__(exc_type, exc_val, exc_tb)
+        shutil.rmtree(self.dir_path)
 
 class redirect(object):
 
