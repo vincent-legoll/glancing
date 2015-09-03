@@ -38,12 +38,15 @@ class GlanceTest(unittest.TestCase):
     def test_glance_exists_false(self):
         self.assertFalse(glance.glance_exists(''))
         self.assertFalse(glance.glance_exists('Nonexistent'))
+        self.assertFalse(glance.glance_exists(u''))
+        self.assertFalse(glance.glance_exists(u'Nonexistent'))
 
     def test_glance_ids_single(self):
         self.assertEqual(set(), glance.glance_ids(None))
         self.assertEqual(set(), glance.glance_ids(True))
         self.assertEqual(set(), glance.glance_ids(False))
         self.assertEqual(set(), glance.glance_ids(''))
+        self.assertEqual(set(), glance.glance_ids(u''))
         self.assertEqual(set(), glance.glance_ids([]))
 
     def test_glance_ids_list_single(self):
@@ -51,11 +54,12 @@ class GlanceTest(unittest.TestCase):
         self.assertEqual(set(), glance.glance_ids([True]))
         self.assertEqual(set(), glance.glance_ids([False]))
         self.assertEqual(set(), glance.glance_ids(['']))
+        self.assertEqual(set(), glance.glance_ids([u'']))
         self.assertEqual(set(), glance.glance_ids([[]]))
 
     def test_glance_ids_list(self):
         self.assertEqual(set(), glance.glance_ids([None, True, False]))
-        self.assertEqual(set(), glance.glance_ids(['', '']))
+        self.assertEqual(set(), glance.glance_ids(['', u'']))
 
 class TestGlanceFixture(unittest.TestCase):
 
@@ -79,7 +83,16 @@ class GlanceNoNameTest(TestGlanceFixture):
     def test_glance_main_noname(self):
         self.common_start()
         self.assertTrue(glance.main(['-d', self._IMG_NAME]))
-        print(glance.glance_ids(''))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class GlanceNoNameTestUnicode(TestGlanceFixture):
+
+    _IMG_NAME = u''
+
+    def test_glance_main_noname(self):
+        self.common_start()
+        self.assertTrue(glance.main(['-d', self._IMG_NAME]))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")

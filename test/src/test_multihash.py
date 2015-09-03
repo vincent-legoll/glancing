@@ -2,13 +2,15 @@
 
 import os
 import sys
+import glob
 import unittest
 
 from tutils import get_local_path
 
-# Setup PYTHONPATH for multihash
+# Setup PYTHONPATH for multihash, utils
 sys.path.append(get_local_path('..', '..', 'src'))
 
+import utils
 import multihash
 
 class MultihashTest(unittest.TestCase):
@@ -59,7 +61,9 @@ class MultihashTest(unittest.TestCase):
             self.assertEquals(mh.hexdigests()['md5'], '92fdff5b8595ef3f9ac0de664ce21532')
         os.remove('test.txt')
 
-    def test_multihash_main(self):
+class MultihashTestMain(unittest.TestCase):
+
+    def setUp(self):
         devnull_checksums = {
             'md5': 'd41d8cd98f00b204e9800998ecf8427e',
             'sha1': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
@@ -76,6 +80,17 @@ class MultihashTest(unittest.TestCase):
             'sha384': '4f51eaa6864f9e5079885a3ac30565581522669bd89e42d5a479433d897a1bf222337ae46125575c969fbc2b78c60e86',
             'sha512': 'd91fa3b083266ba7a651570acc4803e07e1910bcacceae303eb3684e4119907170888997cc13aeea2effa823d51b3dff965800942893ef7db8513cb339e55ae6',
         }
-        files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
-        expected = dict(zip(files_to_hash, [devnull_checksums, random_checksums]))
-        self.assertEqual(expected, multihash.main(files_to_hash))
+        self.files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
+        self.expected = dict(zip(self.files_to_hash, [devnull_checksums, random_checksums]))
+        self.computed = multihash.main(self.files_to_hash)
+
+    def test_multihash_main(self):
+        self.assertEqual(self.expected, self.computed)
+
+    def test_multihash_main(self):
+        ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
+        self.assertTrue(ok)
+        with utils.tempdir():
+            multihash.multisum(self.computed)
+            with open('MD5SUMS', 'rb') as md5f:
+                self.assertEqual(md5f.read(), out)

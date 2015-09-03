@@ -36,6 +36,11 @@ class MetaDataJsonTest(unittest.TestCase):
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
+    def test_metadata_json_bad(self):
+        with devnull('stderr'):
+            with self.assertRaises(ValueError):
+                metadata.MetaStratusLabJson(os.devnull)
+
 class MetaDataCernTest(unittest.TestCase):
 
     def test_metadata_cern(self):
@@ -59,6 +64,10 @@ class MetaDataXmlTest(unittest.TestCase):
         self.assertEqual(md['location'],
             'http://www.apc.univ-paris7.fr/Downloads/comput/'
             'CentOS7.qcow2.gz')
+
+    def test_metadata_xml_bad(self):
+        m = metadata.MetaStratusLabXml(os.devnull)
+        self.assertIsNone(m.get_metadata())
 
 class MetaDataJsonFixtureTest(unittest.TestCase):
 

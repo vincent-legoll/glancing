@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import sys
+import uuid
 import unittest
 
 from tutils import get_local_path
@@ -11,6 +12,7 @@ from tutils import get_local_path
 # Setup PYTHONPATH for openstack_out
 sys.path.append(get_local_path('..', '..', 'src'))
 
+import utils
 import openstack_out
 
 glance_image_show = '''\
@@ -72,6 +74,59 @@ pb = '''\
 # Probleme |||
 
 '''
+
+class OpenstackOutGetFieldTest(unittest.TestCase):
+
+    def test_openstack_out_get_field_ok(self):
+        f = openstack_out.get_field(['false'])
+        self.assertEqual('', f)
+
+        f = openstack_out.get_field(['true'])
+        self.assertEqual('', f)
+
+        f = openstack_out.get_field(['-c', '666', '--', 'neutron', 'agent-list'])
+        self.assertEqual('', f)
+
+        f = openstack_out.get_field(['-c', '1', '--', 'neutron', 'agent-list'])
+        self.assertEqual(['Metadata agent', 'Open vSwitch agent', 'DHCP agent', 'L3 agent', 'Open vSwitch agent'], f)
+
+        f = openstack_out.get_field(['-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
+        self.assertEqual(['Metadata agent', 'DHCP agent', 'L3 agent'], f)
+
+        f = openstack_out.get_field(['-t', '1', '-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
+        self.assertEqual(['Metadata agent'], f)
+
+        f = openstack_out.get_field(['-p', 'Metadata', '-c', '1', '--', 'neutron', 'agent-list'])
+        self.assertEqual(['Metadata agent'], f)
+
+        f = openstack_out.get_field(['-p', 'default', '-c', '1', '--', 'nova', 'secgroup-list'])
+        self.assertEqual(['default'], f)
+
+        f = openstack_out.get_field(['-p', 'default', '-c', '2', '--', 'nova', 'secgroup-list'])
+        self.assertEqual(['default'], f)
+
+        f = openstack_out.get_field(['-p', 'default', '-c', '0', '--', 'nova', 'secgroup-list'])
+        u = uuid.UUID(f[0])
+        self.assertEqual(uuid.UUID, type(u))
+
+        f = openstack_out.get_field(['-p', 'default', '--', 'nova', 'secgroup-list'])
+        u = uuid.UUID(f[0])
+        self.assertEqual(uuid.UUID, type(u))
+
+        f = openstack_out.get_field(['--', 'nova secgroup-list'])
+        u = uuid.UUID(f[0])
+        self.assertEqual(uuid.UUID, type(u))
+
+    def test_openstack_out_get_field(self):
+        with utils.devnull('stderr'):
+            with self.assertRaises(SystemExit):
+                openstack_out.get_field()
+            with self.assertRaises(SystemExit):
+                openstack_out.get_field(None)
+            with self.assertRaises(SystemExit):
+                openstack_out.get_field([])
+            with self.assertRaises(SystemExit):
+                openstack_out.get_field('')
 
 class OpenstackOutMBTest(unittest.TestCase):
 
