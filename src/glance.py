@@ -9,7 +9,7 @@ import argparse
 import utils
 import openstack_out
 
-from utils import vprint
+from utils import vprint, vprint_lines
 
 _GLANCE_CMD = ['glance']
 
@@ -31,13 +31,14 @@ def glance_import(base, md5=None, name=None, diskformat=None):
         cmd += ['--checksum', md5]
     ok, retcode, out, err = utils.run(cmd, out=True, err=True)
     if not ok:
-        vprint('failed to import image into glance: %s %s' % (name, base))
-        vprint('stdout=' + out)
-        vprint('stderr=' + err)
+        vprint('failed to import image into glance: %s from %s' % (name, base))
+        vprint_lines('stdout=' + out)
+        vprint_lines('stderr=' + err)
     return ok
 
 def glance_exists(name):
-    if type(name) is not str:
+    if type(name) not in (str, unicode):
+        vprint('glance_exists(name=%s): name is not a string, but a %s' % (name, str(type(name))))
         raise TypeError
     return len(glance_ids([name])) > 0
 
@@ -54,7 +55,7 @@ def glance_image_list():
 def glance_ids(names):
     ret = set()
     # Some are already IDs
-    if type(names) is str:
+    if type(names) in (str, unicode):
         names = [names]
     if type(names) is list:
         if names:
