@@ -5,7 +5,11 @@ from __future__ import print_function
 import os
 import sys
 import unittest
-import StringIO
+
+try:
+    import StringIO
+except ImportError:
+    import io as StringIO
 
 from tutils import get_local_path
 
@@ -13,6 +17,73 @@ from tutils import get_local_path
 sys.path.append(get_local_path('..', '..', 'src'))
 
 import utils
+from utils import size_t
+
+class UtilsTestTempdir(unittest.TestCase):
+
+    def test_utils_tempdir(self):
+        oldcwd = os.getcwd()
+        with utils.tempdir():
+            tmp_cwd = os.getcwd()
+            self.assertEqual('/tmp', os.path.dirname(tmp_cwd))
+        self.assertEqual(os.getcwd(), oldcwd)
+        self.assertFalse(os.path.exists(tmp_cwd))
+
+class UtilsTestChdir(unittest.TestCase):
+
+    def test_utils_chdir(self):
+        oldcwd = os.getcwd()
+        with utils.chdir('/tmp'):
+            self.assertEqual(os.getcwd(), '/tmp')
+        self.assertEqual(os.getcwd(), oldcwd)
+        with self.assertRaises(ValueError):
+            with utils.chdir(os.devnull):
+                pass
+
+class UtilsTestSizeT(unittest.TestCase):
+
+    def test_utils_size_t_repr(self):
+        self.assertEqual(repr(size_t(0)), '<size_t 0>')
+        self.assertEqual(repr(size_t(0, 'B')), '<size_t 0B>')
+
+        self.assertEqual(repr(size_t(2048)), '<size_t 2048>')
+        self.assertEqual(repr(size_t(2048, 'B')), '<size_t 2048B>')
+
+    def test_utils_size_t_str(self):
+        self.assertEqual(str(size_t(0)), '0')
+        self.assertEqual(str(size_t(0, 'B')), '0B')
+
+        self.assertEqual(str(size_t(10)), '10')
+        self.assertEqual(str(size_t(10, 'B')), '10B')
+
+        self.assertEqual(str(size_t(666)), '666')
+        self.assertEqual(str(size_t(667, 'B')), '667B')
+
+        self.assertEqual(str(size_t(1023)), '1023')
+        self.assertEqual(str(size_t(1024)), '1K')
+        self.assertEqual(str(size_t(1025)), '1K')
+
+        self.assertEqual(str(size_t(2047)), '1K')
+        self.assertEqual(str(size_t(2048)), '2K')
+        self.assertEqual(str(size_t(2049)), '2K')
+
+        self.assertEqual(str(size_t(1024*1024-1)), '1023K')
+        self.assertEqual(str(size_t(1024*1024+0)), '1M')
+        self.assertEqual(str(size_t(1024*1024+1)), '1M')
+
+        self.assertEqual(str(size_t(1024*1024*1024-1)), '1023M')
+        self.assertEqual(str(size_t(1024*1024*1024+0)), '1G')
+        self.assertEqual(str(size_t(1024*1024*1024+1)), '1G')
+
+        self.assertEqual(str(size_t(1024*1024*1024*1024-1)), '1023G')
+        self.assertEqual(str(size_t(1024*1024*1024*1024+0)), '1T')
+        self.assertEqual(str(size_t(1024*1024*1024*1024+1)), '1T')
+
+        self.assertEqual(str(size_t(1024*1024*1024*1024*1024+0)), '1P')
+        self.assertEqual(str(size_t(1024*1024*1024*1024*1024+1)), '1P')
+
+        # FIXME: This last one fail: 0P != 1023T
+        #self.assertEqual(str(size_t(1024*1024*1024*1024*1024-1)), '1023T')
 
 class UtilsTest(unittest.TestCase):
 
@@ -38,12 +109,30 @@ class UtilsTest(unittest.TestCase):
 
     def vprint_verbose(self, verbosity, test_name):
         v = utils.get_verbose()
-        utils.set_verbose(True)
+        utils.set_verbose(verbosity)
         with utils.stringio() as output:
+            expected = ''
+            if verbosity:
+                expected = test_name + ': TOTOTITI\n'
             with utils.redirect('stdout', output):
                 utils.vprint('TOTOTITI', test_name)
-                self.assertEqual(test_name + ': TOTOTITI\n', output.getvalue())
-            self.assertEqual(test_name + ': TOTOTITI\n', output.getvalue())
+                self.assertEqual(expected, output.getvalue())
+            self.assertEqual(expected, output.getvalue())
+        with self.assertRaises(ValueError):
+            output.getvalue()
+        utils.set_verbose(v)
+
+    def vprint_lines_verbose(self, verbosity, test_name):
+        v = utils.get_verbose()
+        utils.set_verbose(verbosity)
+        with utils.stringio() as output:
+            expected = ''
+            if verbosity:
+                expected = test_name + ': TOTO\n' + test_name + ': TITI\n'
+            with utils.redirect('stdout', output):
+                utils.vprint_lines('TOTO\nTITI', test_name)
+                self.assertEqual(expected, output.getvalue())
+            self.assertEqual(expected, output.getvalue())
         with self.assertRaises(ValueError):
             output.getvalue()
         utils.set_verbose(v)
@@ -54,12 +143,27 @@ class UtilsTest(unittest.TestCase):
     def test_utils_vprint_silent(self):
         self.vprint_verbose(False, utils.test_name())
 
+    def test_utils_vprint_lines_verbose(self):
+        self.vprint_lines_verbose(True, utils.test_name())
+
+    def test_utils_vprint_lines_silent(self):
+        self.vprint_lines_verbose(False, utils.test_name())
+
     def test_utils_test_name(self):
         self.assertEqual(utils.test_name(), 'test_utils_test_name')
 
-    @unittest.skip('TODO')
+    @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
     def test_utils_block_read_filename(self):
-        pass
+
+        status = [False]
+
+        def set_status(x):
+            status[0] = True
+       
+        local_path = get_local_path('..', 'data', 'length_one.bin')
+
+        utils.block_read_filename(local_path, set_status)
+        self.assertTrue(status[0])
 
     @unittest.skip('TODO')
     def test_utils_block_read_filedesc(self):
@@ -139,7 +243,7 @@ class UtilsStringioTest(unittest.TestCase):
         test_file = 'test.txt'
         utils.run(['touch', test_file])
         with utils.cleanup(['rm', test_file]):
-            with open(test_file, 'rw+b') as out:
+            with open(test_file, 'w+b') as out:
                 self.assertEqual('', out.read())
                 out.write('TOTO')
                 self.assertEqual('', out.read())
@@ -298,8 +402,12 @@ class UtilsCleanupTest(unittest.TestCase):
             self.assertTrue(os.path.exists(test_file))
         self.assertFalse(os.path.exists(test_file))
 
-zde = ZeroDivisionError('integer division or modulo by zero')
-ae = ArithmeticError('integer division or modulo by zero')
+# Incompatibility with pypy (at least the 2.2.1 version)
+zde_msg = 'integer division or modulo by zero'
+if 'pypy_version_info' in dir(sys):
+    zde_msg = 'integer division by zero'
+zde = ZeroDivisionError(zde_msg)
+ae = ArithmeticError(zde_msg)
 
 class ComparableExcTest(unittest.TestCase):
 
@@ -337,8 +445,8 @@ class ComparableExcTest(unittest.TestCase):
         # Those two are equivalent
         self.assertIn(self.e, utils.Exceptions(zde, ae))
         self.assertIn(self.e, utils.Exceptions(
-            ZeroDivisionError('integer division or modulo by zero'),
-            ArithmeticError('integer division or modulo by zero'),
+            ZeroDivisionError(zde_msg),
+            ArithmeticError(zde_msg),
         ))
 
     def test_utils_cexc_sets(self):
@@ -430,3 +538,7 @@ class AlmostRawFormatterTest(unittest.TestCase):
         for (test_val, expected, expected_pref) in test_vals:
             self.assertEqual(expected, rf._split_lines(test_val, 7))
             self.assertEqual(expected_pref, rf._split_lines(rf._PREFIX + test_val, 7))
+
+if __name__ == '__main__':
+    import pytest
+    pytest.main(['-x', '--pdb', __file__])
