@@ -91,8 +91,7 @@ def multisum(digs):
             data[fn] = lst_files
     for (filename, lines) in data.iteritems():
         if os.path.exists(filename):
-            print('ERROR: file already exists:', filename)
-            sys.exit(2)
+            raise ValueError('ERROR: file already exists:', filename)
         with open(filename, 'wb') as fout:
             fout.writelines(lines)
 
