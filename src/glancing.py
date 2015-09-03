@@ -3,12 +3,19 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
-import urllib2
 import tempfile
 import textwrap
-import urlparse
 import argparse
+
+try:
+    from urllib2 import urlopen, URLError, HTTPError
+    from urlparse import urlsplit
+except ImportError:
+    from urllib.request import urlopen
+    from urllib.error import URLError, HTTPError
+    from urllib.parse import urlsplit
 
 import utils
 import glance
@@ -16,7 +23,7 @@ import multihash
 import decompressor
 import metadata as md
 
-from utils import vprint
+from utils import vprint, size_t
 
 # Handle CLI options
 def do_argparse(sys_argv):
@@ -34,6 +41,9 @@ def do_argparse(sys_argv):
     group.add_argument('-d', '--dry-run', dest='dryrun', action='store_true',
                        help='Do not import image into glance')
 
+    parser.add_argument('-D', '--no-checksum', action='store_true',
+                        help='Do not verify checksums', dest='nocheck')
+
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display additional information')
 
@@ -50,7 +60,8 @@ def do_argparse(sys_argv):
         A colon-separated list of message digests of the image.
 
         This overrides / complements the checksums that are present in
-        metadata, if using the StratusLab marketplace.
+        metadata, if using the StratusLab marketplace. It also overrides
+        checksum files loaded with -S or --sums-files.
 
         Algorithms are deduced from checksum lengths.
 
@@ -58,6 +69,17 @@ def do_argparse(sys_argv):
         "3bea57666cdead13f0ed4a91beef2b98:1b5229d5dad92bc6662553be01608af2180eafbe"
     ''')
     parser.add_argument('-s', '--sums', dest='digests', help=digests_help)
+
+    digests_files_help = ('''>>>
+        A message digest file to load.
+
+        This overrides / complements the checksums that are present in
+        metadata, if using the StratusLab marketplace.
+
+        Algorithms are deduced from checksum lengths.
+    ''')
+    parser.add_argument('-S', '--sums-files', dest='sums_files', nargs='*',
+        help=digests_files_help)
 
     descriptor_help = ('''>>>
         This can be:
@@ -86,13 +108,13 @@ def get_url(url):
     if not url:
         return None
     try:
-        url_f = urllib2.urlopen(url)
-    except urllib2.HTTPError as e:
+        url_f = urlopen(url)
+    except HTTPError as e:
         if e.code == 404 and e.reason == 'Not Found':
             vprint('404 Not found: ' + url)
             return None
         raise e
-    except urllib2.URLError as e:
+    except URLError as e:
         vprint(str(e))
         return None
     with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
@@ -103,6 +125,25 @@ def get_url(url):
             os.remove(fout_name)
             return None
     return fout.name
+
+# Add to metadata['checksums'] a new message digest to be verified
+def add_checksum(dig, metadata, overrides=False):
+    dig_len = len(dig)
+    if dig_len not in multihash._LEN_TO_HASH:
+        vprint('unrecognized digest: ' + dig)
+        return False
+    halg = multihash._LEN_TO_HASH[dig_len]
+    if halg in metadata['checksums']:
+        if dig == metadata['checksums'][halg]:
+            vprint('duplicate digest, computing only once: ' + dig)
+        elif overrides:
+            metadata['checksums'][halg] = dig
+        else:
+            vprint('conflicting digests: ' + dig + ':' + metadata['checksums'][halg])
+            return False
+    else:
+        metadata['checksums'][halg] = dig
+    return True
 
 # Check all message digests of the image file
 def check_digests(local_image_file, metadata, replace_bads=False):
@@ -130,7 +171,8 @@ def backup_dir():
     if not os.path.exists(_BACKUP_DIR):
         os.mkdir(_BACKUP_DIR)
     elif not os.path.isdir(_BACKUP_DIR):
-        vprint(_BACKUP_DIR + ' exists but is not a direstory, sorry cannot backup old image...')
+        vprint(_BACKUP_DIR + ' exists but is not a directory, sorry '
+            'cannot backup old images...')
 
 def main(sys_argv=sys.argv[1:]):
 
@@ -209,45 +251,58 @@ def main(sys_argv=sys.argv[1:]):
     if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
         d = decompressor.Decompressor(local_image_file, ext=chext)
-        res = d.doit(delete=(not args.keeptemps))
+        res, local_image_file = d.doit(delete=(not args.keeptemps))
         if not res:
-            vprint('cannot uncompress')
-            return False
-        # Get rid of compression file extention
-        local_image_file, ext = os.path.splitext(local_image_file)
-        if ext != chext:
-            vprint('mismatched compression, file ext: ' + ext +
-                ', metadata: ' + chext)
+            vprint(local_image_file + ': cannot uncompress')
             return False
         vprint(local_image_file + ': uncompressed file')
+
+    if image_type == 'image':
+        base_name = os.path.basename(local_image_file)
+    elif image_type == 'url':
+        base_name = os.path.basename(urlsplit(url)[2])
 
     # Choose VM image name
     name = args.name
     if name is None:
-        if image_type == 'image':
-            name, ext = os.path.splitext(os.path.basename(local_image_file))
-        elif image_type == 'url':
-            name, ext = os.path.splitext(os.path.basename(urlparse.urlsplit(url)[2]))
+        if image_type in ('image', 'url'):
+            name, ext = os.path.splitext(base_name)
         elif image_type in ('xml', 'json', 'market', 'cern'):
             name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
     vprint(local_image_file + ': VM image name: ' + name)
 
-    # Populate metadata message digests to be verified
+    # Populate metadata message digests to be verified, from checksum files
+    if args.sums_files:
+        if image_type in ('xml', 'json', 'market', 'cern'):
+            raise NotImplementedError
+        else:
+            base_fn = base_name
+        re_chks_line = re.compile(r'(?P<digest>[a-zA-Z0-9]+)\s+(?P<filename>.+)')
+        for sum_file in args.sums_files:
+            if sum_file.startswith(('http://', 'https://')):
+                
+                local_sum_file = get_url(sum_file)
+                if not local_sum_file or not os.path.exists(local_sum_file):
+                    vprint('cannot download from: ' + sum_file)
+                    return False
+                vprint(local_sum_file + ': downloaded checksum file from: ' + sum_file)
+                sum_file = local_sum_file
+            with open(sum_file, 'rb') as sum_f:
+                vprint(sum_file + ': loading checksums...')
+                for line in sum_f:
+                    m = re_chks_line.match(line)
+                    if m and base_fn == m.group('filename'):
+                        vprint(sum_file + ': matched filenames: ' + base_fn + ' == ' + m.group('filename'))
+                        ret = add_checksum(m.group('digest'), metadata, overrides=True)
+                        if not ret:
+                            vprint(sum_file + ': cannot add_checksum(' + m.group('digest') + ')')
+                            return False
+                            
+    # Populate metadata message digests to be verified, from CLI parameters
     if args.digests:
         for dig in filter(None, args.digests.split(':')):
-            dig_len = len(dig)
-            if dig_len in multihash._LEN_TO_HASH:
-                halg = multihash._LEN_TO_HASH[dig_len]
-                if halg in metadata['checksums']:
-                    if dig == metadata['checksums'][halg]:
-                        vprint('duplicate digest, computing only once: ' + dig)
-                    else:
-                        vprint('conflicting digests: ' + dig + ':' + metadata['checksums'][halg])
-                        return False
-                else:
-                    metadata['checksums'][halg] = dig
-            else:
-                vprint('unrecognized digest: ' + dig)
+            ret = add_checksum(dig, metadata, overrides=True)
+            if not ret:
                 return False
 
     # Verify image size
@@ -258,7 +313,7 @@ def main(sys_argv=sys.argv[1:]):
         size_ok = size_expected == size_actual
 
         if size_ok:
-            vprint('%s: size: OK' % (local_image_file,))
+            vprint('%s: size: OK: %s' % (local_image_file, size_t(size_actual)))
         else:
             vprint('%s: size: expected: %d' % (local_image_file, size_expected))
             vprint('%s: size:   actual: %d' % (local_image_file, size_actual))
@@ -266,22 +321,24 @@ def main(sys_argv=sys.argv[1:]):
                 return False
 
     # Verify image checksums
-    verified = 0
-    if size_ok:
-        if len(metadata['checksums']) > 0:
-            vprint(local_image_file + ': verifying checksums')
-            verified = check_digests(local_image_file, metadata, args.force)
-        elif image_type not in ('xml', 'json', 'market', 'cern'):
-            vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
+    verified = len(metadata['checksums'])
+    if not args.nocheck:
+        verified = 0
+        if size_ok:
+            if len(metadata['checksums']) > 0:
+                vprint(local_image_file + ': verifying checksums')
+                verified = check_digests(local_image_file, metadata, args.force)
+            elif image_type not in ('xml', 'json', 'market', 'cern'):
+                vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
+            else:
+                vprint(local_image_file + ': no checksum to verify found in metadata...')
         else:
-            vprint(local_image_file + ': no checksum to verify found in metadata...')
-    else:
-        if args.force:
-            vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
-            metadata['checksums'] = { 'md5': '0' * 32 }
-            check_digests(local_image_file, metadata, args.force)
-        else:
-            vprint(local_image_file + ': size differ, not verifying checksums')
+            if args.force:
+                vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
+                metadata['checksums'] = { 'md5': '0' * 32 }
+                check_digests(local_image_file, metadata, args.force)
+            else:
+                vprint(local_image_file + ': size differ, not verifying checksums')
 
     # If image already exists, download it to backup directory
     if not args.dryrun and glance.glance_exists(name):
