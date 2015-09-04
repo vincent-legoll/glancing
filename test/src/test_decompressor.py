@@ -10,6 +10,7 @@ from tutils import get_local_path
 # Setup PYTHONPATH for decompressor
 sys.path.append(get_local_path('..', '..', 'src'))
 
+import utils
 import decompressor
 
 _TEST_FILES = ['random_1M_bz2.bin.bz2', 'random_1M_gz.bin.gz', 'random_1M_zip.bin.zip']
@@ -60,7 +61,24 @@ class DecompressorErrorsTest(unittest.TestCase):
             self.assertFalse(ret)
             self.assertEqual(fn, os.devnull + '_uncompressed')
 
-    def test_decompressor_good_ext(self):
+    def test_decompressor_good_ext_existent(self):
+        fn = '/tmp/' + utils.test_name() + '.ext'
+        open(fn, 'wb+').close()
+        with self.assertRaises(decompressor.DecompressorError):
+            d = decompressor.Decompressor(fn)
+        with self.assertRaises(decompressor.DecompressorError):
+            d = decompressor.Decompressor(fn, '.zip')
+
+    def test_decompressor_no_ext_existent(self):
+        fn = '/tmp/' + utils.test_name()
+        open(fn, 'wb+').close()
+        with self.assertRaises(decompressor.DecompressorError):
+            d = decompressor.Decompressor(fn)
+        open(fn + '.zip', 'wb+').close()
+        with self.assertRaises(decompressor.DecompressorError):
+            d = decompressor.Decompressor(fn + '.zip')
+
+    def test_decompressor_good_ext_not_existent(self):
         for ext in decompressor._EXT_MAP:
             with self.assertRaises(decompressor.DecompressorError):
                 d = decompressor.Decompressor('/tmp/nonexistent', ext)

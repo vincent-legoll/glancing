@@ -149,6 +149,14 @@ class OpenstackOutMBTest(unittest.TestCase):
         # 5 elems per line...
         self.assertEqual(len(b), 5)
 
+class OpenstackOutMainTest(unittest.TestCase):
+
+    def test_openstack_out_main(self):
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                openstack_out.main(['-p', 'L3', '-c', '1', '--', 'neutron', 'agent-list'])
+                self.assertEqual(output.getvalue(), 'L3 agent\n')
+
 class OpenstackOutPBTest(unittest.TestCase):
 
     def test_openstack_out_parse_block_header_pb(self):

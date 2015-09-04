@@ -37,6 +37,24 @@ class GlancingMiscTest(unittest.TestCase):
         self.assertFalse(glancing.main(['']))
         self.assertFalse(glancing.main(['-d', '']))
 
+class GlancingGetUrlTest(unittest.TestCase):
+
+    def test_glancing_get_url(self):
+        self.assertIsNone(glancing.get_url(None))
+        self.assertIsNone(glancing.get_url(True))
+        self.assertIsNone(glancing.get_url(False))
+        self.assertIsNone(glancing.get_url([]))
+        self.assertIsNone(glancing.get_url(tuple()))
+        self.assertIsNone(glancing.get_url(set()))
+        self.assertIsNone(glancing.get_url(frozenset))
+        self.assertIsNone(glancing.get_url({}))
+        self.assertIsNone(glancing.get_url(1))
+        self.assertIsNone(glancing.get_url('a'))
+        self.assertIsNone(glancing.get_url(u'a'))
+        self.assertIsNone(glancing.get_url(''))
+        self.assertIsNone(glancing.get_url(u''))
+        self.assertIsNone(glancing.get_url(u'http://google.fr/totototo'))
+
 class GlancingImageDryRunNotExistentTest(unittest.TestCase):
 
     def test_glancing_image_notexistent(self):

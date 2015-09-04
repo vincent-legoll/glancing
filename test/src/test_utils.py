@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import sys
+import uuid
 import unittest
 
 try:
@@ -165,9 +166,9 @@ class UtilsTest(unittest.TestCase):
         utils.block_read_filename(local_path, set_status)
         self.assertTrue(status[0])
 
-    @unittest.skip('TODO')
-    def test_utils_block_read_filedesc(self):
-        pass
+#    @unittest.skip('TODO')
+#    def test_utils_block_read_filedesc(self):
+#        pass
 
 class UtilsRunTest(unittest.TestCase):
 
@@ -180,12 +181,19 @@ class UtilsRunTest(unittest.TestCase):
     def test_utils_run_false(self):
         self.assertFalse(utils.run(['false'])[0])
 
-    def test_utils_run_false(self):
+    def test_utils_run_wrong(self):
         good, retcode, out, err = utils.run(['ls', '--format'], out=True, err=True)
         self.assertFalse(good)
         self.assertFalse(0 == retcode)
         self.assertEqual('', out)
-        self.assertFalse('' == err)
+        self.assertEqual(err, "ls: option '--format' requires an argument\nTry 'ls --help' for more information.\n")
+
+    def test_utils_run_wrong_not_quiet(self):
+        good, retcode, out, err = utils.run(['ls', '--format'], out=True, err=True, quiet_out=False, quiet_err=False)
+        self.assertFalse(good)
+        self.assertFalse(0 == retcode)
+        self.assertEqual(out, '')
+        self.assertEqual(err, "ls: option '--format' requires an argument\nTry 'ls --help' for more information.\n")
 
     def test_utils_run_not_in_path(self):
         with utils.environ('PATH'):
@@ -201,11 +209,40 @@ class UtilsRunTest(unittest.TestCase):
         self.assertFalse(os.path.exists(test_file))
 
     def test_utils_run_output(self):
+        good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True, quiet_out=False)
+        self.assertTrue(good)
+        self.assertTrue(retcode == 0)
+        self.assertEqual(out, 'TOTO')
+        self.assertIsNone(err)
+
+    def test_utils_run_output_quiet(self):
+        good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True, quiet_out=True)
+        self.assertTrue(good)
+        self.assertTrue(retcode == 0)
+        self.assertEqual(out, 'TOTO')
+        self.assertIsNone(err)
+
+    def test_utils_run_output_quiet(self):
         good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True)
         self.assertTrue(good)
         self.assertTrue(retcode == 0)
         self.assertEqual(out, 'TOTO')
         self.assertIsNone(err)
+
+class UtilsUUIDTest(unittest.TestCase):
+
+    def test_utils_is_uuid(self):
+        self.assertTrue(utils.is_uuid(uuid.uuid4()))
+        self.assertTrue(utils.is_uuid(str(uuid.uuid4())))
+        self.assertFalse(utils.is_uuid(None))
+        self.assertFalse(utils.is_uuid(True))
+        self.assertFalse(utils.is_uuid(False))
+        self.assertFalse(utils.is_uuid(''))
+        self.assertFalse(utils.is_uuid(u''))
+        self.assertFalse(utils.is_uuid([]))
+        self.assertFalse(utils.is_uuid({}))
+        self.assertFalse(utils.is_uuid(set()))
+        self.assertFalse(utils.is_uuid(frozenset()))
 
 class UtilsStringioTest(unittest.TestCase):
 
@@ -263,7 +300,25 @@ class UtilsStringioTest(unittest.TestCase):
 
 class UtilsRedirectTest(unittest.TestCase):
 
-    def test_utils_print(self):
+    def test_utils_redirect_run(self):
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                utils.run(['echo', 'TOTO'], out=False)
+                self.assertEqual('', output.getvalue())
+
+    def test_utils_redirect_run_out(self):
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                utils.run(['echo', 'TOTO'], out=True)
+                self.assertEqual('', output.getvalue())
+
+    def test_utils_redirect_write(self):
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                sys.stdout.write('TOTO')
+                self.assertEqual('TOTO', output.getvalue())
+
+    def test_utils_redirect_print(self):
         with utils.stringio() as output:
             with utils.redirect('stdout', output):
                 print('TOTOTITI')
@@ -272,7 +327,7 @@ class UtilsRedirectTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             output.getvalue()
 
-    def test_utils_close(self):
+    def test_utils_redirect_close(self):
         tmp = None
         with utils.redirect('stdout'):
             print('toto')
