@@ -87,7 +87,7 @@ class MultihashTestMain(unittest.TestCase):
     def test_multihash_main(self):
         self.assertEqual(self.expected, self.computed)
 
-    def test_multihash_main(self):
+    def test_multihash_multisum(self):
         ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
         self.assertTrue(ok)
         with utils.tempdir():
