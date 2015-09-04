@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import sys
+import uuid
 import math
 import types
 import shutil
@@ -49,6 +50,24 @@ def vprint_lines(msg, prog=sys.argv[0]):
 def test_name():
     return inspect.stack()[1][3]
 
+def is_uuid(x):
+    if type(x) == uuid.UUID:
+        return True
+    try:
+        uuid.UUID(x)
+        return True
+    except Exception:
+        pass
+    return False
+
+def is_iter(x):
+    try:
+        it = iter(x)
+        return True
+    except TypeError:
+        pass
+    return False
+
 class size_t(object):
 
     # This is not S.I. compliant prefix, this is power-of-two based
@@ -67,15 +86,25 @@ class size_t(object):
     def __str__(self):
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
-def run(cmd, out=False, err=False):
-    stdout = subprocess.PIPE if out else subprocess.DEVNULL
-    stderr = subprocess.PIPE if err else subprocess.DEVNULL
+def output(out, quiet):
+    if out:
+        stdout = subprocess.PIPE
+    elif quiet is None or quiet == True:
+        stdout = subprocess.DEVNULL
+    else:
+        stdout = None
+    return stdout
+
+def run(cmd, out=False, err=False, quiet_out=None, quiet_err=None):
+    stdout = output(out, quiet_out)
+    stderr = output(err, quiet_err)
     stdoutdata, stderrdata = None, None
     try:
         subp = subprocess.Popen(cmd, stdin=subprocess.DEVNULL,
                                 stdout=stdout, stderr=stderr)
         stdoutdata, stderrdata = subp.communicate()
-        return subp.returncode == 0, subp.returncode, stdoutdata if out else None, stderrdata if err else None
+        return (subp.returncode == 0, subp.returncode,
+            stdoutdata if out else None, stderrdata if err else None)
     except OSError as e:
         vprint("'%s': Cannot execute, please check it is properly"
                " installed, and available through your PATH environment "
