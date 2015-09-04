@@ -47,8 +47,8 @@ def glance_image_list():
     ok, retcode, out, err = utils.run(cmd, out=True, err=True)
     if not ok:
         vprint('failed to get image-list from glance')
-        vprint('stdout=' + out)
-        vprint('stderr=' + err)
+        vprint_lines('stdout=' + out)
+        vprint_lines('stderr=' + err)
         return None
     return out
 
@@ -57,30 +57,13 @@ def glance_ids(names):
     # Some are already IDs
     if type(names) in (str, unicode):
         names = [names]
-    if type(names) is list:
-        if names:
-            for name in names:
-                if type(name) is str:
-                    try:
-                        uuid.UUID(name)
-                        names.remove(name)
-                        ret.add(name)
-                    except Exception as e:
-                        acceptable_excs = utils.Exceptions(
-                            ValueError('badly formed hexadecimal UUID string'),
-                            ValueError("invalid literal for long() with base 16: '%s'" % name),
-                            TypeError('need one of hex, bytes, bytes_le, fields, or int'),
-                        )
-                        if e not in acceptable_excs:
-                            raise e
-        # The rest (if anything left) is assumed to be "real" names
-        if names:
-            il = glance_image_list()
-            if il:
-                h, b = openstack_out.parse_block(il)
-                for image_id, image_name, _, _, _, _ in b:
-                    if image_name in names:
-                        ret.add(image_id)
+    if names and utils.is_iter(names):
+        il = glance_image_list()
+        if il:
+            h, b = openstack_out.parse_block(il)
+            for image_id, image_name, _, _, _, _ in b:
+                if image_name in names or image_id in names:
+                    ret.add(image_id)
     return ret
 
 def glance_delete_all(names, quiet=False):
@@ -105,8 +88,8 @@ def glance_delete(name, quiet=False):
     if not ok:
         vprint('failed to delete image from glance: ' + name)
         if not quiet:
-            vprint('stdout=' + out)
-            vprint('stderr=' + err)
+            vprint_lines('stdout=' + out)
+            vprint_lines('stderr=' + err)
     return ok
 
 def glance_download(name, fn_local):
@@ -114,8 +97,8 @@ def glance_download(name, fn_local):
     ok, retcode, out, err = utils.run(cmd, out=True, err=True)
     if not ok:
         vprint('failed to download image from glance: ' + name)
-        vprint('stdout=' + out)
-        vprint('stderr=' + err)
+        vprint_lines('stdout=' + out)
+        vprint_lines('stderr=' + err)
     return ok
 
 # Handle CLI options
