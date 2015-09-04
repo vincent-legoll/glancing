@@ -24,6 +24,9 @@ class GlanceTest(unittest.TestCase):
 
     def test_glance_ok(self):
         self.assertTrue(glance.glance_ok())
+        with utils.devnull('stderr'):
+            with utils.environ('PATH', 'not_the_one'):
+                self.assertFalse(glance.glance_ok())
 
     def test_glance_exists_raise(self):
         with self.assertRaises(TypeError):
@@ -60,6 +63,39 @@ class GlanceTest(unittest.TestCase):
     def test_glance_ids_list(self):
         self.assertEqual(set(), glance.glance_ids([None, True, False]))
         self.assertEqual(set(), glance.glance_ids(['', u'']))
+
+class TestGlanceNotOkGlanceIDS(unittest.TestCase):
+
+    def test_glance_ids_uuid(self):
+        glance.glance_delete_all(utils.test_name(), quiet=True)
+        self.assertTrue(glance.glance_import(os.devnull,
+                name=utils.test_name(), diskformat='raw'))
+        img_uuids_name = list(glance.glance_ids(utils.test_name()))
+        self.assertEqual(len(img_uuids_name), 1)
+        img_uuid = img_uuids_name[0]
+        img_uuids_uuid = list(glance.glance_ids(img_uuid))
+        self.assertEqual(img_uuids_uuid, img_uuids_name)
+        glance.glance_delete_all(utils.test_name(), quiet=True)
+
+class TestGlanceNotOk(unittest.TestCase):
+
+    def test_glance_diskformat(self):
+        glance.glance_delete_all(utils.test_name(), quiet=True)
+        self.assertFalse(glance.glance_import(os.devnull,
+                name=utils.test_name(), diskformat='notgood'))
+        self.assertFalse(glance.glance_import(os.devnull,
+                name=utils.test_name()))
+        glance.glance_delete_all(utils.test_name(), quiet=True)
+
+    def test_glance_imglist(self):
+        self.assertTrue(glance.glance_image_list())
+        with utils.environ('OS_PASSWORD', 'not_the_one'):
+            self.assertFalse(glance.glance_image_list())
+
+    def test_glance_ids(self):
+        self.assertEqual(set(), glance.glance_ids('XXX'))
+        with utils.environ('OS_PASSWORD', 'not_the_one'):
+            self.assertEqual(set(), glance.glance_ids('XXX'))
 
 class TestGlanceFixture(unittest.TestCase):
 
