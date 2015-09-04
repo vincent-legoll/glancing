@@ -105,18 +105,23 @@ def do_argparse(sys_argv):
 
 # Get compressed VM image file from the given url
 def get_url(url):
-    if not url:
+    if not url or type(url) not in (str, unicode):
         return None
     try:
         url_f = urlopen(url)
     except HTTPError as e:
         if e.code == 404 and e.reason == 'Not Found':
-            vprint('404 Not found: ' + url)
+            vprint(str(e))
             return None
         raise e
     except URLError as e:
         vprint(str(e))
         return None
+    except ValueError as e:
+        if e.args[0] == 'unknown url type: %s' % url:
+            vprint(str(e))
+            return None
+        raise e
     with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
         try:
             utils.block_read_filedesc(url_f, fout.write, 4096)
