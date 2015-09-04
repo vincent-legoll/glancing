@@ -33,7 +33,7 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
         if seps == 1:
             header = line_split
             length = ls_len
-        elif seps == 2:
+        else: # if seps == 2:
             if line_pattern_re is not None:
                 if not line_pattern_re.search(line):
                     continue
@@ -52,13 +52,15 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
 def map_block(block):
     ret = {}
     h, b = parse_block(block)
+    # Direct mapping
     if len(h) == 2:
         for i in range(len(b)):
-            if len(h) == len(b[i]):
+            #if len(h) == len(b[i]): # Useless, parse_block ensures that
                 ret[b[i][0]] = b[i][1]
-    elif len(h) > 2:
+    # Mapping to lists
+    else: # if len(h) > 2:
         for i in range(len(b)):
-            if len(h) == len(b[i]):
+            #if len(h) == len(b[i]): # Useless, parse_block ensures that
                 ret[b[i][0]] = b[i][1:]
     return ret
 
@@ -95,8 +97,6 @@ def get_field(sys_argv=sys.argv[1:]):
 
     # Handle CLI arguments
     args = cli(sys_argv=sys_argv)
-    if not args:
-        return ''
 
     # Column selection
     col = 0
