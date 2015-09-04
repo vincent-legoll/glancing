@@ -60,7 +60,7 @@ def glance_ids(names):
     if names and utils.is_iter(names):
         il = glance_image_list()
         if il:
-            h, b = openstack_out.parse_block(il)
+            h, b, _, _ = openstack_out.parse_block(il)
             for image_id, image_name, _, _, _, _ in b:
                 if image_name in names or image_id in names:
                     ret.add(image_id)
