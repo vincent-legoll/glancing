@@ -14,8 +14,10 @@ import openstack_out
 re_sep_line = re.compile(r'^[+-]+$')
 
 def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
+    garbin = []
+    garbout = []
     header = []
-    ret = []
+    rows = []
     seps = 0
     length = 0
     for line in block.splitlines():
@@ -25,9 +27,11 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
             seps += 1
             continue
         if seps == 0:
+            garbin.append(line)
             continue
         elif seps == 3:
-            break
+            garbout.append(line)
+            continue
         line_split = [i.strip() for i in line.split('|')][1:-1]
         ls_len = len(line_split)
         if seps == 1:
@@ -41,17 +45,17 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
                 if line_anti_pattern_re.search(line):
                     continue
             if length == ls_len:
-                ret.append(line_split)
+                rows.append(line_split)
             else:
                 print('line "%s" has wrong number of columns %d, should'
                       ' be %d ' % (line, ls_len, length))
                 continue
 
-    return header, ret
+    return header, rows, garbin, garbout
 
 def map_block(block):
     ret = {}
-    h, b = parse_block(block)
+    h, b, _, _ = parse_block(block)
     # Direct mapping
     if len(h) == 2:
         for i in range(len(b)):
@@ -123,21 +127,27 @@ def get_field(sys_argv=sys.argv[1:]):
     if len(cmd) == 1 and type(cmd[0]) == str:
         cmd = cmd[0].split()
 
-    # Run it, grab output
-    ok, retcode, out, err = utils.run(cmd, out=True)
-    if not ok:
-        return ''
-
     # Parse the returned array
-    headers, rows = openstack_out.parse_block(out, pat, apa)
-    if not rows:
+    ret = get_rows(cmd, pat, apa)
+    if not ret:
         return ''
+    headers, rows, _, _ = ret
 
     # Return the requested columns
     if len(headers) > col:
         return [row[col] for row in rows[:head]]
 
     return ''
+
+def get_rows(cmd, pat=None, apa=None):
+
+    # Run it, grab output
+    ok, retcode, out, err = utils.run(cmd, out=True)
+    if not ok:
+        return None
+
+    # Parse the returned array
+    return openstack_out.parse_block(out, pat, apa)
 
 def main(sys_argv=sys.argv[1:]):
     for i in get_field(sys_argv=sys_argv):
