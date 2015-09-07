@@ -44,8 +44,14 @@ class GlanceTest(unittest.TestCase):
         self.assertFalse(glance.glance_exists(u''))
         self.assertFalse(glance.glance_exists(u'Nonexistent'))
 
+    def test_glance_ids_unfiltered(self):
+        l1 = glance.glance_ids(None)
+        self.assertTrue(set() <= l1)
+        l2 = glance.glance_ids()
+        self.assertTrue(set() <= l2)
+        self.assertEqual(l1, l2)
+
     def test_glance_ids_single(self):
-        self.assertEqual(set(), glance.glance_ids(None))
         self.assertEqual(set(), glance.glance_ids(True))
         self.assertEqual(set(), glance.glance_ids(False))
         self.assertEqual(set(), glance.glance_ids(''))
@@ -88,9 +94,9 @@ class TestGlanceNotOk(unittest.TestCase):
         glance.glance_delete_all(utils.test_name(), quiet=True)
 
     def test_glance_imglist(self):
-        self.assertTrue(glance.glance_image_list())
+        self.assertTrue(glance.glance_run('image-list'))
         with utils.environ('OS_PASSWORD', 'not_the_one'):
-            self.assertFalse(glance.glance_image_list())
+            self.assertFalse(glance.glance_run('image-list'))
 
     def test_glance_ids(self):
         self.assertEqual(set(), glance.glance_ids('XXX'))
