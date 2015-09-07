@@ -21,29 +21,39 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
     seps = 0
     length = 0
     for line in block.splitlines():
+        # Empty line
         if not line:
             continue
+        # A separator line
         if re_sep_line.match(line):
             seps += 1
             continue
+        # Before the table
         if seps == 0:
             garbin.append(line)
             continue
+        # After the table
         elif seps == 3:
             garbout.append(line)
             continue
+        # Separate the different columns
         line_split = [i.strip() for i in line.split('|')][1:-1]
         ls_len = len(line_split)
+        # This line is a header one
         if seps == 1:
             header = line_split
             length = ls_len
+        # These are the data, the rows of the table
         else: # if seps == 2:
+            # Select good lines
             if line_pattern_re is not None:
                 if not line_pattern_re.search(line):
                     continue
+            # Deselect wrong lines
             if line_anti_pattern_re is not None:
                 if line_anti_pattern_re.search(line):
                     continue
+            # Right number of columns ?
             if length == ls_len:
                 rows.append(line_split)
             else:
@@ -147,7 +157,7 @@ def get_rows(cmd, pat=None, apa=None):
         return None
 
     # Parse the returned array
-    return openstack_out.parse_block(out, pat, apa)
+    return parse_block(out, pat, apa)
 
 def main(sys_argv=sys.argv[1:]):
     for i in get_field(sys_argv=sys_argv):
