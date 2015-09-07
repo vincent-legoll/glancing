@@ -208,21 +208,21 @@ class UtilsRunTest(unittest.TestCase):
         self.assertTrue(utils.run(['rm', test_file])[0])
         self.assertFalse(os.path.exists(test_file))
 
-    def test_utils_run_output(self):
+    def test_utils_run_output_quiet_false(self):
         good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True, quiet_out=False)
         self.assertTrue(good)
         self.assertTrue(retcode == 0)
         self.assertEqual(out, 'TOTO')
         self.assertIsNone(err)
 
-    def test_utils_run_output_quiet(self):
+    def test_utils_run_output_quiet_true(self):
         good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True, quiet_out=True)
         self.assertTrue(good)
         self.assertTrue(retcode == 0)
         self.assertEqual(out, 'TOTO')
         self.assertIsNone(err)
 
-    def test_utils_run_output_quiet(self):
+    def test_utils_run_output(self):
         good, retcode, out, err = utils.run(['echo', '-n', 'TOTO'], out=True)
         self.assertTrue(good)
         self.assertTrue(retcode == 0)
