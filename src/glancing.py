@@ -221,15 +221,18 @@ def main(sys_argv=sys.argv[1:]):
         # Get xml metadata file from StratusLab marketplace
         metadata_url_base = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
         local_metadata_file = get_url(metadata_url_base + args.descriptor)
-        metadata = md.MetaStratusLabXml(local_metadata_file).get_metadata()
+        meta = md.MetaStratusLabXml(local_metadata_file)
     elif image_type == 'cern':
-        metadata = md.MetaCern(args.cernlist).get_metadata(args.descriptor)
+        meta = md.MetaCern(args.cernlist, args.descriptor)
     elif image_type == 'json':
-        metadata = md.MetaStratusLabJson(args.descriptor).get_metadata()
+        meta = md.MetaStratusLabJson(args.descriptor)
     elif image_type == 'xml':
-        metadata = md.MetaStratusLabXml(args.descriptor).get_metadata()
-    else:
+        meta = md.MetaStratusLabXml(args.descriptor)
+
+    if image_type == 'image':
         metadata = {'checksums': {}, 'format': 'raw'}
+    else:
+        metadata = meta.get_metadata()
 
     # Ensure we have something to work on
     if not metadata:
@@ -273,7 +276,7 @@ def main(sys_argv=sys.argv[1:]):
         if image_type in ('image', 'url'):
             name, ext = os.path.splitext(base_name)
         elif image_type in ('xml', 'json', 'market', 'cern'):
-            name = '%s-%s-%s' % (metadata['os'], metadata['os-version'], metadata['os-arch'])
+            name = get_name()
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to be verified, from checksum files
