@@ -17,3 +17,5 @@ test/images/cirros-MD5SUMS
 test/images/coreos_production_qemu_image.img
 test/images/ttylinux-16.1-x86_64.img
 
+test/stratuslab/download/*.xml
+test/stratuslab/download/*.json
