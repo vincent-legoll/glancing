@@ -46,8 +46,8 @@ class MetaDataCernTest(unittest.TestCase):
     def test_metadata_cern(self):
         fn = 'test_image_list'
         jsonfile = get_local_path('..', 'CERN', fn)
-        m = metadata.MetaCern(jsonfile)
-        md = m.get_metadata('deadbabe-f00d-beef-cafe-b1ab1ab1a666')
+        m = metadata.MetaCern(jsonfile, 'deadbabe-f00d-beef-cafe-b1ab1ab1a666')
+        md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys)
         self.assertEqual(md['location'],
             'http://download.cirros-cloud.net/0.3.4/'

@@ -9,6 +9,8 @@ import xml.etree.ElementTree as et
 
 import decompressor
 
+from utils import vprint
+
 class StratusLabNS(object):
 
     _NS_TO_URL_PREFIXES = {
@@ -30,11 +32,20 @@ class StratusLabNS(object):
         'compression': 'dcterms',
     }
 
+class MetaDataBase(object):
+
+    def __init__(self):
+        super(MetaDataBase, self).__init__()
+
+    def get_name(self):
+        md = self.data
+        return '%s-%s-%s' % (md['os'], md['os-version'], md['os-arch'])
+
 # Translate Stratuslab market place hash names to hashlib ones
 def sl_to_hashlib(hash_name):
     return hash_name.replace('-', '').lower()
 
-class MetaDataJson(object):
+class MetaDataJson(MetaDataBase):
 
     def __init__(self, filename):
         super(MetaDataJson, self).__init__()
@@ -83,14 +94,15 @@ class MetaCern(MetaDataJson):
         'os-version': "sl:osversion",
     }
 
-    def __init__(self, jsonfile):
+    def __init__(self, jsonfile, ident):
         super(MetaCern, self).__init__(jsonfile)
         self.all_images = {}
         self.get_all_images()
         self.data = None
+        self.ident = ident
 
-    def get_metadata(self, ident):
-        return self.all_images.get(ident, {})
+    def get_metadata(self):
+        return self.all_images.get(self.ident, {})
 
     def get_all_images(self):
         il = self.json_obj["hv:imagelist"]["hv:images"]
@@ -112,7 +124,7 @@ class MetaCern(MetaDataJson):
                     ret['checksums'][algo] = img[key]
             self.all_images[img["dc:identifier"]] = ret
 
-class MetaStratusLabXml(object):
+class MetaStratusLabXml(MetaDataBase):
     '''Parse the metadata .xml file, from the stratuslab marketplace
        Extract interesting data: url and message digests
     '''
@@ -122,6 +134,7 @@ class MetaStratusLabXml(object):
         try:
             self.xml_obj = et.parse(filename)
         except et.ParseError as e:
+            vprint('parse error')
             self.get_metadata = lambda: None
         self.data = { 'checksums': {} }
 
@@ -129,7 +142,13 @@ class MetaStratusLabXml(object):
         ns = StratusLabNS._NS_TO_URL_PREFIXES
         ret = self.data
         root = self.xml_obj.getroot()
-        rdf = root.find('rdf:RDF', ns)
+        # StratusLab xml metadata files are not consistent:
+        # if downloaded through the XML button or directly
+        # through the url, there's an additionnal root tag
+        if root.tag == 'metadata':
+            rdf = root.find('rdf:RDF', ns)
+        else:
+            rdf = root
         desc = rdf.find('rdf:Description', ns)
         for cksum in desc.findall('slreq:checksum', ns):
             algo = cksum.find('slreq:algorithm', ns)
