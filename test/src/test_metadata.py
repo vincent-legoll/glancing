@@ -57,7 +57,7 @@ class MetaDataXmlTest(unittest.TestCase):
 
     def test_metadata_xml(self):
         fn = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml'
-        xmlfile = get_local_path('..', 'stratuslab', fn)
+        xmlfile = get_local_path('..', 'stratuslab', 'download', fn)
         m = metadata.MetaStratusLabXml(xmlfile)
         md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys)
