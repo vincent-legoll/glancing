@@ -229,7 +229,7 @@ def main(sys_argv=sys.argv[1:]):
     elif image_type == 'xml':
         meta = md.MetaStratusLabXml(args.descriptor)
 
-    if image_type == 'image':
+    if image_type in ('image', 'url'):
         metadata = {'checksums': {}, 'format': 'raw'}
     else:
         metadata = meta.get_metadata()
