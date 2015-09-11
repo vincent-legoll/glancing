@@ -15,7 +15,11 @@ for vmid in ${VMID_LIST}; do
     wget -O ${vmid}.xml ${SL_MARKETPLACE_URL_BASE}${vmid}?media=xml
     if [ $? -eq 0 ]; then
 	wget -O ${vmid}.json ${SL_MARKETPLACE_URL_BASE}${vmid}?media=json
+	[ $? -ne 0 ] && rm ${vmid}.json
     else
 	rm ${vmid}.xml
     fi
 done
+
+# This one is borked
+rm PIDt94ySjKEHKKvWrYijsZtclxU.json
