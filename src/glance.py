@@ -91,6 +91,11 @@ def glance_download(name, fn_local):
     out = glance_run('image-download', '--file', fn_local, name, err_msg=err_msg)
     return out is not None
 
+def glance_rename(vmid, name):
+    err_msg = 'failed to rename image from glance: ' + name
+    out = glance_run('image-update', '--name', name, vmid, err_msg=err_msg)
+    return out is not None
+
 # Handle CLI options
 def do_argparse(sys_argv):
     parser = argparse.ArgumentParser(description='Manage glance VM images')

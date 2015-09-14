@@ -170,10 +170,7 @@ class GlanceMainTest(TestGlanceFixture):
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
-class GlanceMiscTest(TestGlanceFixture):
-
-    def test_glance_exists_import(self):
-        self.common_start(self._IMG_NAME)
+class GlanceDeleteTest(TestGlanceFixture):
 
     def test_glance_delete_all(self):
         self.common_start(self._IMG_NAME)
@@ -206,6 +203,23 @@ class GlanceMiscTest(TestGlanceFixture):
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
         self.assertFalse(glance.glance_delete(self._IMG_NAME, quiet=True))
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class GlanceMiscTest(TestGlanceFixture):
+
+    def test_glance_exists_import(self):
+        self.common_start(self._IMG_NAME)
+
+    def test_glance_rename_and_back(self):
+        old = '_rename_test'
+        self.common_start(self._IMG_NAME)
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
+        self.assertTrue(glance.glance_rename(self._IMG_NAME, self._IMG_NAME + old))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME + old))
+        self.assertTrue(glance.glance_rename(self._IMG_NAME + old, self._IMG_NAME))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
     def test_glance_download(self):
         _RND1M_FILE = get_local_path('..', 'data', 'random_1M.bin')
