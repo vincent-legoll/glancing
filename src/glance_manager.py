@@ -106,6 +106,10 @@ def handle_vm(vmid, vmmap):
     name = meta.get_name()
     if name in vmmap:
         vprint('An image with the same name is already in glance, but md5 differ')
+        if not glance.glance_rename(vmid, name + '_old'):
+            return
+
+    glance.glance_import(meta_file, md5=new_md5, name=name)
 
 def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
