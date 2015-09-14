@@ -1,17 +1,17 @@
 #! /usr/bin/env python
 
 import os
-import sys
 import unittest
 
-from tutils import get_local_path
+from tutils import local_pythonpath
 
 # Setup PYTHONPATH for utils
-sys.path.append(get_local_path('..', '..', 'src'))
+local_pythonpath('..', '..', 'src')
 
 import glance
 import utils
 
+# Always verbose messages during tests
 utils.set_verbose(True)
 
 # Check we have a cloud ready to import images into...
@@ -220,6 +220,8 @@ class GlanceMiscTest(TestGlanceFixture):
         self.assertTrue(glance.glance_rename(self._IMG_NAME + old, self._IMG_NAME))
         self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        # TODO: 2 images ont le meme nom...
+        # TODO: rename inexistent
 
     def test_glance_download(self):
         _RND1M_FILE = get_local_path('..', 'data', 'random_1M.bin')
