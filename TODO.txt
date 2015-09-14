@@ -2,26 +2,21 @@
   or glancepush directly
 
 High priority list:
+- filter image updates according to a subscription list
 
 - backup images to be replaced
 - output EGI marketplace-compliant json
-- filter image updates according to a subscription list
+
+Medium priority list:
 
 - Add more tests (see coverage reports)
   os.remove (--keep-temps=False) after import (--dry-run=False)
   no name for url, json, market
   size NOK + [no-]force
   -s and metadata overriding checksums
+  -S with pathes inside *SUMS file instead of only filenames
 
-- take checksums from : distro files
-  check gpg signature
-
-MD5SUMS
-MD5SUMS.gpg
-SHA1SUMS
-SHA1SUMS.gpg
-SHA256SUMS
-SHA256SUMS.gpg
+- check gpg signature
 
 gpg --verify MD5SUMS.gpg MD5SUMS
 gpg: Signature made 2014-07-25T01:53:21 CEST using DSA key ID FBB75451
@@ -30,11 +25,19 @@ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys FBB75451
 # gpg --lsign-key FBB75451
 gpg --verify SHA256SUMS.gpg SHA256SUMS
 
-
-
 gpg --import /usr/share/keyrings/ubuntu-archive-keyring.gpg
-
 
 sudo apt-get install ubuntu-keyring
 gpgv --keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg SHA256SUMS.gpg SHA256SUMS
 grep ubuntu-14.04-desktop-amd64.iso SHA256SUMS | sha256sum --check
+
+Interresting images
+
+upstream, not modified
+- ubuntu
+- centos
+
+VOs, as-is
+- EGIs
+
+SL market, endorsed
