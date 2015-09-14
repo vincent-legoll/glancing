@@ -12,3 +12,8 @@ def mod_path():
 
 def get_local_path(*args):
     return os.path.realpath(os.path.join(mod_path(), *args))
+
+def local_pythonpath(*args):
+    local_path = get_local_path(*args)
+    if local_path not in sys.path:
+        sys.path.append(local_path)
