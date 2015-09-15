@@ -5,7 +5,7 @@ import sys
 import glob
 import unittest
 
-from tutils import local_pythonpath
+from tutils import local_pythonpath, get_local_path
 
 # Setup project-local PYTHONPATH
 local_pythonpath('..', '..', 'src')
