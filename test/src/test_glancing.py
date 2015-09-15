@@ -4,11 +4,12 @@ import os
 import sys
 import unittest
 
-from tutils import local_pythonpath
+from tutils import local_pythonpath, get_local_path
 
 # Setup project-local PYTHONPATH
 local_pythonpath('..', '..', 'src')
 
+import utils
 from utils import devnull, environ, test_name, run, cleanup
 
 import glancing
@@ -334,3 +335,21 @@ class GlancingUrlImportTest(BaseGlancingUrl):
         with cleanup(['glance', 'image-delete', test_name()]):
             self.assertTrue(glancing.main(['-n', test_name(),
                 self._CIRROS_URL, '-S', self._CIRROS_SUM]))
+
+
+class GlancingUrlImportTest(BaseGlancingUrl):
+
+    def setUp(self):
+        self._v = utils.get_verbose()
+        utils.set_verbose(True)
+
+    def tearDown(self):
+        utils.set_verbose(self._v)
+
+    def test_glancing_add_checksum(self):
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                self.assertFalse(glancing.add_checksum(self._CIRROS_MD5,
+                                 {'checksums': {'md5': '0' * 32}}))
+                self.assertEqual(output.getvalue(), '%s: conflicting digests: %s:%s\n' %
+                                 (sys.argv[0], self._CIRROS_MD5, '0' * 32))
