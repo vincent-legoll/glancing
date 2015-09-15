@@ -45,8 +45,6 @@ class MultihashTest(unittest.TestCase):
         mh = multihash.multihash_serial_exec()
         self.assertEquals(mh.get_hash(os.devnull, 'md5'), 'd41d8cd98f00b204e9800998ecf8427e')
         self.assertIsNone(mh.get_hash('/tmp/nonexistent', 'md5'))
-        with self.assertRaises(OSError):
-            mh.get_hash(os.devnull, 'nonexistent_hash_algo')
 
     def test_multihash_string_serial(self):
         mh = multihash.multihash_serial_exec()
@@ -60,6 +58,27 @@ class MultihashTest(unittest.TestCase):
             mh.hash_file('test.txt')
             self.assertEquals(mh.hexdigests()['md5'], '92fdff5b8595ef3f9ac0de664ce21532')
         os.remove('test.txt')
+
+class MultihashTestGetHashSerial(unittest.TestCase):
+
+    def setUp(self):
+        self._v = utils.get_verbose()
+        utils.set_verbose(True)
+
+    def tearDown(self):
+        utils.set_verbose(self._v)
+
+    def test_multihash_gethash_serial_nonexistent_hash(self):
+        mh = multihash.multihash_serial_exec()
+        with utils.stringio() as output:
+            with utils.redirect('stdout', output):
+                nonexistent_hash = 'nonexistent_hash_algo'
+                self.assertFalse(mh.get_hash(os.devnull, nonexistent_hash))
+                out = ("%s: '%s%s': Cannot execute, please check it is properly"
+                       " installed, and available through your PATH environment "
+                       "variable.\n%s: [Errno 2] No such file or directory\n" %
+                       (sys.argv[0], nonexistent_hash, 'sum', sys.argv[0]))
+                self.assertEqual(output.getvalue(), out)
 
 class MultihashTestMain(unittest.TestCase):
 
