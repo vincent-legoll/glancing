@@ -336,7 +336,6 @@ class GlancingUrlImportTest(BaseGlancingUrl):
             self.assertTrue(glancing.main(['-n', test_name(),
                 self._CIRROS_URL, '-S', self._CIRROS_SUM]))
 
-
 class GlancingUrlImportTest(BaseGlancingUrl):
 
     def setUp(self):
