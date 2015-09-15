@@ -4,8 +4,8 @@
 High priority list:
 - filter image updates according to a subscription list
 
+- remove backup from glancing and put it into glance_manager
 - backup images to be replaced
-- output EGI marketplace-compliant json
 
 Medium priority list:
 
@@ -15,6 +15,8 @@ Medium priority list:
   size NOK + [no-]force
   -s and metadata overriding checksums
   -S with pathes inside *SUMS file instead of only filenames
+
+- output EGI marketplace-compliant json
 
 - check gpg signature
 
