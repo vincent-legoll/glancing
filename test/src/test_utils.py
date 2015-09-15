@@ -12,7 +12,7 @@ try:
 except ImportError:
     import io as StringIO
 
-from tutils import local_pythonpath
+from tutils import local_pythonpath, get_local_path
 
 # Setup project-local PYTHONPATH
 local_pythonpath('..', '..', 'src')
@@ -593,6 +593,15 @@ class AlmostRawFormatterTest(unittest.TestCase):
         for (test_val, expected, expected_pref) in test_vals:
             self.assertEqual(expected, rf._split_lines(test_val, 7))
             self.assertEqual(expected_pref, rf._split_lines(rf._PREFIX + test_val, 7))
+
+class OutputTest(unittest.TestCase):
+
+    def test_utils_output(self):
+        import subprocess
+        self.assertIsNone(utils.output(False, False))
+        self.assertEqual(subprocess.PIPE, utils.output(True, False))
+        self.assertEqual(subprocess.PIPE, utils.output(True, True))
+        self.assertEqual(subprocess.DEVNULL, utils.output(False, True))
 
 if __name__ == '__main__':
     import pytest
