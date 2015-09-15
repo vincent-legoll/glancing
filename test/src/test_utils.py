@@ -12,10 +12,10 @@ try:
 except ImportError:
     import io as StringIO
 
-from tutils import get_local_path
+from tutils import local_pythonpath
 
-# Setup PYTHONPATH for utils
-sys.path.append(get_local_path('..', '..', 'src'))
+# Setup project-local PYTHONPATH
+local_pythonpath('..', '..', 'src')
 
 import utils
 from utils import size_t

@@ -5,7 +5,7 @@ import unittest
 
 from tutils import local_pythonpath
 
-# Setup PYTHONPATH for utils
+# Setup project-local PYTHONPATH
 local_pythonpath('..', '..', 'src')
 
 import glance

@@ -4,10 +4,10 @@ import os
 import sys
 import unittest
 
-from tutils import get_local_path
+from tutils import local_pythonpath
 
-# Setup PYTHONPATH for metadata
-sys.path.append(get_local_path('..', '..', 'src'))
+# Setup project-local PYTHONPATH
+local_pythonpath('..', '..', 'src')
 
 from utils import devnull
 
