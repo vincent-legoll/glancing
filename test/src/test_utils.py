@@ -68,23 +68,23 @@ class UtilsTestSizeT(unittest.TestCase):
         self.assertEqual(str(size_t(2048)), '2K')
         self.assertEqual(str(size_t(2049)), '2K')
 
-        self.assertEqual(str(size_t(1024*1024-1)), '1023K')
-        self.assertEqual(str(size_t(1024*1024+0)), '1M')
-        self.assertEqual(str(size_t(1024*1024+1)), '1M')
+        self.assertEqual(str(size_t(1024 * 1024 - 1)), '1023K')
+        self.assertEqual(str(size_t(1024 * 1024 + 0)), '1M')
+        self.assertEqual(str(size_t(1024 * 1024 + 1)), '1M')
 
-        self.assertEqual(str(size_t(1024*1024*1024-1)), '1023M')
-        self.assertEqual(str(size_t(1024*1024*1024+0)), '1G')
-        self.assertEqual(str(size_t(1024*1024*1024+1)), '1G')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 - 1)), '1023M')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 + 0)), '1G')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 + 1)), '1G')
 
-        self.assertEqual(str(size_t(1024*1024*1024*1024-1)), '1023G')
-        self.assertEqual(str(size_t(1024*1024*1024*1024+0)), '1T')
-        self.assertEqual(str(size_t(1024*1024*1024*1024+1)), '1T')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 - 1)), '1023G')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 + 0)), '1T')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 + 1)), '1T')
 
-        self.assertEqual(str(size_t(1024*1024*1024*1024*1024+0)), '1P')
-        self.assertEqual(str(size_t(1024*1024*1024*1024*1024+1)), '1P')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 * 1024 + 0)), '1P')
+        self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 * 1024 + 1)), '1P')
 
         # FIXME: This last one fail: 0P != 1023T
-        #self.assertEqual(str(size_t(1024*1024*1024*1024*1024-1)), '1023T')
+        #self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 * 1024 - 1)), '1023T')
 
 class UtilsTest(unittest.TestCase):
 
@@ -160,7 +160,7 @@ class UtilsTest(unittest.TestCase):
 
         def set_status(x):
             status[0] = True
-       
+
         local_path = get_local_path('..', 'data', 'length_one.bin')
 
         utils.block_read_filename(local_path, set_status)

@@ -25,4 +25,3 @@ class GlanceManagerTest(unittest.TestCase):
     def test_glance_manager_ok(self):
         glance_manager.get_meta_file = lambda x: get_local_path('..', 'stratuslab', 'cirros.xml')
         glance_manager.main(['-v', '-l', get_local_path('..', 'gm_list.txt')])
-        
