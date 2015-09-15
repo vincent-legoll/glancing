@@ -89,7 +89,7 @@ class size_t(object):
 def output(out, quiet):
     if out:
         stdout = subprocess.PIPE
-    elif quiet is None or quiet == True:
+    elif quiet is None or quiet is True:
         stdout = subprocess.DEVNULL
     else:
         stdout = None
@@ -104,7 +104,7 @@ def run(cmd, out=False, err=False, quiet_out=None, quiet_err=None):
                                 stdout=stdout, stderr=stderr)
         stdoutdata, stderrdata = subp.communicate()
         return (subp.returncode == 0, subp.returncode,
-            stdoutdata if out else None, stderrdata if err else None)
+                stdoutdata if out else None, stderrdata if err else None)
     except OSError as e:
         vprint("'%s': Cannot execute, please check it is properly"
                " installed, and available through your PATH environment "
@@ -113,12 +113,12 @@ def run(cmd, out=False, err=False, quiet_out=None, quiet_err=None):
     return False, None, None, None
 
 class chdir(object):
-    
+
     def __init__(self, dir_path):
         if not os.path.isdir(dir_path):
             raise ValueError('Not a directory')
         self.dir_path = dir_path
-        
+
     def __enter__(self):
         self.oldcwd = os.getcwd()
         os.chdir(self.dir_path)

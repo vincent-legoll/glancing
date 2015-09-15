@@ -88,7 +88,7 @@ def cli(sys_argv=sys.argv[1:]):
                         ' regex. Searched in the whole line')
 
     parser.add_argument('-P', '--anti-pattern', dest='antipattern',
-                         default=None, nargs="?", metavar='STRING',
+                        default=None, nargs="?", metavar='STRING',
                         help='pattern to deselect lines. Can be a python'
                         ' regex. Searched in the whole line')
 
@@ -98,7 +98,7 @@ def cli(sys_argv=sys.argv[1:]):
 
     parser.add_argument('-t', '--head', dest='head', default=None,
                         nargs="?", metavar='NUMBER',
-            help='In case of multi line output, get the first N lines')
+                        help='In case of multi line output, get the first N lines')
 
     parser.add_argument(dest='cmd', nargs="+", metavar='STRING',
                         help='openstack command, as a single or multiple'

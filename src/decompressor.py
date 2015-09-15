@@ -31,7 +31,7 @@ class Decompressor(object):
 
         if not os.path.exists(filename):
             raise DecompressorError('File does not exist: ' + filename)
-            
+
         self.fin_name = filename
         self.block_size = block_size
         self.fout_name, sext = os.path.splitext(filename)

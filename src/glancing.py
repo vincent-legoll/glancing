@@ -288,7 +288,6 @@ def main(sys_argv=sys.argv[1:]):
         re_chks_line = re.compile(r'(?P<digest>[a-zA-Z0-9]+)\s+(?P<filename>.+)')
         for sum_file in args.sums_files:
             if sum_file.startswith(('http://', 'https://')):
-                
                 local_sum_file = get_url(sum_file)
                 if not local_sum_file or not os.path.exists(local_sum_file):
                     vprint('cannot download from: ' + sum_file)
@@ -305,7 +304,7 @@ def main(sys_argv=sys.argv[1:]):
                         if not ret:
                             vprint(sum_file + ': cannot add_checksum(' + m.group('digest') + ')')
                             return False
-                            
+
     # Populate metadata message digests to be verified, from CLI parameters
     if args.digests:
         for dig in filter(None, args.digests.split(':')):

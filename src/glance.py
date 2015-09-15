@@ -43,7 +43,7 @@ def glance_run(glance_cmd=None, *args, **kwargs):
     cmd.extend(args)
     ok, retcode, out, err = utils.run(cmd, out=True, err=True)
     if not ok:
-        if not (kwargs.get('quiet') == True):
+        if not (kwargs.get('quiet') is True):
             err_msg = kwargs.get('err_msg', 'failed to run "%s"' % glance_cmd)
             vprint(err_msg)
             if args:
@@ -64,7 +64,7 @@ def glance_ids(names=None):
         for image_id, image_name, _, _, _, _ in b:
             # Filtering or not ?
             if (names is None or (utils.is_iter(names) and
-                (image_name in names or image_id in names))):
+                    (image_name in names or image_id in names))):
                 ret.add(image_id)
     return ret
 

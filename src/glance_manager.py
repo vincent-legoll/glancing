@@ -81,7 +81,6 @@ def get_glance_vmmap():
 #~ | status           | active                               |
 #~ | updated_at       | 2015-07-21T12:24:17                  |
 #~ +------------------+--------------------------------------+
-#~ 
 #~ --is-public [True|False]
     #~ Makes an image accessible for all the tenants (admin-only by default).
 #~ --is-protected [True|False]
