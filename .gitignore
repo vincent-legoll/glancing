@@ -19,3 +19,7 @@ test/images/ttylinux-16.1-x86_64.img
 
 test/stratuslab/download/*.xml
 test/stratuslab/download/*.json
+
+test/stratuslab/JcqGhHxmTRAEpHMmRF-xhSTM3TO.xml
+test/stratuslab/KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml
+test/stratuslab/PIDt94ySjKEHKKvWrYijsZtclxU.xml
