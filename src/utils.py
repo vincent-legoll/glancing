@@ -195,12 +195,20 @@ class cleanup(object):
         # Prepare
         self._cleanup_cmd = cleanup_cmd
 
+    def _cleanup(self):
+        run(self._cleanup_cmd)
+
     def __enter__(self):
         pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Restore
-        run(self._cleanup_cmd)
+        self._cleanup()
+
+class clean(cleanup):
+
+    def __enter__(self):
+        self._cleanup()
 
 class stringio(object):
 
