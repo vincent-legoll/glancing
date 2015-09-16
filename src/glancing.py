@@ -210,7 +210,6 @@ def main(sys_argv=sys.argv[1:]):
             image_type = 'market'
         else:
             vprint('probably invalid StratusLab marketplace ID')
-            return False
 
     if image_type is None:
         vprint('Cannot guess mode of operation')
