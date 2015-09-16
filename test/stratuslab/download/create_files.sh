@@ -7,19 +7,21 @@ KqU_1EZFVGCDEhX9Kos9ckOaNjB \
 PIDt94ySjKEHKKvWrYijsZtclxU \
 JcqGhHxmTRAEpHMmRF-xhSTM3TO"
 
-# Not there any more
-#~ BtSKdXa2SvHlSVTvgFgivIYDq--
-#~ ME4iRTemHRwhABKV5AgrkQfDerA
+function get_one()
+{
+    wget -O $1 $2
+    RET=$?
+    if [ ${RET} -eq 0 ]; then
+	[ -f ../$1 ] || ln -s download/$1 ..
+    else
+	rm $1
+    fi
+    return ${RET}
+}
 
 for vmid in ${VMID_LIST}; do
-    wget -O ${vmid}.xml ${SL_MARKETPLACE_URL_BASE}${vmid}?media=xml
-    if [ $? -eq 0 ]; then
-	wget -O ${vmid}.json ${SL_MARKETPLACE_URL_BASE}${vmid}?media=json
-	[ $? -ne 0 ] && rm ${vmid}.json
-    else
-	rm ${vmid}.xml
-    fi
+    get_one ${vmid}.xml ${SL_MARKETPLACE_URL_BASE}${vmid}?media=xml
+    #~ if [ $? -eq 0 ]; then
+	#~ get_one ${vmid}.json ${SL_MARKETPLACE_URL_BASE}${vmid}?media=json
+    #~ fi
 done
-
-# This one is borked
-rm PIDt94ySjKEHKKvWrYijsZtclxU.json
