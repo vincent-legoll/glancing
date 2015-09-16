@@ -221,8 +221,15 @@ def main(sys_argv=sys.argv[1:]):
     if image_type == 'market':
         # Get xml metadata file from StratusLab marketplace
         metadata_url_base = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
-        local_metadata_file = get_url(metadata_url_base + args.descriptor)
-        meta = md.MetaStratusLabXml(local_metadata_file)
+        sl_md_url = metadata_url_base + args.descriptor
+        local_metadata_file = get_url(sl_md_url)
+        if local_metadata_file is None:
+            vprint('cannot get xml metadata file from StratuLab marketplace: ' + sl_md_url)
+            return False
+        else:
+            vprint('downloaded xml metadata file from StratuLab marketplace: ' + sl_md_url)
+            vprint('into local file: ' + local_metadata_file)
+            meta = md.MetaStratusLabXml(local_metadata_file)
     elif image_type == 'cern':
         meta = md.MetaCern(args.cernlist, args.descriptor)
     elif image_type == 'json':
