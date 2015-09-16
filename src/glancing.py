@@ -192,6 +192,7 @@ def main(sys_argv=sys.argv[1:]):
     # Guess which mode are we operating in
     image_type = None
     d = args.descriptor
+    vprint('descriptor: ' + d)
     if d.startswith('http://') or d.startswith('https://'):
         image_type = 'url'
     elif os.path.exists(d):
@@ -276,7 +277,7 @@ def main(sys_argv=sys.argv[1:]):
         if image_type in ('image', 'url'):
             name, ext = os.path.splitext(base_name)
         elif image_type in ('xml', 'json', 'market', 'cern'):
-            name = get_name()
+            name = metadata.get_name()
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to be verified, from checksum files
