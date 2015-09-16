@@ -71,6 +71,10 @@ class MetaStratusLabJson(MetaDataJson):
 
     def get_metadata(self):
         ret = self.data
+        # StratusLab can answear with 200/OK but error encoded in json response...
+        if "rMsg" in self.json_obj:
+            vprint('Bad JSON metadata')
+            return None
         for val in self.json_obj.values():
             for key in val:
                 retkey = self._MDKEY_TO_RETKEY.get(key)
