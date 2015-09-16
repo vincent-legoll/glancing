@@ -7,18 +7,12 @@ import sys
 import uuid
 import unittest
 
-try:
-    import StringIO
-except ImportError:
-    import io as StringIO
-
 from tutils import local_pythonpath, get_local_path
 
 # Setup project-local PYTHONPATH
 local_pythonpath('..', '..', 'src')
 
 import utils
-from utils import size_t
 
 class UtilsTestTempdir(unittest.TestCase):
 
@@ -44,6 +38,8 @@ class UtilsTestChdir(unittest.TestCase):
 class UtilsTestSizeT(unittest.TestCase):
 
     def test_utils_size_t_repr(self):
+        size_t = utils.size_t
+
         self.assertEqual(repr(size_t(0)), '<size_t 0>')
         self.assertEqual(repr(size_t(0, 'B')), '<size_t 0B>')
 
@@ -51,6 +47,8 @@ class UtilsTestSizeT(unittest.TestCase):
         self.assertEqual(repr(size_t(2048, 'B')), '<size_t 2048B>')
 
     def test_utils_size_t_str(self):
+        size_t = utils.size_t
+
         self.assertEqual(str(size_t(0)), '0')
         self.assertEqual(str(size_t(0, 'B')), '0B')
 
