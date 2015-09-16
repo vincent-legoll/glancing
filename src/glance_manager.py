@@ -89,11 +89,12 @@ def get_glance_vmmap():
 def get_meta_file(vmid):
     # Get xml metadata file from StratusLab marketplace
     metadata_url_base = _DEFAULT_SL_MARKETPLACE_URL_BASE
-    return glancing.get_url(metadata_url_base + vmid)
+    fn = glancing.get_url(metadata_url_base + vmid)
+    os.rename(fn, fn + '.xml')
+    return fn + '.xml'
 
 def handle_vm(vmid, vmmap):
     meta_file = get_meta_file(vmid)
-    print(meta_file)
     meta = metadata.MetaStratusLabXml(meta_file)
     md = meta.get_metadata()
     new_md5 = md['checksums']['md5']
@@ -108,7 +109,7 @@ def handle_vm(vmid, vmmap):
         if not glance.glance_rename(vmid, name + '_old'):
             return
 
-    glance.glance_import(meta_file, md5=new_md5, name=name)
+    glancing.main(['-v', '-s', new_md5, '-n', name, meta_file])
 
 def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
