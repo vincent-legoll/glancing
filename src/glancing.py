@@ -284,7 +284,7 @@ def main(sys_argv=sys.argv[1:]):
         if image_type in ('image', 'url'):
             name, ext = os.path.splitext(base_name)
         elif image_type in ('xml', 'json', 'market', 'cern'):
-            name = metadata.get_name()
+            name = meta.get_name()
     vprint(local_image_file + ': VM image name: ' + name)
 
     # Populate metadata message digests to be verified, from checksum files
