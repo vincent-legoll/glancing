@@ -199,19 +199,20 @@ class GlancingMetadataTest(unittest.TestCase):
     def test_glancing_metadata_heavies(self):
         market_ids = (
             # 98 MB, size & checksum mismatch: 4 B -> 98 MB
-            ('JcqGhHxmTRAEpHMmRF-xhSTM3TO', False, False),
+            ('JcqGhHxmTRAEpHMmRF-xhSTM3TO', False, False, False),
             # 102 MB, does not exists any more on SL marketplace
-            ('BtSKdXa2SvHlSVTvgFgivIYDq--', True, False),
+            ('BtSKdXa2SvHlSVTvgFgivIYDq--', True, False, False),
             # 463 MB
-            ('KqU_1EZFVGCDEhX9Kos9ckOaNjB', True, True),
+            ('KqU_1EZFVGCDEhX9Kos9ckOaNjB', True, True, True),
             # Size & checksum mismatch: 375 MB -> 492 MB
-            ('ME4iRTemHRwhABKV5AgrkQfDerA', False, False),
+            ('ME4iRTemHRwhABKV5AgrkQfDerA', False, False, False),
         )
-        for market_id, status_json, status_market in market_ids:
-            mdfile = get_local_path('..', 'stratuslab', market_id +
-                '.json')
+        for market_id, status_json, status_xml, status_market in market_ids:
+            mdfile_base = get_local_path('..', 'stratuslab', market_id)
             self.assertEqual(status_json, glancing.main(['-d',
-                mdfile]), mdfile)
+                mdfile_base + '.json']), mdfile_base + '.json')
+            self.assertEqual(status_xml, glancing.main(['-d',
+                mdfile_base + '.xml']), mdfile_base + '.xml')
             self.assertEqual(status_market, glancing.main(['-d',
                 market_id]), market_id)
 
@@ -222,10 +223,10 @@ class GlancingMetadataTest(unittest.TestCase):
         market_id = 'ME4iRTemHRwhABKV5AgrkQfDerA'
         mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
         with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-f', '-n', test_name(),
+            self.assertTrue(glancing.main(['-vf', '-n', test_name(),
                 mdfile]))
         with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-f', '-n', test_name(),
+            self.assertFalse(glancing.main(['-vf', '-n', test_name(),
                 market_id]))
 
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
@@ -276,15 +277,6 @@ class GlancingUrlDryRunTest(unittest.TestCase):
     def test_glancing_url_notexistent(self):
         url = 'http://nulle.part.fr/nonexistent_file.txt'
         self.assertFalse(glancing.main(['-d', url]))
-
-# FIXME: get a new image list
-@unittest.skip("Obsolete CERN VM list file")
-class GlancingCernTest(unittest.TestCase):
-
-    def test_glancing_cern(self):
-        cern_id = '623b0bc7-abc2-4961-8700-53e358772a96'
-        jsonfile = get_local_path('..', 'CERN', 'hepix_signed_image_list')
-        self.assertTrue(glancing.main(['-dvk', '-c', jsonfile, cern_id]))
 
 class BaseGlancingUrl(unittest.TestCase):
 
