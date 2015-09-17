@@ -73,7 +73,7 @@ Upload to SL market
 -------------------
 
 stratus-upload-metadata \
-    --marketplace-endpoint=http://marketplace.stratuslab.eu \
+    --marketplace-endpoint=https://marketplace.stratuslab.eu/marketplace/metadata \
     cirros-0.3.4-x86_64-base-.sign.xml
 
 6. Add to signed image list
