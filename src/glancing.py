@@ -5,6 +5,8 @@ from __future__ import print_function
 import os
 import re
 import sys
+import base64
+import binascii
 import tempfile
 import textwrap
 import argparse
@@ -207,9 +209,13 @@ def main(sys_argv=sys.argv[1:]):
         if args.cernlist:
             image_type = 'cern'
         elif len(d) == 27:
-            image_type = 'market'
+            try:
+                base64.decodestring(d)
+                image_type = 'market'
+            except binascii.Error:
+                vprint('probably invalid StratusLab marketplace ID')
         else:
-            vprint('probably invalid StratusLab marketplace ID')
+            vprint('unknown descriptor')
 
     if image_type is None:
         vprint('Cannot guess mode of operation')
