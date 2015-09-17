@@ -22,8 +22,12 @@ with utils.devnull('stderr'):
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceManagerTest(unittest.TestCase):
 
-    def test_glance_manager_ok(self):
+    def test_glance_manager_mocked_ok(self):
         gmf = lambda x: get_local_path('..', 'stratuslab', 'cirros.xml')
         glance_manager.get_meta_file = gmf
+        self.assertTrue(glance_manager.main(['-v', '-l',
+            get_local_path('..', 'gm_list.txt')]))
+
+    def test_glance_manager_ok(self):
         self.assertTrue(glance_manager.main(['-v', '-l',
             get_local_path('..', 'gm_list.txt')]))
