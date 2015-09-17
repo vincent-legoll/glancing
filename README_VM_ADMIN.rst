@@ -38,7 +38,7 @@ stratus-build-metadata \
   --os=cirros \
   --os-version=0.3.4 \
   --os-arch=x86_64 \
-  --title='CirrOS version 0.3.4 for x86_64' \
+  --title='CirrOS v0.3.4 for x86_64' \
   --location=http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img \
   cirros-0.3.4-x86_64-disk.img
 
