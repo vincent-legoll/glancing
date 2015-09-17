@@ -1,26 +1,26 @@
 Image manager tasks
 
-#. Get base image
+1. Get base image
 =================
 
-#. Modify it
+2. Modify it
 ============
 
-#. Check it for security
+3. Check it for security
 ========================
 
-#. Create SL metadata
+4. Create SL metadata
 =====================
 
-#. Upload to SL market
+5. Upload to SL market
 ======================
 
-#. Add to signed image list
+6. Add to signed image list
 ===========================
 
-#. Push updated image list to quattor
+7. Push updated image list to quattor
 =====================================
 
-#. Let sites get it
+8. Let sites get it
 ===================
 
