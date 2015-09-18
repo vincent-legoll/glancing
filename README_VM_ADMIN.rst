@@ -79,11 +79,21 @@ stratus-upload-metadata \
 6. Add to signed image list
 ===========================
 
+echo 'VMID' >> ${quattor}/etc/glance-manager/image_list.txt
+
 7. Push updated image list to quattor
 =====================================
 
+- svn push
+- svn pre-commit-hook: changelog
+- svn pre-commit-hook: automated security-check (grab from glancepush)
+
 8. Let sites get it
 ===================
+
+- Cron: glance_manager.py
+- or quattor-trigger ?
+- ML: changelog
 
 9. References
 =============
