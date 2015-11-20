@@ -98,7 +98,7 @@ def handle_vm(vmid, vmmap):
     meta = metadata.MetaStratusLabXml(meta_file)
     md = meta.get_metadata()
     new_md5 = md['checksums']['md5']
-
+    vprint('handle_vm(%s)' % vmid)
     if new_md5 in vmmap:
         vprint('Already in local glance: %s' % vmmap[new_md5]['name'])
         return
@@ -113,12 +113,15 @@ def handle_vm(vmid, vmmap):
 
 def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
+    vprint(args.vmlist)
     if not args.vmlist or not os.path.exists(args.vmlist):
         return False
     vmmap = get_glance_vmmap()
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
-        handle_vm(vmid, vmmap)
+        vmid = vmid.strip()
+        if vmid:
+            handle_vm(vmid, vmmap)
     return True
 
 if __name__ == '__main__':
