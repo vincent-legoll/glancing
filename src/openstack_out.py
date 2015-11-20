@@ -137,6 +137,11 @@ def get_field(sys_argv=sys.argv[1:]):
     if len(cmd) == 1 and type(cmd[0]) == str:
         cmd = cmd[0].split()
 
+    # Handle site-specific parameters (for example: "--insecure")
+    os_params = os.environ.get('OS_PARAMS', None)
+    if os_params:
+        cmd[1:1] = os_params.split()
+
     # Parse the returned array
     ret = get_rows(cmd, pat, apa)
     if not ret:

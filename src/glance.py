@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import os
 import sys
 import uuid
 import argparse
@@ -38,6 +39,10 @@ def glance_exists(name):
 
 def glance_run(glance_cmd=None, *args, **kwargs):
     cmd = list(_GLANCE_CMD)
+    # Handle site-specific parameters (for example: "--insecure")
+    os_params = os.environ.get('OS_PARAMS', None)
+    if os_params:
+        cmd[1:1] = os_params.split()
     if glance_cmd is not None:
         cmd += [glance_cmd]
     cmd.extend(args)
