@@ -20,7 +20,10 @@ with utils.devnull('stderr'):
     _GLANCE_OK = utils.run(['glance', 'image-list'])[0]
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
-class GlanceTest(unittest.TestCase):
+class SkipGlanceNOK(unittest.TestCase):
+    pass
+
+class GlanceTest(SkipGlanceNOK):
 
     def test_glance_ok(self):
         self.assertTrue(glance.glance_ok())
@@ -70,7 +73,7 @@ class GlanceTest(unittest.TestCase):
         self.assertEqual(set(), glance.glance_ids([None, True, False]))
         self.assertEqual(set(), glance.glance_ids(['', u'']))
 
-class TestGlanceNotOkGlanceIDS(unittest.TestCase):
+class TestGlanceNotOkGlanceIDS(SkipGlanceNOK):
 
     def test_glance_ids_uuid(self):
         glance.glance_delete_all(utils.test_name(), quiet=True)
@@ -83,7 +86,7 @@ class TestGlanceNotOkGlanceIDS(unittest.TestCase):
         self.assertEqual(img_uuids_uuid, img_uuids_name)
         glance.glance_delete_all(utils.test_name(), quiet=True)
 
-class TestGlanceNotOk(unittest.TestCase):
+class TestGlanceNotOk(SkipGlanceNOK):
 
     def test_glance_diskformat(self):
         glance.glance_delete_all(utils.test_name(), quiet=True)
@@ -103,7 +106,7 @@ class TestGlanceNotOk(unittest.TestCase):
         with utils.environ('OS_PASSWORD', 'not_the_one'):
             self.assertEqual(set(), glance.glance_ids('XXX'))
 
-class TestGlanceFixture(unittest.TestCase):
+class TestGlanceFixture(SkipGlanceNOK):
 
     _IMG_NAME = 'test-glance-img'
 
@@ -117,7 +120,6 @@ class TestGlanceFixture(unittest.TestCase):
         self.assertTrue(glance.glance_import(filename, name=name, diskformat='raw'))
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceNoNameTest(TestGlanceFixture):
 
     _IMG_NAME = ''
@@ -127,7 +129,6 @@ class GlanceNoNameTest(TestGlanceFixture):
         self.assertTrue(glance.main(['-d', self._IMG_NAME]))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceNoNameTestUnicode(TestGlanceFixture):
 
     _IMG_NAME = u''
@@ -137,7 +138,6 @@ class GlanceNoNameTestUnicode(TestGlanceFixture):
         self.assertTrue(glance.main(['-d', self._IMG_NAME]))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceMainTest(TestGlanceFixture):
 
     def test_glance_main_ok_nodelete(self):
@@ -169,7 +169,6 @@ class GlanceMainTest(TestGlanceFixture):
                 glance.main([self._IMG_NAME])
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceDeleteTest(TestGlanceFixture):
 
     def test_glance_delete_all(self):
@@ -204,7 +203,6 @@ class GlanceDeleteTest(TestGlanceFixture):
 
         self.assertFalse(glance.glance_delete(self._IMG_NAME, quiet=True))
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceMiscTest(TestGlanceFixture):
 
     def test_glance_exists_import(self):
@@ -220,7 +218,7 @@ class GlanceMiscTest(TestGlanceFixture):
         self.assertTrue(glance.glance_rename(self._IMG_NAME + old, self._IMG_NAME))
         self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
-        # TODO: 2 images ont le meme nom...
+        # TODO: images with same name...
         # TODO: rename inexistent
 
     def test_glance_download(self):
