@@ -212,8 +212,11 @@ class clean(cleanup):
 
 class stringio(object):
 
-    def __init__(self):
-        self._iofile = StringIO.StringIO()
+    def __init__(self, data=None):
+        if data is not None:
+            self._iofile = StringIO.StringIO(data)
+        else:
+            self._iofile = StringIO.StringIO()
 
     def __enter__(self):
         return self._iofile
