@@ -15,6 +15,12 @@ local_pythonpath('..', '..', 'src')
 import utils
 import openstack_out
 
+
+# Check we have a cloud ready to test...
+_VMS_OK = False
+with utils.devnull('stderr'):
+    _VMS_OK = utils.run(['nova', 'list'])[0]
+
 glance_image_show = '''\
 +------------------+--------------------------------------+
 | Property         | Value                                |
@@ -77,56 +83,79 @@ pb = '''\
 
 class OpenstackOutGetFieldTest(unittest.TestCase):
 
+    def get_field(self, args_list):
+        args = openstack_out.cli(args_list)
+        if args is None:
+            return None
+        return openstack_out.get_field(args)
+
     def test_openstack_out_get_field_ok(self):
-        f = openstack_out.get_field(['false'])
-        self.assertEqual('', f)
+        f = self.get_field(['false'])
+        self.assertEqual(None, f)
 
-        f = openstack_out.get_field(['true'])
-        self.assertEqual('', f)
+        f = self.get_field(['true'])
+        self.assertEqual(None, f)
 
-        f = openstack_out.get_field(['-c', '666', '--', 'neutron', 'agent-list'])
-        self.assertEqual('', f)
+        with utils.environ('OS_PARAMS', '--insecure'):
+            f = self.get_field(['-c', '666', '--', 'neutron', 'agent-list'])
+            self.assertEqual(None, f)
 
-        f = openstack_out.get_field(['-c', '1', '--', 'neutron', 'agent-list'])
+    @unittest.skipUnless(_VMS_OK, "VMs are not running")
+    def test_openstack_out_get_field_ok_vms(self):
+        f = self.get_field(['-c', '1', '--', 'neutron', 'agent-list'])
         self.assertEqual(['Metadata agent', 'Open vSwitch agent', 'DHCP agent', 'L3 agent', 'Open vSwitch agent'], f)
 
-        f = openstack_out.get_field(['-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
+        f = self.get_field(['-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
         self.assertEqual(['Metadata agent', 'DHCP agent', 'L3 agent'], f)
 
-        f = openstack_out.get_field(['-t', '1', '-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
+        f = self.get_field(['-t', '1', '-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
         self.assertEqual(['Metadata agent'], f)
 
-        f = openstack_out.get_field(['-p', 'Metadata', '-c', '1', '--', 'neutron', 'agent-list'])
+        f = self.get_field(['-p', 'Metadata', '-c', '1', '--', 'neutron', 'agent-list'])
         self.assertEqual(['Metadata agent'], f)
 
-        f = openstack_out.get_field(['-p', 'default', '-c', '1', '--', 'nova', 'secgroup-list'])
+        f = self.get_field(['-p', 'default', '-c', '1', '--', 'nova', 'secgroup-list'])
         self.assertEqual(['default'], f)
 
-        f = openstack_out.get_field(['-p', 'default', '-c', '2', '--', 'nova', 'secgroup-list'])
+        f = self.get_field(['-p', 'default', '-c', '2', '--', 'nova', 'secgroup-list'])
         self.assertEqual(['default'], f)
 
-        f = openstack_out.get_field(['-p', 'default', '-c', '0', '--', 'nova', 'secgroup-list'])
+        f = self.get_field(['-p', 'default', '-c', '0', '--', 'nova', 'secgroup-list'])
         u = uuid.UUID(f[0])
         self.assertEqual(uuid.UUID, type(u))
 
-        f = openstack_out.get_field(['-p', 'default', '--', 'nova', 'secgroup-list'])
+        f = self.get_field(['-p', 'default', '--', 'nova', 'secgroup-list'])
         u = uuid.UUID(f[0])
         self.assertEqual(uuid.UUID, type(u))
 
-        f = openstack_out.get_field(['--', 'nova secgroup-list'])
+        f = self.get_field(['--', 'nova secgroup-list'])
         u = uuid.UUID(f[0])
         self.assertEqual(uuid.UUID, type(u))
 
-    def test_openstack_out_get_field(self):
-        with utils.devnull('stderr'):
-            with self.assertRaises(SystemExit):
-                openstack_out.get_field()
-            with self.assertRaises(SystemExit):
-                openstack_out.get_field(None)
-            with self.assertRaises(SystemExit):
-                openstack_out.get_field([])
-            with self.assertRaises(SystemExit):
-                openstack_out.get_field('')
+    def test_openstack_out_get_field_ok_uuids(self):
+        header, rows, garbin, garbout = openstack_out.parse_block(neutron_agent_list)
+        for row in rows:
+            u = uuid.UUID(row[0])
+            self.assertEqual(uuid.UUID, type(u))
+
+    def test_openstack_out_get_field_ok_uuids_input(self):
+        with utils.stringio(neutron_agent_list) as fin:
+            with utils.redirect('stdin', iofile=fin):
+                f = self.get_field(['-p', 'Metadata', '-c', '0', '--'])
+                print(f)
+                u = uuid.UUID(f[0][0])
+                self.assertEqual(uuid.UUID, type(u))
+        with utils.stringio(neutron_agent_list) as fin:
+            with utils.redirect('stdin', iofile=fin):
+                f = self.get_field(['-P', 'c7-netw', '--'])
+                print(f)
+                u = uuid.UUID(f[0][0])
+                self.assertEqual(uuid.UUID, type(u))
+
+    def test_openstack_out_get_field_nok(self):
+        self.assertEqual(None, self.get_field(None))
+        self.assertEqual(None, self.get_field([]))
+        self.assertEqual(None, self.get_field(''))
 
 class OpenstackOutMBTest(unittest.TestCase):
 
@@ -140,7 +169,6 @@ class OpenstackOutMBTest(unittest.TestCase):
         b = openstack_out.map_block(glance_image_show)
         self.assertEqual(b['checksum'], 'ee1eca47dc88f4879d8a229cc70a07c6')
         self.assertEqual(b['id'], '185beafd-c5fc-4877-bbcc-e49a8d3f03ed')
-        # should be 3, but there are collisions in the map
         self.assertEqual(len(b), 15)
 
     def test_openstack_out_map_block_ne(self):
@@ -151,6 +179,7 @@ class OpenstackOutMBTest(unittest.TestCase):
 
 class OpenstackOutMainTest(unittest.TestCase):
 
+    @unittest.skipUnless(_VMS_OK, "VMs are not running")
     def test_openstack_out_main(self):
         with utils.stringio() as output:
             with utils.redirect('stdout', output):
