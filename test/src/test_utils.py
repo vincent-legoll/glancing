@@ -14,6 +14,15 @@ local_pythonpath('..', '..', 'src')
 
 import utils
 
+class UtilsTestIsIter(unittest.TestCase):
+
+    def test_utils_isiter(self):
+        self.assertTrue(utils.is_iter([i for i in range(3)]))
+        self.assertTrue(utils.is_iter([]))
+        self.assertFalse(utils.is_iter(1))
+        self.assertFalse(utils.is_iter(1.0))
+        self.assertTrue(utils.is_iter([1]))
+
 class UtilsTestTempdir(unittest.TestCase):
 
     def test_utils_tempdir(self):
@@ -451,6 +460,17 @@ class UtilsCleanupTest(unittest.TestCase):
         test_file = '/tmp/' + utils.test_name()
         self.assertFalse(os.path.exists(test_file))
         with utils.cleanup(['rm', test_file]):
+            utils.run(['touch', test_file])
+            self.assertTrue(os.path.exists(test_file))
+        self.assertFalse(os.path.exists(test_file))
+
+    def test_utils_clean(self):
+        test_file = '/tmp/' + utils.test_name()
+        self.assertFalse(os.path.exists(test_file))
+        utils.run(['touch', test_file])
+        self.assertTrue(os.path.exists(test_file))
+        with utils.clean(['rm', test_file]):
+            self.assertFalse(os.path.exists(test_file))
             utils.run(['touch', test_file])
             self.assertTrue(os.path.exists(test_file))
         self.assertFalse(os.path.exists(test_file))
