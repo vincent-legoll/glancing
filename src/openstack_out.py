@@ -5,11 +5,9 @@ from __future__ import print_function
 import os
 import re
 import sys
-import json
 import argparse
 
 import utils
-import openstack_out
 
 re_sep_line = re.compile(r'^[+-]+$')
 
@@ -79,11 +77,19 @@ def map_block(block):
     return ret
 
 def cli(sys_argv=sys.argv[1:]):
+    if not sys_argv:
+        return None
+
     desc_help = 'Select a part of an openstack command output'
     parser = argparse.ArgumentParser(description=desc_help)
 
+    parser.add_argument('-s', '--separator', dest='sep', default='',
+                        metavar='STRING',
+                        help='field separator for output, when there are'
+                        'multiple columns')
+
     parser.add_argument('-p', '--pattern', dest='pattern', default=None,
-                        nargs="?", metavar='STRING',
+                        metavar='STRING',
                         help='pattern to select lines. Can be a python'
                         ' regex. Searched in the whole line')
 
@@ -92,37 +98,23 @@ def cli(sys_argv=sys.argv[1:]):
                         help='pattern to deselect lines. Can be a python'
                         ' regex. Searched in the whole line')
 
-    parser.add_argument('-c', '--column', dest='column', default=None,
-                        nargs="?", metavar='NUMBER',
+    parser.add_argument('-c', '--column', dest='columns', default=[],
+                        type=int, metavar='NUMBER', action='append',
                         help='column # to get')
 
     parser.add_argument('-t', '--head', dest='head', default=None,
-                        nargs="?", metavar='NUMBER',
+                        metavar='NUMBER',
                         help='In case of multi line output, get the first N lines')
 
-    parser.add_argument(dest='cmd', nargs="+", metavar='STRING',
+    parser.add_argument(dest='cmd', nargs="*", metavar='STRING',
                         help='openstack command, as a single or multiple'
-                        ' strings, but separated from the other parameters'
-                        ' with "--"')
+                        ' strings')
 
     return parser.parse_args(sys_argv)
 
-def get_field(sys_argv=sys.argv[1:]):
+def get_field(args):
 
-    # Handle CLI arguments
-    args = cli(sys_argv=sys_argv)
-
-    # Column selection
-    col = 0
-    if args.column is not None:
-        col = int(args.column)
-
-    # Lines selection
-    head = None
-    if args.head:
-        head = int(args.head)
-
-    # Lines selection
+    # Lines selection by pattern matching
     pat = None
     if args.pattern:
         pat = re.compile(args.pattern)
@@ -132,41 +124,52 @@ def get_field(sys_argv=sys.argv[1:]):
     if args.antipattern:
         apa = re.compile(args.antipattern)
 
-    # Command to run, simple or multiple strings
+    ret = None
     cmd = args.cmd
-    if len(cmd) == 1 and type(cmd[0]) == str:
-        cmd = cmd[0].split()
+    if len(cmd) > 0:
+        # Command to run, simple or multiple strings
+        if len(cmd) == 1 and type(cmd[0]) == str:
+            cmd = cmd[0].split()
 
-    # Handle site-specific parameters (for example: "--insecure")
-    os_params = os.environ.get('OS_PARAMS', None)
-    if os_params:
-        cmd[1:1] = os_params.split()
+        # Handle site-specific parameters (for example: "--insecure")
+        os_params = os.environ.get('OS_PARAMS', None)
+        if os_params:
+            cmd[1:1] = os_params.split()
+        # Run it, grab output
+        ok, retcode, out, err = utils.run(cmd, out=True)
+        if not ok:
+            return None
+    else:
+        # No command to run, assume data comes from stdin
+        out = sys.stdin.read()
 
     # Parse the returned array
-    ret = get_rows(cmd, pat, apa)
+    if out:
+        ret = parse_block(out, pat, apa)
+
     if not ret:
-        return ''
+        return None
     headers, rows, _, _ = ret
 
+    # Lines selection by quantity (the first N lines or all of them)
+    head = int(args.head) if args.head else len(rows)
+
+    # Column selection
+    if not args.columns:
+        args.columns = (0,)
+
     # Return the requested columns
-    if len(headers) > col:
-        return [row[col] for row in rows[:head]]
+    if len(headers) > max(args.columns):
+        return [[row[col] for col in args.columns] for row in rows[:head]]
 
-    return ''
-
-def get_rows(cmd, pat=None, apa=None):
-
-    # Run it, grab output
-    ok, retcode, out, err = utils.run(cmd, out=True)
-    if not ok:
-        return None
-
-    # Parse the returned array
-    return parse_block(out, pat, apa)
+    return None
 
 def main(sys_argv=sys.argv[1:]):
-    for i in get_field(sys_argv=sys_argv):
-        print(i)
+    # Handle CLI arguments
+    args = cli(sys_argv=sys_argv)
+
+    for i in get_field(args):
+        print(args.sep.join(map(str, i)))
 
 if __name__ == '__main__':
     main()
