@@ -44,6 +44,17 @@ class UtilsTestChdir(unittest.TestCase):
             with utils.chdir(os.devnull):
                 pass
 
+class UtilsTestSmallSizeT(unittest.TestCase):
+
+    def test_utils_size_t_repr(self):
+        ssize_t = utils.small_size_t
+
+        self.assertEqual(repr(ssize_t(0)), '<small_size_t 0>')
+        self.assertEqual(repr(ssize_t(0, 'B')), '<small_size_t 0B>')
+
+        self.assertEqual(repr(ssize_t(0.1)), '<small_size_t 0.1>')
+        self.assertEqual(repr(ssize_t(0.01, 'B')), '<small_size_t 0.01B>')
+
 class UtilsTestSizeT(unittest.TestCase):
 
     def test_utils_size_t_repr(self):

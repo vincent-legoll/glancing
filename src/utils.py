@@ -1,4 +1,6 @@
 #! /usr/bin/env python
+# -*- coding: utf-8 -*-
+# coding: utf-8
 
 from __future__ import print_function
 
@@ -82,6 +84,23 @@ class size_t(object):
 
     def __repr__(self):
         return '<size_t %d%s>' % (self._n, self.suffix)
+
+    def __str__(self):
+        return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
+
+class small_size_t(object):
+
+    # This is not S.I. compliant prefix, this is power-of-two based
+    _UNIT_PREFIX = ['', 'm', 'μ', 'n', 'p', 'f']
+
+    def __init__(self, n, suffix=''):
+        self._n = n
+        self.suffix = suffix
+        self.exp = abs(int(math.log10(n))) if n != 0 else 0
+        self.n = long(long(n) / long(10 ** long(10 * self.exp)))
+
+    def __repr__(self):
+        return '<small_size_t %d%s>' % (self._n, self.suffix)
 
     def __str__(self):
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
