@@ -61,19 +61,21 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
 
     return header, rows, garbin, garbout
 
-def map_block(block):
+def map_block(block, key_index=0):
+    # Be careful, key index has to map to a unique identifer or else
+    # you'll lose data: only the last row will be kept...
     ret = {}
     h, b, _, _ = parse_block(block)
     # Direct mapping
     if len(h) == 2:
         for i in range(len(b)):
             #if len(h) == len(b[i]): # Useless, parse_block ensures that
-                ret[b[i][0]] = b[i][1]
+                ret[b[i][key_index]] = b[i][1]
     # Mapping to lists
     else: # if len(h) > 2:
         for i in range(len(b)):
             #if len(h) == len(b[i]): # Useless, parse_block ensures that
-                ret[b[i][0]] = b[i][1:]
+                ret[b[i][key_index]] = b[i][:key_index] + b[i][key_index+1:]
     return ret
 
 def cli(sys_argv=sys.argv[1:]):
