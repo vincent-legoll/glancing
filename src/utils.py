@@ -287,3 +287,35 @@ class AlmostRawFormatter(argparse.HelpFormatter):
         if text.strip().startswith(self._PREFIX):
             return textwrap.dedent(text[len(self._PREFIX):]).strip().splitlines()
         return super(AlmostRawFormatter, self)._split_lines(text, width)
+
+def alphanum_sort(iterable, prefix='', suffix=''):
+    '''
+    Used to sort list of seemingly identical strings:
+    sbgcsrv4.in2p3.fr
+    sbgcsrv06.in2p3.fr
+    sbgcsrv1.in2p3.fr
+    sbgcsrv7.in2p3.fr
+    sbgcsrv13.in2p3.fr
+    '''
+    
+    res = {}
+    for item in iterable:
+        if not item.startswith(prefix):
+            continue
+        i = item[len(prefix):-len(suffix)]
+        if not i:
+            idx = -1
+        elif '.' in i:
+            idx = float(i)
+        else:
+            idx = int(i)
+        res_ = res.get(idx, [])
+        res_.append(i)
+        res[idx] = res_
+    result = []
+    # First sort by number value
+    for num in sorted(res):
+        # Then for identical number values, sort according to string length
+        for str_val in sorted(res[num], key=lambda x: len(x)):
+            result.append(prefix + str_val + suffix)
+    return result
