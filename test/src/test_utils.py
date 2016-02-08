@@ -632,6 +632,13 @@ class OutputTest(unittest.TestCase):
         self.assertEqual(subprocess.PIPE, utils.output(True, True))
         self.assertEqual(subprocess.DEVNULL, utils.output(False, True))
 
+class AlphaNumSortTest(unittest.TestCase):
+
+    def test_alphanum_sort(self):
+        a = ['aze42rty', 'azerty', 'aze1rty', 'aze01rty', 'aze100rty', 'aze10rty', 'aze1.0rty', 'aze00rty', 'aze0rty']
+        expected = ['azerty', 'aze0rty', 'aze00rty', 'aze1rty', 'aze01rty', 'aze1.0rty', 'aze10rty', 'aze42rty', 'aze100rty', ]
+        self.assertEqual(expected, utils.alphanum_sort(a, 'aze', 'rty'))
+
 if __name__ == '__main__':
     import pytest
     pytest.main(['-x', '--pdb', __file__])
