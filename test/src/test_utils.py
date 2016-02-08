@@ -180,7 +180,7 @@ class UtilsTest(unittest.TestCase):
             status[0] = True
 
         local_path = get_local_path('..', 'data', 'length_one.bin')
-
+        self.assertTrue(os.path.exists(local_path))
         utils.block_read_filename(local_path, set_status)
         self.assertTrue(status[0])
 
