@@ -76,9 +76,11 @@ class size_t(object):
     _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
 
     # This class does no rounding: 2047 => 1K, 2048 => 2K
-    def __init__(self, n, suffix=''):
+    def __init__(self, n, suffix='', unit=None):
         self._n = n
         self.suffix = suffix
+        if unit is not None:
+            n *= 1024 ** self._UNIT_PREFIX.index(unit)
         self.exp = int(math.log(n, 2) / 10) if n != 0 else 0
         self.n = long(long(n) / long(2 ** long(10 * self.exp)))
 
