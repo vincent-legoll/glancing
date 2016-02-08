@@ -639,6 +639,18 @@ class AlphaNumSortTest(unittest.TestCase):
         expected = ['azerty', 'aze0rty', 'aze00rty', 'aze1rty', 'aze01rty', 'aze1.0rty', 'aze10rty', 'aze42rty', 'aze100rty', ]
         self.assertEqual(expected, utils.alphanum_sort(a, 'aze', 'rty'))
 
+class TRSTest(unittest.TestCase):
+
+    def test_tr_s(self):
+        self.assertEqual('', utils.tr_s(''))
+        self.assertEqual('a', utils.tr_s('a'))
+        self.assertEqual('a', utils.tr_s('aa'))
+        self.assertEqual('a a', utils.tr_s('aa aa'))
+        self.assertEqual('abababa', utils.tr_s('abababa'))
+        self.assertEqual('a b c', utils.tr_s('aa bbb c'))
+        self.assertEqual('a', utils.tr_s('a' * 4096))
+        self.assertEqual('a', utils.tr_s('a' * 4097))
+
 if __name__ == '__main__':
     import pytest
     pytest.main(['-x', '--pdb', __file__])

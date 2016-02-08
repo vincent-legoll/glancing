@@ -5,6 +5,7 @@
 from __future__ import print_function
 
 import os
+import re
 import sys
 import uuid
 import math
@@ -319,3 +320,9 @@ def alphanum_sort(iterable, prefix='', suffix=''):
         for str_val in sorted(res[num], key=lambda x: len(x)):
             result.append(prefix + str_val + suffix)
     return result
+
+def tr_s(datastr):
+    '''
+    Work similarly as the "tr -s" unix command
+    '''
+    return re.sub(r'(.)(\1+)', r'\1', datastr)
