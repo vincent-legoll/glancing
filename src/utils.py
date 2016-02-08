@@ -292,11 +292,12 @@ class AlmostRawFormatter(argparse.HelpFormatter):
 def alphanum_sort(iterable, prefix='', suffix=''):
     '''
     Used to sort list of seemingly identical strings:
-    sbgcsrv4.in2p3.fr
-    sbgcsrv06.in2p3.fr
-    sbgcsrv1.in2p3.fr
-    sbgcsrv7.in2p3.fr
-    sbgcsrv13.in2p3.fr
+
+    sbgcsrv4.in2p3.fr              sbgcsrv1.in2p3.fr
+    sbgcsrv06.in2p3.fr             sbgcsrv4.in2p3.fr
+    sbgcsrv1.in2p3.fr      =>      sbgcsrv06.in2p3.fr
+    sbgcsrv7.in2p3.fr              sbgcsrv7.in2p3.fr
+    sbgcsrv13.in2p3.fr             sbgcsrv13.in2p3.fr
     '''
     
     res = {}
