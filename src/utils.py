@@ -357,7 +357,7 @@ def alphanum_sort(iterable, prefix='', suffix=''):
     sbgcsrv7.in2p3.fr              sbgcsrv7.in2p3.fr
     sbgcsrv13.in2p3.fr             sbgcsrv13.in2p3.fr
     '''
-    
+
     res = {}
     for item in iterable:
         if not item.startswith(prefix):
