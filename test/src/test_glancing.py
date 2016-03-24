@@ -130,7 +130,7 @@ class GlancingImageDryRunCoreosTest(unittest.TestCase):
     def test_glancing_image_coreos(self):
         fn = 'coreos_production_qemu_image.img'
         imgfile = get_local_path('..', 'images', fn)
-        md5 = '1b0d8f7e4ff1128e3527ad6e15ae0855'
+        md5 = '81a424a52f6775599b4e3de162f81e64'
         self.assertTrue(glancing.main(['-d', imgfile, '-s',
             md5 + ':' + md5]))
 
