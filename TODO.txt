@@ -1,13 +1,7 @@
-- use glance APIs if available - BLARGH, that's not going to fly
-  or glancepush directly
-
-High priority list:
 - filter image updates according to a subscription list
 
-- remove backup from glancing and put it into glance_manager
 - backup images to be replaced
-
-Medium priority list:
+- remove backup from glancing and put it into glance_manager
 
 - Add more tests (see coverage reports)
   os.remove (--keep-temps=False) after import (--dry-run=False)
@@ -20,26 +14,15 @@ Medium priority list:
 
 - check gpg signature
 
-gpg --verify MD5SUMS.gpg MD5SUMS
-gpg: Signature made 2014-07-25T01:53:21 CEST using DSA key ID FBB75451
-gpg: Can't check signature: No public key
-gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys FBB75451
-# gpg --lsign-key FBB75451
-gpg --verify SHA256SUMS.gpg SHA256SUMS
+    gpg --verify MD5SUMS.gpg MD5SUMS
+    gpg: Signature made 2014-07-25T01:53:21 CEST using DSA key ID FBB75451
+    gpg: Can't check signature: No public key
+    gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys FBB75451
+    # gpg --lsign-key FBB75451
+    gpg --verify SHA256SUMS.gpg SHA256SUMS
 
-gpg --import /usr/share/keyrings/ubuntu-archive-keyring.gpg
+    gpg --import /usr/share/keyrings/ubuntu-archive-keyring.gpg
 
-sudo apt-get install ubuntu-keyring
-gpgv --keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg SHA256SUMS.gpg SHA256SUMS
-grep ubuntu-14.04-desktop-amd64.iso SHA256SUMS | sha256sum --check
-
-Interresting images
-
-upstream, not modified
-- ubuntu
-- centos
-
-VOs, as-is
-- EGIs
-
-SL market, endorsed
+    sudo apt-get install ubuntu-keyring
+    gpgv --keyring=/usr/share/keyrings/ubuntu-archive-keyring.gpg SHA256SUMS.gpg SHA256SUMS
+    grep ubuntu-14.04-desktop-amd64.iso SHA256SUMS | sha256sum --check
