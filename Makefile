@@ -7,7 +7,7 @@ clean:
 	find . -type f -name .coverage -print0 | xargs -0 rm
 
 nosetests:
-	run_tests.sh
+	./run_tests.sh
 
 pytests:
 	py.test -n $(call NPROC)
