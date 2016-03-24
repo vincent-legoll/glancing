@@ -123,7 +123,7 @@ def main():
             parser.print_help()
             print "\nMissing DATAFILE(s) parameters"
             sys.exit(1)
-            
+
     if args.display or args.plot:
         plotit(lengths, times_sh, times_mh, args.plot, args.display)
 
