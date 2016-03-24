@@ -2,7 +2,6 @@
 
 import os
 import sys
-
 import bz2
 import gzip
 import zipfile
@@ -24,7 +23,8 @@ _EXT_MAP = {
 }
 
 class Decompressor(object):
-    '''A class able to handle differently compressed file formats
+    '''A class to handle differently-compressed file formats in an
+    uniform way.
     '''
 
     def __init__(self, filename, ext=None, block_size=4096):
