@@ -135,6 +135,10 @@ def run(cmd, out=False, err=False, quiet_out=None, quiet_err=None):
     return False, None, None, None
 
 class chdir(object):
+    """Context manager that change the current working directory, run
+    the code block and then get back to its previous cwd before exiting
+    the context.
+    """
 
     def __init__(self, dir_path):
         if not os.path.isdir(dir_path):
@@ -149,6 +153,9 @@ class chdir(object):
         os.chdir(self.oldcwd)
 
 class tempdir(chdir):
+    """Context manager that run the code block n a temporary folder that
+    is destroyed before context exits.
+    """
 
     def __init__(self, prefix='glancing-'):
         super(tempdir, self).__init__(tempfile.mkdtemp(prefix=prefix))
@@ -158,6 +165,13 @@ class tempdir(chdir):
         shutil.rmtree(self.dir_path)
 
 class redirect(object):
+    """Context manager to redirect some std stream temporarily to
+    another opened file.
+
+    with open('/path/to/output.txt', 'wb') as fout:
+        with redirect('stdout', fout):
+            print('Hello world !')
+    """
 
     def __init__(self, iodesc_name, iofile=None):
         # Prepare
@@ -183,11 +197,24 @@ class redirect(object):
         sys.__dict__[self._oldiodesc_name] = self._oldiodesc
 
 class devnull(redirect):
+    """Context manager to silence some std stream.
+
+    # Equivalent to: "command > /dev/null"
+    with devnull('stdout'):
+        command()
+
+    # Equivalent to: "command 2> /dev/null"
+    with devnull('stderr'):
+        command()
+    """
 
     def __init__(self, iodesc_name):
         super(devnull, self).__init__(iodesc_name, None)
 
 class environ(object):
+    """Context manager to manipulate safely the environment variables,
+    they'll get back their old values after the context is exited.
+    """
 
     def __init__(self, envvar_name, envvar_val=''):
         # Prepare
@@ -212,6 +239,9 @@ class environ(object):
             os.environ[self._envvar_name] = self._old_envvar_val
 
 class cleanup(object):
+    """Context manager that runs an external command as a cleanup action
+    before it exits its enclosing context.
+    """
 
     def __init__(self, cleanup_cmd):
         # Prepare
@@ -228,11 +258,18 @@ class cleanup(object):
         self._cleanup()
 
 class clean(cleanup):
+    """Same as the "cleanup" class, but also run the cleanup action
+    before entering the context.
+    """
 
     def __enter__(self):
         self._cleanup()
 
 class stringio(object):
+    """StringIO context manager, same as:
+    with open("/path/to/fop.txt", "r") as fop:
+        do_something_with(fop)
+    """
 
     def __init__(self, data=None):
         if data is not None:
@@ -247,15 +284,36 @@ class stringio(object):
         self._iofile.close()
 
 def block_read_filename(filename, callback, block_size=4096):
+    """Open and then read a file in chunks, and call a function back for
+    each block.
+    """
     with open(filename, 'rb') as f:
         block_read_filedesc(f, callback, block_size)
 
 def block_read_filedesc(filedesc, callback, block_size=4096):
+    """Read a file in chunks, and call a function back for each block
+    """
     chunk_reader = functools.partial(filedesc.read, block_size)
     for block in iter(chunk_reader, ''):
         callback(block)
 
 class Exceptions(object):
+    """Class to match an exception's type and its args against a list of
+    other exceptions
+
+    excs = utils.Exceptions(
+        ZeroDivisionError('integer division or modulo by zero'),
+        ArithmeticError('integer division or modulo by zero'),
+    )
+
+    try:
+        0 / 0
+    except Exception as e:
+        if e in excs:
+            print('Learn your math lessons')
+        else:
+            raise e
+    """
 
     def __init__(self, *args):
         if len(args) == 1 and isinstance(args[0], collections.Iterable):
@@ -277,8 +335,8 @@ class Exceptions(object):
         return False
 
 class AlmostRawFormatter(argparse.HelpFormatter):
+    '''Useful for multiline argparse option descriptions
 
-    '''
     Based on code from:
     http://dolinked.com/questions/12720/python-argparse-how-to-insert-newline-the-help-text
     '''
