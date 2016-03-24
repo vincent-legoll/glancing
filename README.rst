@@ -1,8 +1,8 @@
 #. What is this
 ===============
 
-This is a compilation of helper scripts to ease importing VM images
-into an OpenStack glance service. It can handle various kind of VM image
+This is a few helper scripts to ease importing VM images into an
+OpenStack glance service. It can handle various kind of VM image
 source metadata, as well as work directly with local files.
 
 #. Features
@@ -31,8 +31,9 @@ connecting to a glance service, see in "Automated Testing" section below.
 
     $ ./src/glancing.py url http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
-- Download XML metadata from StatusLab marketplace, then get the image
-  from the URL, and verify all the checksums that are present inside.
+- Download XML metadata from StatusLab marketplace, get the URL from this
+  metadata, then get the image from the URL, and verify all the checksums
+  that are available.
 
   This one is for a CentOS v7 image...
 
@@ -40,7 +41,7 @@ connecting to a glance service, see in "Automated Testing" section below.
 
 - You have browsed the StratusLab marketplace, and found the right image
   for your project, downloaded its JSON metadata locally, then want to
-  get the VM image described inside:
+  get that VM image:
 
     $ ./src/glancing.py json /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
 
@@ -89,7 +90,7 @@ before launching the test suite.
 
 You can further extend the coverage of the test suite, by modifying the
 following lines from ./test/src/test_glancing.py file. They enable more
-tests, but will download a lot of big image files...
+tests, but will download a lot of big (huge) image files...
 
     _HEAVY_TESTS = False
     _HUGE_TESTS = False
@@ -111,4 +112,6 @@ image registry sevice:
     export OS_TENANT_NAME=admin_tenant
     export OS_USERNAME=admin_username
     export OS_PASSWORD=ADMIN_PASSWORD
-    export OS_AUTH_URL=http://ctrl:35357/v2.0
+    export OS_AUTH_URL=http://controller_node:35357/v2.0
+    export OS_REGION_NAME="IPHC"
+    export OS_CACERT="${HOME}/path/to/CNRS2.pem"
