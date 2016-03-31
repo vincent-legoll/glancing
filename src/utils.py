@@ -71,42 +71,53 @@ def is_iter(x):
         pass
     return False
 
-class size_t(object):
+class abstract_size_t(object):
 
-    # This is not S.I. compliant prefix, this is power-of-two based
-    _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
-
-    # This class does no rounding: 2047 => 1K, 2048 => 2K
     def __init__(self, n, suffix='', unit=None):
-        self._n = n
+        self.n, self._n = n, n
         self.suffix = suffix
-        if unit is not None:
-            n *= 1024 ** self._UNIT_PREFIX.index(unit)
-        self.exp = int(math.log(n, 2) / 10) if n != 0 else 0
-        self.n = long(long(n) / long(2 ** long(10 * self.exp)))
+        self.unit = ''
+        self.shift = 0
+        self.around = math.ceil if self._FRACTIONAL else math.floor
+        if unit is not None and n != 0:
+            self.unit = unit
+            self.shift = self._UNIT_PREFIX.index(unit)
+            self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.shift)
+        self.exp = self.shift + (abs(int(self.around(self.log(self.n) / self._INTERUNIT_FACTOR))) if self.n != 0 else 0)
+        if self._FRACTIONAL and type(self._n) == float:
+            self.n = long(n * (self._BASE ** (self._INTERUNIT_FACTOR * self.exp)))
+            digits = abs(int(math.floor(self.log(self._n))))
+            self.fmt = '%1.' + str(digits) + 'f%s%s'
+        else:
+            self.n = long(n / (self._BASE ** (self._INTERUNIT_FACTOR * self.exp)))
+            self.fmt = '%d%s%s'
+
+    def log(self, n):
+        return math.log(n, self._BASE)
 
     def __repr__(self):
-        return '<size_t %d%s>' % (self._n, self.suffix)
+        return ('<%s ' + self.fmt + '>') % (self.__class__.__name__, self._n, self.unit, self.suffix)
 
     def __str__(self):
+        print(self.__class__.__name__, self._n, self.unit, self.n, self._UNIT_PREFIX[self.exp], self.suffix, self.fmt, self.exp, self.shift)
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
-class small_size_t(object):
+class size_t(abstract_size_t):
+    # This is not a S.I. compliant prefix, this is power-of-two based
+    _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
+    _FRACTIONAL = False
+    _INTERUNIT_FACTOR = 10
+    _BASE = 2
 
-    # This is not S.I. compliant prefix, this is power-of-two based
+class small_size_t(abstract_size_t):
     _UNIT_PREFIX = ['', 'm', 'μ', 'n', 'p', 'f']
+    _FRACTIONAL = True
+    _INTERUNIT_FACTOR = 3
+    _BASE = 10
 
-    def __init__(self, n, suffix=''):
-        self._n = n
-        self.suffix = suffix
-        self.exp = abs(int(math.log10(n))) if n != 0 else 0
-        self.n = long(long(n) / long(10 ** long(10 * self.exp)))
-
-    def __repr__(self):
-        return '<small_size_t %d%s>' % (self._n, self.suffix)
-
-    def __str__(self):
-        return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
+    # For better accuracy than math.log(n, 10)
+    def log(self, n):
+        return math.log10(n)
 
 def output(out, quiet):
     if out:
