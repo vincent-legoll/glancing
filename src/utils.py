@@ -99,7 +99,6 @@ class abstract_size_t(object):
         return ('<%s ' + self.fmt + '>') % (self.__class__.__name__, self._n, self.unit, self.suffix)
 
     def __str__(self):
-        print(self.__class__.__name__, self._n, self.unit, self.n, self._UNIT_PREFIX[self.exp], self.suffix, self.fmt, self.exp, self.shift)
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
 class size_t(abstract_size_t):
