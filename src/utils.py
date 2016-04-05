@@ -96,9 +96,11 @@ class abstract_size_t(object):
         return math.log(n, self._BASE)
 
     def __repr__(self):
+        '''Represents the size_t with its construction-time passed parameters'''
         return ('<%s ' + self.fmt + '>') % (self.__class__.__name__, self._n, self.unit, self.suffix)
 
     def __str__(self):
+        '''Represents the size_t with "optimized" units (for example: 1024KB => 1MB'''
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
 class size_t(abstract_size_t):
