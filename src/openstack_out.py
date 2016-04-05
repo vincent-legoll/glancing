@@ -66,12 +66,12 @@ def map_block(block, key_index=0):
     # you'll lose data: only the last row will be kept...
     ret = {}
     h, b, _, _ = parse_block(block)
-    # Direct mapping
+    # Only two columns: direct mapping
     if len(h) == 2:
         for i in range(len(b)):
             #if len(h) == len(b[i]): # Useless, parse_block ensures that
                 ret[b[i][key_index]] = b[i][1]
-    # Mapping to lists
+    # More than two columns: map to lists
     else: # if len(h) > 2:
         for i in range(len(b)):
             #if len(h) == len(b[i]): # Useless, parse_block ensures that
