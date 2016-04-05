@@ -48,7 +48,7 @@ class UtilsTestChdir(unittest.TestCase):
 
 class UtilsTestSmallSizeT(unittest.TestCase):
 
-    def test_utils_size_t_repr(self):
+    def test_utils_ssize_t_repr(self):
         ssize_t = utils.small_size_t
 
         self.assertEqual(repr(ssize_t(0)), '<small_size_t 0>')
@@ -82,7 +82,7 @@ class UtilsTestSmallSizeT(unittest.TestCase):
         self.assertEqual(repr(ssize_t(0.0000000000000001)), '<small_size_t 0.0000000000000001>')
         self.assertEqual(repr(ssize_t(0.0000000000000000001)), '<small_size_t 0.0000000000000000001>')
 
-    def test_utils_size_t_str(self):
+    def test_utils_ssize_t_str(self):
         ssize_t = utils.small_size_t
 
         self.assertEqual(str(ssize_t(0)), '0')
