@@ -85,11 +85,11 @@ class abstract_size_t(object):
             self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.shift)
         self.exp = abs(int(self.around(self.log(self.n) / self._INTERUNIT_FACTOR))) if self.n != 0 else 0
         if self._FRACTIONAL and type(self._n) == float:
-            self.n = long(n * (self._BASE ** (self._INTERUNIT_FACTOR * self.exp)))
+            self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
             digits = abs(int(math.floor(self.log(self._n))))
             self.fmt = '%1.' + str(digits) + 'f%s%s'
         else:
-            self.n = long(n / (self._BASE ** (self._INTERUNIT_FACTOR * self.exp)))
+            self.n /= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
             self.fmt = '%d%s%s'
 
     def log(self, n):
