@@ -83,16 +83,16 @@ class abstract_size_t(object):
             self.unit = unit
             self.shift = self._UNIT_PREFIX.index(unit)
             self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.shift)
-        self.exp = abs(int(self.around(self.log(self.n) / self._INTERUNIT_FACTOR))) if self.n != 0 else 0
+        self.exp = abs(int(self.around(self._log(self.n) / self._INTERUNIT_FACTOR))) if self.n != 0 else 0
         if self._FRACTIONAL and type(self._n) == float:
             self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
-            digits = abs(int(math.floor(self.log(self._n))))
+            digits = abs(int(math.floor(self._log(self._n))))
             self.fmt = '%1.' + str(digits) + 'f%s%s'
         else:
             self.n /= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
             self.fmt = '%d%s%s'
 
-    def log(self, n):
+    def _log(self, n):
         return math.log(n, self._BASE)
 
     def __repr__(self):
@@ -117,7 +117,7 @@ class small_size_t(abstract_size_t):
     _BASE = 10
 
     # For better accuracy than math.log(n, 10)
-    def log(self, n):
+    def _log(self, n):
         return math.log10(n)
 
 def output(out, quiet):
