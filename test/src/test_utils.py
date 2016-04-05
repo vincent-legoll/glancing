@@ -127,6 +127,28 @@ class UtilsTestSizeT(unittest.TestCase):
         self.assertEqual(repr(size_t(2048)), '<size_t 2048>')
         self.assertEqual(repr(size_t(2048, 'B')), '<size_t 2048B>')
 
+    def test_utils_size_t_unit(self):
+        size_t = utils.size_t
+
+        self.assertEqual(str(size_t(0, '', 'M')), '0')
+        self.assertEqual(str(size_t(0, 'B', 'M')), '0B')
+
+        # Zero is special-case for repr()
+        self.assertEqual(repr(size_t(0, '', 'M')), '<size_t 0>')
+        self.assertEqual(repr(size_t(0, 'B', 'M')), '<size_t 0B>')
+
+        self.assertEqual(str(size_t(1, '', 'M')), '1M')
+        self.assertEqual(str(size_t(1, 'B', 'M')), '1MB')
+
+        self.assertEqual(repr(size_t(1, '', 'M')), '<size_t 1M>')
+        self.assertEqual(repr(size_t(1, 'B', 'M')), '<size_t 1MB>')
+
+        self.assertEqual(str(size_t(1024, '', 'M')), '1G')
+        self.assertEqual(str(size_t(1024, 'B', 'M')), '1GB')
+
+        self.assertEqual(repr(size_t(1024, '', 'M')), '<size_t 1024M>')
+        self.assertEqual(repr(size_t(1024, 'B', 'M')), '<size_t 1024MB>')
+
     def test_utils_size_t_str(self):
         size_t = utils.size_t
 
