@@ -50,7 +50,7 @@ def get_vmlist(vmlist_fn):
             ret.append(line)
     return ret
 
-def get_glance_vmmap():
+def get_glance_images():
     ret = {}
     ids = glance.glance_ids()
     for vmid in ids:
@@ -116,7 +116,7 @@ def main(sys_argv=sys.argv[1:]):
     vprint(args.vmlist)
     if not args.vmlist or not os.path.exists(args.vmlist):
         return False
-    vmmap = get_glance_vmmap()
+    vmmap = get_glance_images()
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
         vmid = vmid.strip()
