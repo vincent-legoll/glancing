@@ -10,7 +10,7 @@ nosetests:
 	./run_tests.sh
 
 pytests:
-	py.test -n $(call NPROC)
+	py.test -n `$(NPROC)`
 
 tox:
 	tox
