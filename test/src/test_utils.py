@@ -46,16 +46,21 @@ class UtilsTestChdir(unittest.TestCase):
             with utils.chdir(os.devnull):
                 pass
 
+@unittest.skip('FIXME')
 class UtilsTestSmallSizeT(unittest.TestCase):
 
+    #@unittest.skip('FIXME')
     def test_utils_ssize_t_repr(self):
         ssize_t = utils.small_size_t
 
         self.assertEqual(repr(ssize_t(0)), '<small_size_t 0>')
         self.assertEqual(repr(ssize_t(0, 'K')), '<small_size_t 0K>')
 
-        self.assertEqual(repr(ssize_t(0, '', 'm')), '<small_size_t 0m>')
-        self.assertEqual(repr(ssize_t(0, 'm', 'n')), '<small_size_t 0nm>')
+        self.assertEqual(repr(ssize_t(0, '', 'm')), '<small_size_t 0>')
+        self.assertEqual(repr(ssize_t(0, 'm', 'n')), '<small_size_t 0m>')
+
+        self.assertEqual(repr(ssize_t(1, '', 'm')), '<small_size_t 1m>')
+        self.assertEqual(repr(ssize_t(1, 'm', 'n')), '<small_size_t 1nm>')
 
         self.assertEqual(repr(ssize_t(0.1)), '<small_size_t 0.1>')
         self.assertEqual(repr(ssize_t(0.01, 'T')), '<small_size_t 0.01T>')
@@ -66,8 +71,10 @@ class UtilsTestSmallSizeT(unittest.TestCase):
         self.assertEqual(repr(ssize_t(0.001, 'm', '')), '<small_size_t 0.001m>')
         self.assertEqual(repr(ssize_t(0.0001, 'm', '')), '<small_size_t 0.0001m>')
 
+        self.assertEqual(repr(ssize_t(0.2)), '<small_size_t 0.2>')
         self.assertEqual(repr(ssize_t(0.33)), '<small_size_t 0.33>')
         self.assertEqual(repr(ssize_t(0.033, 's')), '<small_size_t 0.033s>')
+        self.assertEqual(repr(ssize_t(0.0333333333, 's')), '<small_size_t 0.0333333s>')
 
         self.assertEqual(repr(ssize_t(0.0066)), '<small_size_t 0.0066>')
         self.assertEqual(repr(ssize_t(0.00066)), '<small_size_t 0.00066>')
@@ -82,6 +89,8 @@ class UtilsTestSmallSizeT(unittest.TestCase):
         self.assertEqual(repr(ssize_t(0.0000000000000001)), '<small_size_t 0.0000000000000001>')
         self.assertEqual(repr(ssize_t(0.0000000000000000001)), '<small_size_t 0.0000000000000000001>')
 
+        # FIXME add more cases, like below...
+
     def test_utils_ssize_t_str(self):
         ssize_t = utils.small_size_t
 
@@ -91,7 +100,22 @@ class UtilsTestSmallSizeT(unittest.TestCase):
         self.assertEqual(str(ssize_t(0, '', 'm')), '0')
         self.assertEqual(str(ssize_t(0, 'm', 'n')), '0m')
 
+        self.assertEqual(str(ssize_t(1000, 'A', 'n')), '1mA')
+        self.assertEqual(str(ssize_t(1, 'm', 'n')), '1nm')
+
         self.assertEqual(str(ssize_t(0.1)), '100m')
+        self.assertEqual(str(ssize_t(0.01)), '10m')
+        self.assertEqual(str(ssize_t(0.001)), '1m')
+
+        self.assertEqual(str(ssize_t(0.2)), '200m')
+        self.assertEqual(str(ssize_t(0.3)), '300m')
+        self.assertEqual(str(ssize_t(0.4)), '400m')
+        self.assertEqual(str(ssize_t(0.5)), '500m')
+        self.assertEqual(str(ssize_t(0.6)), '600m')
+        self.assertEqual(str(ssize_t(0.7)), '700m')
+        self.assertEqual(str(ssize_t(0.8)), '800m')
+        self.assertEqual(str(ssize_t(0.9)), '900m')
+
         self.assertEqual(str(ssize_t(0.01, 'T')), '10mT')
 
         self.assertEqual(str(ssize_t(0.1, '', 'm')), '100μ')
@@ -100,21 +124,36 @@ class UtilsTestSmallSizeT(unittest.TestCase):
         self.assertEqual(str(ssize_t(0.001, 'm', '')), '1mm')
         self.assertEqual(str(ssize_t(0.0001, 'm', '')), '100μm')
 
-        self.assertEqual(str(ssize_t(0.33)), '0.33')
-        self.assertEqual(str(ssize_t(0.033, 's')), '0.033s')
+        self.assertEqual(str(ssize_t(0.33)), '330m')
+        self.assertEqual(str(ssize_t(0.033, 's')), '33ms')
+        self.assertEqual(str(ssize_t(0.0333333333, 's')), '33.3ms')
 
-        self.assertEqual(str(ssize_t(0.0066)), '0.0066')
-        self.assertEqual(str(ssize_t(0.00066)), '0.00066')
+        self.assertEqual(str(ssize_t(0.0066)), '6.60m')
+        self.assertEqual(str(ssize_t(0.00066)), '660μ')
+        self.assertEqual(str(ssize_t(0.06060)), '60.6m')
 
-        self.assertEqual(str(ssize_t(0.00001)), '0.00001')
-        self.assertEqual(str(ssize_t(0.000001)), '0.000001')
-        self.assertEqual(str(ssize_t(0.0000001)), '0.0000001')
-        self.assertEqual(str(ssize_t(0.00000001)), '0.00000001')
-        self.assertEqual(str(ssize_t(0.000000001)), '0.000000001')
-        self.assertEqual(str(ssize_t(0.0000000001)), '0.0000000001')
-        self.assertEqual(str(ssize_t(0.0000000000001)), '0.0000000000001')
-        self.assertEqual(str(ssize_t(0.0000000000000001)), '0.0000000000000001')
-        self.assertEqual(str(ssize_t(0.0000000000000000001)), '0.0000000000000000001')
+        self.assertEqual(str(ssize_t(0.06001)), '60.0m')
+        self.assertEqual(str(ssize_t(0.06002)), '60.0m')
+        self.assertEqual(str(ssize_t(0.06003)), '60.0m')
+        self.assertEqual(str(ssize_t(0.06004)), '60.0m')
+        self.assertEqual(str(ssize_t(0.06005)), '60.0m')
+        self.assertEqual(str(ssize_t(0.06006)), '60.1m')
+        self.assertEqual(str(ssize_t(0.06007)), '60.1m')
+        self.assertEqual(str(ssize_t(0.06008)), '60.1m')
+        self.assertEqual(str(ssize_t(0.06009)), '60.1m')
+
+        self.assertEqual(str(ssize_t(0.00001)), '10μ')
+        self.assertEqual(str(ssize_t(0.000001)), '1μ')
+        self.assertEqual(str(ssize_t(0.0000001)), '100n')
+        self.assertEqual(str(ssize_t(0.00000001)), '10n')
+        self.assertEqual(str(ssize_t(0.000000001)), '1n')
+        self.assertEqual(str(ssize_t(0.0000000001)), '100p')
+        self.assertEqual(str(ssize_t(0.0000000000001)), '100f')
+        self.assertEqual(str(ssize_t(0.00000000000001)), '10f')
+        self.assertEqual(str(ssize_t(0.000000000000001)), '1f')
+        self.assertEqual(str(ssize_t(0.0000000000000000)), '0')
+        self.assertEqual(str(ssize_t(0.0000000000000001)), '0')
+        self.assertEqual(str(ssize_t(0.0000000000000000001)), '0')
 
 class UtilsTestSizeT(unittest.TestCase):
 
