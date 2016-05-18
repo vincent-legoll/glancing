@@ -19,7 +19,8 @@ def glance_ok():
     return glance_run(quiet=True) is not None
 
 # Import VM image into glance
-def glance_import(base, md5=None, name=None, diskformat=None):
+def glance_import_id(base, md5=None, name=None, diskformat=None):
+    g_args = None
     args = ['--container-format', 'bare', '--file', base]
     if diskformat is not None:
         args += ['--disk-format', diskformat]
@@ -27,9 +28,20 @@ def glance_import(base, md5=None, name=None, diskformat=None):
         args += ['--name', name]
     if md5 is not None:
         args += ['--checksum', md5]
+        # Passing in the checksum has been deprecated in API v2.x
+        g_args = ['--os-image-api-version', '1']
     err_msg = 'failed to import image into glance: %s from %s' % (name, base)
-    out = glance_run('image-create', *args, err_msg=err_msg)
-    return out is not None
+    out = glance_run('image-create', g_args, *args, err_msg=err_msg)
+    if out:
+        print(out)
+        h, b, _, _ = openstack_out.parse_block(out)
+        for property_name, value in b:
+            if property_name == 'id':
+                return value
+    return False
+
+def glance_import(base, md5=None, name=None, diskformat=None):
+    return not not glance_import_id(base, md5, name, diskformat)
 
 def glance_exists(name):
     if type(name) not in (str, unicode):
@@ -37,8 +49,10 @@ def glance_exists(name):
         raise TypeError
     return len(glance_ids([name])) > 0
 
-def glance_run(glance_cmd=None, *args, **kwargs):
+def glance_run(glance_cmd=None, g_args=None, *args, **kwargs):
     cmd = list(_GLANCE_CMD)
+    if g_args is not None:
+        cmd.extend(g_args)
     # Handle site-specific parameters (for example: "--insecure")
     os_params = os.environ.get('OS_PARAMS', None)
     if os_params:
@@ -66,12 +80,21 @@ def glance_ids(names=None):
     il = glance_run('image-list')
     if il:
         h, b, _, _ = openstack_out.parse_block(il)
-        for image_id, image_name, _, _, _, _ in b:
+        for image_id, image_name in b:
             # Filtering or not ?
             if (names is None or (utils.is_iter(names) and
                     (image_name in names or image_id in names))):
                 ret.add(image_id)
     return ret
+
+def glance_id(name):
+    if utils.is_uuid(name):
+        return name
+    name = glance_ids(name)
+    if name and len(name) > 0:
+        return list(name)[0]
+    # Non-existent image
+    return None
 
 def glance_delete_all(names, quiet=False):
     ret = False
@@ -87,18 +110,27 @@ def glance_delete_ids(ids, quiet=False):
     return ret
 
 def glance_delete(name, quiet=False):
-    err_msg = 'failed to delete image from glance: ' + name
-    out = glance_run('image-delete', name, err_msg=err_msg, quiet=quiet)
+    imgid = glance_id(name)
+    if imgid is None:
+        return False
+    err_msg = 'failed to delete image from glance: ' + str(imgid)
+    out = glance_run('image-delete', None, imgid, err_msg=err_msg, quiet=quiet)
     return out is not None
 
 def glance_download(name, fn_local):
-    err_msg = 'failed to download image from glance: ' + name
-    out = glance_run('image-download', '--file', fn_local, name, err_msg=err_msg)
+    imgid = glance_id(name)
+    if imgid is None:
+        return False
+    err_msg = 'failed to download image from glance: ' + str(imgid)
+    out = glance_run('image-download', None, '--file', fn_local, imgid, err_msg=err_msg)
     return out is not None
 
 def glance_rename(vmid, name):
-    err_msg = 'failed to rename image from glance: ' + name
-    out = glance_run('image-update', '--name', name, vmid, err_msg=err_msg)
+    imgid = glance_id(vmid)
+    if imgid is None:
+        return False
+    err_msg = 'failed to rename image from glance: ' + str(imgid)
+    out = glance_run('image-update', None, '--name', name, imgid, err_msg=err_msg)
     return out is not None
 
 # Handle CLI options
