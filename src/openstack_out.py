@@ -90,13 +90,13 @@ def cli(sys_argv=sys.argv[1:]):
                         help='field separator for output, when there are'
                         'multiple columns')
 
-    parser.add_argument('-p', '--pattern', dest='pattern', default=None,
-                        metavar='STRING',
+    parser.add_argument('-p', '--pattern', dest='pattern',
+                        metavar='STRING', action='append',
                         help='pattern to select lines. Can be a python'
                         ' regex. Searched in the whole line')
 
     parser.add_argument('-P', '--anti-pattern', dest='antipattern',
-                        default=None, nargs="?", metavar='STRING',
+                        metavar='STRING', action='append',
                         help='pattern to deselect lines. Can be a python'
                         ' regex. Searched in the whole line')
 
@@ -119,12 +119,12 @@ def get_field(args):
     # Lines selection by pattern matching
     pat = None
     if args.pattern:
-        pat = re.compile(args.pattern)
+        pat = re.compile('|'.join(args.pattern))
 
     # Lines deselection
     apa = None
     if args.antipattern:
-        apa = re.compile(args.antipattern)
+        apa = re.compile('|'.join(args.antipattern))
 
     ret = None
     cmd = args.cmd
