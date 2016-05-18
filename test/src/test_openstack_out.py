@@ -102,34 +102,40 @@ class OpenstackOutGetFieldTest(unittest.TestCase):
 
     @unittest.skipUnless(_VMS_OK, "VMs are not running")
     def test_openstack_out_get_field_ok_vms(self):
-        f = self.get_field(['-c', '1', '--', 'neutron', 'agent-list'])
-        self.assertEqual(['Metadata agent', 'Open vSwitch agent', 'DHCP agent', 'L3 agent', 'Open vSwitch agent'], f)
+        f = self.get_field(['-c', '2', '--', 'nova', 'flavor-list'])
+        self.assertEqual(sorted([['512'], ['2048'], ['4096'], ['8192'], ['16384'], ['32768'], ['2048'], ['4096']]), sorted(f))
 
-        f = self.get_field(['-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
-        self.assertEqual(['Metadata agent', 'DHCP agent', 'L3 agent'], f)
+        f = self.get_field(['-c', '1', '--', 'nova', 'flavor-list'])
+        self.assertEqual(sorted([['m1.tiny'], ['m1.small'], ['m1.medium'], ['m1.large'], ['m1.xlarge'], ['m1.2xlarge'], ['m1.cms-small'], ['m1.small-bigmem']]), sorted(f))
 
-        f = self.get_field(['-t', '1', '-c', '1', '-P', 'vSwitch', '--', 'neutron', 'agent-list'])
-        self.assertEqual(['Metadata agent'], f)
+        f = self.get_field(['-c', '1', '-c', '2', '-p', 'tiny', '-p', 'medium', '--', 'nova', 'flavor-list'])
+        self.assertEqual(sorted([['m1.medium', '4096'], ['m1.tiny', '512']]), sorted(f))
 
-        f = self.get_field(['-p', 'Metadata', '-c', '1', '--', 'neutron', 'agent-list'])
-        self.assertEqual(['Metadata agent'], f)
+        f = self.get_field(['-c', '2', '-P', 'large', '-P', 'small', '--', 'nova', 'flavor-list'])
+        self.assertEqual([['512'], ['4096']], f)
+
+        f = self.get_field(['-t', '1', '-c', '1', '-P', '512', '--', 'nova', 'flavor-list'])
+        self.assertEqual([['m1.small']], f)
+
+        f = self.get_field(['-p', 'm1.xlarge', '-c', '2', '--', 'nova', 'flavor-list'])
+        self.assertEqual([['16384']], f)
 
         f = self.get_field(['-p', 'default', '-c', '1', '--', 'nova', 'secgroup-list'])
-        self.assertEqual(['default'], f)
+        self.assertEqual([['default']], f)
 
         f = self.get_field(['-p', 'default', '-c', '2', '--', 'nova', 'secgroup-list'])
-        self.assertEqual(['default'], f)
+        self.assertEqual([['default']], f)
 
         f = self.get_field(['-p', 'default', '-c', '0', '--', 'nova', 'secgroup-list'])
-        u = uuid.UUID(f[0])
+        u = uuid.UUID(f[0][0])
         self.assertEqual(uuid.UUID, type(u))
 
         f = self.get_field(['-p', 'default', '--', 'nova', 'secgroup-list'])
-        u = uuid.UUID(f[0])
+        u = uuid.UUID(f[0][0])
         self.assertEqual(uuid.UUID, type(u))
 
         f = self.get_field(['--', 'nova secgroup-list'])
-        u = uuid.UUID(f[0])
+        u = uuid.UUID(f[0][0])
         self.assertEqual(uuid.UUID, type(u))
 
     def test_openstack_out_get_field_ok_uuids(self):
@@ -183,8 +189,8 @@ class OpenstackOutMainTest(unittest.TestCase):
     def test_openstack_out_main(self):
         with utils.stringio() as output:
             with utils.redirect('stdout', output):
-                openstack_out.main(['-p', 'L3', '-c', '1', '--', 'neutron', 'agent-list'])
-                self.assertEqual(output.getvalue(), 'L3 agent\n')
+                openstack_out.main(['-p', 'm1.tiny', '-c', '2', '--', 'nova', 'flavor-list'])
+                self.assertEqual(output.getvalue(), '512\n')
 
 class OpenstackOutPBTest(unittest.TestCase):
 
