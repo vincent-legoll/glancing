@@ -11,9 +11,9 @@ import utils
 class DecompressorError(Exception):
     pass
 
-def zip_opener(fn, mode):
+def zip_opener(fn, _):
     zf = zipfile.ZipFile(fn, 'r')
-    unfn, ext = os.path.splitext(fn)
+    unfn, _ = os.path.splitext(fn)
     return zf.open(os.path.basename(unfn))
 
 _EXT_MAP = {
@@ -59,19 +59,19 @@ class Decompressor(object):
             with self.opener(self.fin_name, 'rb') as fin:
                 delout = False
                 try:
-                    with open(self.fout_name, 'wb+') as fout:
+                    with open(self.fout_name, 'wb') as fout:
                         try:
                             utils.block_read_filedesc(fin, fout.write, self.block_size)
-                        except IOError as e:
-                            if e not in utils.Exceptions(IOError('Not a gzipped file')):
-                                raise e
+                        except IOError as exc:
+                            if exc not in utils.Exceptions(IOError('Not a gzipped file')):
+                                raise exc
                             delout = True
                             ret = False
                     if delout:
                         os.remove(self.fout_name)
-                except IOError as e:
+                except IOError:
                     ret = False
-        except:
+        except Exception:
             ret = False
 
         if delete:
