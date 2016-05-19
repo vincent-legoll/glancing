@@ -98,6 +98,7 @@ def handle_vm(vmid, vmmap):
             return
 
     glancing.main(['-v', '-s', new_md5, '-n', name, meta_file])
+    glance.glance_update(name, '--property', 'version=' + mdata['version'])
 
 def main(sys_argv=sys.argv[1:]):
     '''Download images specified in the given list & store them in glance
