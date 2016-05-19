@@ -86,6 +86,7 @@ def glance_ids(names=None):
     return ret
 
 def glance_id(name):
+    # FIXME: We don't handle images with uuid as name
     if utils.is_uuid(name):
         return name
     name = glance_ids(name)
