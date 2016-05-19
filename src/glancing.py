@@ -108,8 +108,10 @@ def do_argparse(sys_argv):
 
     return args
 
-# Get compressed VM image file from the given url
 def get_url(url):
+    '''Retrieve content from URL into a temporary file.
+       Return temporary file name.
+    '''
     if not url or type(url) not in (str, unicode):
         return None
     try:
