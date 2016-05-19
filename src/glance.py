@@ -165,7 +165,7 @@ def do_argparse(sys_argv):
 
     return args
 
-def main(sys_argv=sys.argv):
+def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
     if args.delete:
         glance_delete_all(args.delete)
