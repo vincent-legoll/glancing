@@ -36,10 +36,11 @@ class MetaDataBase(object):
 
     def __init__(self):
         super(MetaDataBase, self).__init__()
+        self.data = None
 
     def get_name(self):
-        md = self.data
-        return '%s-%s-%s' % (md['os'], md['os-version'], md['os-arch'])
+        data = self.data
+        return '%s-%s-%s' % (data['os'], data['os-version'], data['os-arch'])
 
 # Translate Stratuslab market place hash names to hashlib ones
 def sl_to_hashlib(hash_name):
@@ -52,12 +53,11 @@ class MetaDataJson(MetaDataBase):
         with open(filename, 'rb') as fileobj:
             try:
                 self.json_obj = json.loads(fileobj.read())
-            except ValueError as e:
+            except ValueError:
                 self.json_obj = None
-                self.get_metadata = lambda: None
             if not type(self.json_obj) is dict:
                 raise ValueError('Cannnot load json data from: ' + filename)
-        self.data = { 'checksums': {} }
+        self.data = {'checksums': {}}
 
 class MetaStratusLabJson(MetaDataJson):
     '''Parse the metadata .json file, from the stratuslab marketplace
@@ -70,8 +70,12 @@ class MetaStratusLabJson(MetaDataJson):
     }
 
     def get_metadata(self):
+        if not self.json_obj:
+            vprint('No JSON object')
+            return None
         ret = self.data
-        # StratusLab can answear with 200/OK but error encoded in json response...
+        # StratusLab marketplace can answer with 200/OK but error encoded
+        # in json response...
         if "rMsg" in self.json_obj:
             vprint('Bad JSON metadata')
             return None
@@ -109,8 +113,8 @@ class MetaCern(MetaDataJson):
         return self.all_images.get(self.ident, {})
 
     def get_all_images(self):
-        il = self.json_obj["hv:imagelist"]["hv:images"]
-        for img_h in il:
+        imglist = self.json_obj["hv:imagelist"]["hv:images"]
+        for img_h in imglist:
             img = img_h["hv:image"]
             ret = {
                 'checksums': {},
@@ -137,31 +141,34 @@ class MetaStratusLabXml(MetaDataBase):
         super(MetaStratusLabXml, self).__init__()
         try:
             self.xml_obj = et.parse(filename)
-        except et.ParseError as e:
+        except et.ParseError:
             vprint('parse error')
-            self.get_metadata = lambda: None
-        self.data = { 'checksums': {} }
+            self.xml_obj = None
+        self.data = {'checksums': {}}
 
     def get_metadata(self):
-        ns = StratusLabNS._NS_TO_URL_PREFIXES
+        if not self.xml_obj:
+            vprint('No XML object')
+            return None
+        nsp = StratusLabNS._NS_TO_URL_PREFIXES
         ret = self.data
         root = self.xml_obj.getroot()
         # StratusLab xml metadata files are not consistent:
         # if downloaded through the XML button or directly
         # through the url, there's an additionnal root tag
         if root.tag == 'metadata':
-            rdf = root.find('rdf:RDF', ns)
+            rdf = root.find('rdf:RDF', nsp)
         else:
             rdf = root
-        desc = rdf.find('rdf:Description', ns)
-        for cksum in desc.findall('slreq:checksum', ns):
-            algo = cksum.find('slreq:algorithm', ns)
-            val = cksum.find('slreq:value', ns)
+        desc = rdf.find('rdf:Description', nsp)
+        for cksum in desc.findall('slreq:checksum', nsp):
+            algo = cksum.find('slreq:algorithm', nsp)
+            val = cksum.find('slreq:value', nsp)
             ret['checksums'][sl_to_hashlib(algo.text)] = val.text
         for key in StratusLabNS._RETKEY_TO_NS_PREFIXES.keys():
             if key == 'algorithm':
                 continue
             mdkey = StratusLabNS._RETKEY_TO_NS_PREFIXES[key] + ':' + key
-            node = desc.find(mdkey, ns)
+            node = desc.find(mdkey, nsp)
             ret[key] = node.text
         return ret
