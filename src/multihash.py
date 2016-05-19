@@ -22,18 +22,30 @@ try:
 except AttributeError:
     _HASH_ALGOS = hashlib.algorithms_guaranteed
 
+_hld = hashlib.__dict__
+
 # Mapping from algorithm to digest length
-_HASH_TO_LEN = { hash_name: hashlib.__dict__[hash_name]().digest_size * 2 for hash_name in _HASH_ALGOS }
+_HASH_TO_LEN = {
+    hash_name: _hld[hash_name]().digest_size * 2 for hash_name in _HASH_ALGOS
+}
+
+def hash2len(ahash):
+    return _HASH_TO_LEN[ahash]
 
 # Mapping from digest length to algorithm
-_LEN_TO_HASH = { hashlib.__dict__[hash_name]().digest_size * 2: hash_name for hash_name in _HASH_ALGOS }
+_LEN_TO_HASH = {
+    _hld[hash_name]().digest_size * 2: hash_name for hash_name in _HASH_ALGOS
+}
+
+def len2hash(alen):
+    return _LEN_TO_HASH[alen]
 
 class multihash_hashlib(object):
     '''Compute multiple message digests in parallel, using python's hashlib
     '''
 
     def __init__(self, hash_names=_HASH_ALGOS, block_size=4096):
-        self.data = {hash_name: hashlib.__dict__[hash_name]() for hash_name in hash_names}
+        self.data = {hash_name: _hld[hash_name]() for hash_name in hash_names}
         self.block_size = block_size
 
     def update(self, data):
@@ -60,14 +72,14 @@ class multihash_serial_exec(object):
         if not os.path.exists(filename):
             raise IOError('[Errno 2] No such file or directory: ' + filename)
         for hash_name in self.hexdigests_data.keys():
-            h = self.get_hash(filename, hash_name)
-            self.hexdigests_data[hash_name] = h
+            ahash = self.get_hash(filename, hash_name)
+            self.hexdigests_data[hash_name] = ahash
 
     # Compute message digest for given file name with the given algorithm
-    def get_hash(self, fn, hash_name):
-        cmd = [hash_name + 'sum', '--binary', fn]
-        ok, _, out, _ = utils.run(cmd, out=True)
-        if ok:
+    def get_hash(self, filename, hash_name):
+        cmd = [hash_name + 'sum', '--binary', filename]
+        status, _, out, _ = utils.run(cmd, out=True)
+        if status:
             return out[:_HASH_TO_LEN[hash_name]]
         return None
 
@@ -91,9 +103,9 @@ def multisum(digs):
 def main(args=sys.argv[1:]):
     ret = collections.OrderedDict()
     for arg in args:
-        mh = multihash_hashlib()
-        mh.hash_file(arg)
-        ret[arg] = mh.hexdigests()
+        mhash = multihash_hashlib()
+        mhash.hash_file(arg)
+        ret[arg] = mhash.hexdigests()
     return ret
 
 if __name__ == '__main__':
