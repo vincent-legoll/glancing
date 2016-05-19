@@ -83,33 +83,73 @@ def handle_vm(vmid, vmmap):
     meta_file = get_meta_file(vmid)
     meta = metadata.MetaStratusLabXml(meta_file)
     mdata = meta.get_metadata()
+
     new_md5 = mdata['checksums']['md5']
     name = mdata['title']
 
     if new_md5 in vmmap:
         vprint('An image with the same MD5 is already in glance: ' + vmid)
+        diff = False
 
         # Check name
         oldn = vmmap[new_md5]['name']
-        newn = mdata['title']
+        newn = name
         if oldn != newn:
             vprint("But names differ, old: %s, new: %s" % (oldn, newn))
+            diff = True
 
         # Check Version
         oldv = vmmap[new_md5]['version']
         newv = mdata['version']
         if oldv != newv:
             vprint("But versions differ, old: %s, new: %s" % (oldv, newv))
+            diff = True
 
-        # Which one is the good one ? Punt untilwe know for sure
+        # Which one is the good one ? Let the admin sort it out...
+        if diff:
+            diff_msg = "differ, but we don't know which is the good one"
+        else:
+            diff_msg = "look like the same images"
+        vprint("They %s, ignoring..." % diff_msg)
+
         return
 
     if name in vmmap:
-        vprint('An image with the same name is already in glance, '
-               'but md5 differ: ' + vmid)
-        if not glance.glance_rename(vmid, name + '_old'):
+        vprint('An image with the same name is already in glance: ' + vmid)
+        diff = False
+
+        # Check MD5
+        oldc = vmmap[name]['checksum']
+        newc = new_md5
+        if oldc != newc:
+            vprint("But checksums differ, old: %s, new: %s" % (oldc, newc))
+            diff = True
+
+        # Check Version
+        oldv = vmmap[name]['version']
+        newv = mdata['version']
+        if oldv != newv:
+            vprint("But versions differ, old: %s, new: %s" % (oldv, newv))
+            diff = True
+            if oldv > newv:
+                vprint("Versions are going backwards, that's not good.")
+                vprint("Ignoring for now, fix the image on the market place.")
+                return
+
+        # This should not happen, as it should already have been caught by
+        # earlier MD5 checking...
+        if not diff:
+            vprint("Identical images, that should not happen, please report"
+                   " as a bug.")
             return
 
+        if not glance.glance_rename(name, name + '_old'):
+            vprint('Cannot rename old image, aborting update...')
+            return
+
+        vprint("Previous image renamed to: " + name + '_old')
+
+    vprint("Uploading new image: " + name)
     glancing.main(['-v', '-s', new_md5, '-n', name, meta_file])
     glance.glance_update(name, '--property', 'version=' + mdata['version'])
 
