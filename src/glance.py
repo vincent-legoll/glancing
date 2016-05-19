@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import os
 import sys
-import uuid
 import argparse
 
 import utils
@@ -33,9 +32,8 @@ def glance_import_id(base, md5=None, name=None, diskformat=None):
     err_msg = 'failed to import image into glance: %s from %s' % (name, base)
     out = glance_run('image-create', g_args, *args, err_msg=err_msg)
     if out:
-        print(out)
-        h, b, _, _ = openstack_out.parse_block(out)
-        for property_name, value in b:
+        _, block, _, _ = openstack_out.parse_block(out)
+        for property_name, value in block:
             if property_name == 'id':
                 return value
     return False
@@ -60,9 +58,9 @@ def glance_run(glance_cmd=None, g_args=None, *args, **kwargs):
     if glance_cmd is not None:
         cmd += [glance_cmd]
     cmd.extend(args)
-    ok, retcode, out, err = utils.run(cmd, out=True, err=True)
-    if not ok:
-        if not (kwargs.get('quiet') is True):
+    status, _, out, err = utils.run(cmd, out=True, err=True)
+    if not status:
+        if not kwargs.get('quiet') is True:
             err_msg = kwargs.get('err_msg', 'failed to run "%s"' % glance_cmd)
             vprint(err_msg)
             if args:
@@ -77,10 +75,10 @@ def glance_ids(names=None):
     # Single name ?
     if type(names) in (str, unicode):
         names = [names]
-    il = glance_run('image-list')
-    if il:
-        h, b, _, _ = openstack_out.parse_block(il)
-        for image_id, image_name in b:
+    imglist = glance_run('image-list')
+    if imglist:
+        _, block, _, _ = openstack_out.parse_block(imglist)
+        for image_id, image_name in block:
             # Filtering or not ?
             if (names is None or (utils.is_iter(names) and
                     (image_name in names or image_id in names))):
@@ -142,9 +140,9 @@ def do_argparse(sys_argv):
                         help='display additional information')
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-d', '--delete', dest='delete', metavar='NAME', nargs='+',
-                       help='delete all images with the same name as '
-                            'the specified VM')
+    group.add_argument('-d', '--delete', dest='delete', metavar='NAME',
+                       nargs='+', help='delete all images with the same '
+                            'name as the specified VM')
 
     args = parser.parse_args(sys_argv)
 
