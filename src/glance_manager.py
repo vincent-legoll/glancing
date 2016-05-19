@@ -64,18 +64,21 @@ def get_vmlist(vmlist_fn):
             ret.append(line)
     return ret
 
+_GLANCE_IMAGES = None
+
 def get_glance_images():
     '''Get info about images already in glance
     '''
-    ret = {}
-    ids = glance.glance_ids()
-    for vmid in ids:
-        img = glance.glance_show(vmid)
-        if img:
-            vmmap = openstack_out.map_block(img)
-            ret[vmmap['checksum']] = vmmap
-            ret[vmmap['name']] = vmmap
-    return ret
+    global _GLANCE_IMAGES
+    if _GLANCE_IMAGES is None:
+        _GLANCE_IMAGES = {}
+        for vmid in glance.glance_ids():
+            img = glance.glance_show(vmid)
+            if img:
+                vmmap = openstack_out.map_block(img)
+                _GLANCE_IMAGES[vmmap['checksum']] = vmmap
+                _GLANCE_IMAGES[vmmap['name']] = vmmap
+    return _GLANCE_IMAGES
 
 def get_meta_file(vmid, metadata_url_base):
     '''Retrieve image metadata from StratusLab marketplace, in XML format
@@ -89,7 +92,7 @@ def get_meta_file(vmid, metadata_url_base):
     os.rename(fn_meta, fn_meta + '.xml')
     return fn_meta + '.xml'
 
-def handle_vm(vmid, vmmap, url):
+def handle_vm(vmid, url):
     '''Handle one image given by its SL marketplace ID
     '''
     vprint('handle_vm(%s)' % vmid)
@@ -177,12 +180,11 @@ def main(sys_argv=sys.argv[1:]):
     if not args.vmlist or not os.path.exists(args.vmlist):
         print('Cannot access image list file: ' + args.vmlist)
         return False
-    vmmap = get_glance_images()
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
         vmid = vmid.strip()
         if vmid:
-            handle_vm(vmid, vmmap, args.url)
+            handle_vm(vmid, args.url)
     return True
 
 if __name__ == '__main__':
