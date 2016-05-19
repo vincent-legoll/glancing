@@ -84,12 +84,13 @@ def handle_vm(vmid, vmmap):
     meta = metadata.MetaStratusLabXml(meta_file)
     mdata = meta.get_metadata()
     new_md5 = mdata['checksums']['md5']
+    name = mdata['title']
+
     if new_md5 in vmmap:
         vprint('An image with the same MD5 is already in glance: ' + vmid)
         #~ vmmap[new_md5]['name']
         return
 
-    name = meta.get_name()
     if name in vmmap:
         vprint('An image with the same name is already in glance, '
                'but md5 differ: ' + vmid)
