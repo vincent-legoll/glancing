@@ -9,7 +9,7 @@ import argparse
 
 import utils
 
-re_sep_line = re.compile(r'^[+-]+$')
+_RE_SEP_LINE = re.compile(r'^[+-]+$')
 
 def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
     garbin = []
@@ -23,7 +23,7 @@ def parse_block(block, line_pattern_re=None, line_anti_pattern_re=None):
         if not line:
             continue
         # A separator line
-        if re_sep_line.match(line):
+        if _RE_SEP_LINE.match(line):
             seps += 1
             continue
         # Before the table
@@ -65,17 +65,17 @@ def map_block(block, key_index=0):
     # Be careful, key index has to map to a unique identifer or else
     # you'll lose data: only the last row will be kept...
     ret = {}
-    h, b, _, _ = parse_block(block)
+    head, pblock, _, _ = parse_block(block)
     # Only two columns: direct mapping
-    if len(h) == 2:
-        for i in range(len(b)):
-            #if len(h) == len(b[i]): # Useless, parse_block ensures that
-                ret[b[i][key_index]] = b[i][1]
+    if len(head) == 2:
+        for i in range(len(pblock)):
+            #if len(head) == len(b[i]): # Useless, parse_block ensures that
+            ret[pblock[i][key_index]] = pblock[i][1]
     # More than two columns: map to lists
-    else: # if len(h) > 2:
-        for i in range(len(b)):
-            #if len(h) == len(b[i]): # Useless, parse_block ensures that
-                ret[b[i][key_index]] = b[i][:key_index] + b[i][key_index+1:]
+    else: # if len(head) > 2:
+        for i in range(len(pblock)):
+            #if len(head) == len(pblock[i]): # Useless, parse_block ensures that
+            ret[pblock[i][key_index]] = (pblock[i][:key_index] + pblock[i][key_index+1:])
     return ret
 
 def cli(sys_argv=sys.argv[1:]):
@@ -126,7 +126,6 @@ def get_field(args):
     if args.antipattern:
         apa = re.compile('|'.join(args.antipattern))
 
-    ret = None
     cmd = args.cmd
     if len(cmd) > 0:
         # Command to run, simple or multiple strings
@@ -138,20 +137,18 @@ def get_field(args):
         if os_params:
             cmd[1:1] = os_params.split()
         # Run it, grab output
-        ok, retcode, out, err = utils.run(cmd, out=True)
-        if not ok:
+        status, _, out, _ = utils.run(cmd, out=True)
+        if not status:
             return None
     else:
         # No command to run, assume data comes from stdin
         out = sys.stdin.read()
 
     # Parse the returned array
-    if out:
-        ret = parse_block(out, pat, apa)
-
-    if not ret:
+    if not out:
         return None
-    headers, rows, _, _ = ret
+
+    headers, rows, _, _ = parse_block(out, pat, apa)
 
     # Lines selection by quantity (the first N lines or all of them)
     head = int(args.head) if args.head else len(rows)
