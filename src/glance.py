@@ -132,11 +132,16 @@ def glance_download(name, fn_local):
     return out is not None
 
 def glance_rename(vmid, name):
+    return glance_update(vmid, '--name', name)
+
+def glance_update(vmid, *args):
     imgid = glance_id(vmid)
     if imgid is None:
         return False
-    err_msg = 'failed to rename image from glance: ' + str(imgid)
-    out = glance_run('image-update', None, '--name', name, imgid, err_msg=err_msg)
+    err_msg = 'failed to update image from glance: ' + str(imgid)
+    args = list(args)
+    args.append(imgid)
+    out = glance_run('image-update', None, *args, err_msg=err_msg)
     return out is not None
 
 # Handle CLI options
