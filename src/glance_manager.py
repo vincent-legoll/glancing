@@ -37,6 +37,9 @@ def do_argparse(sys_argv):
     parser.add_argument('-l', '--vmlist', default=_DEFAULT_VMLIST_FILE,
                         help='List of endorsed VMs to put in glance')
 
+    parser.add_argument('-u', '--url', default=_DEFAULT_SL_MARKETPLACE_URL_BASE,
+                        help='Market place base URL')
+
     args = parser.parse_args(sys_argv)
 
     if args.verbose:
@@ -74,20 +77,26 @@ def get_glance_images():
             ret[vmmap['name']] = vmmap
     return ret
 
-def get_meta_file(vmid):
+def get_meta_file(vmid, metadata_url_base):
     '''Retrieve image metadata from StratusLab marketplace, in XML format
     '''
-    # Get xml metadata file from StratusLab marketplace
-    metadata_url_base = _DEFAULT_SL_MARKETPLACE_URL_BASE
-    fn_meta = glancing.get_url(metadata_url_base + vmid)
+    # Get XML metadata file from StratusLab marketplace
+    url_meta = metadata_url_base + vmid
+    fn_meta = glancing.get_url(url_meta)
+    if not fn_meta:
+        vprint("Cannot retrieve XML metadata from URL: " + url_meta)
+        return None
     os.rename(fn_meta, fn_meta + '.xml')
     return fn_meta + '.xml'
 
-def handle_vm(vmid, vmmap):
+def handle_vm(vmid, vmmap, url):
     '''Handle one image given by its SL marketplace ID
     '''
     vprint('handle_vm(%s)' % vmid)
-    meta_file = get_meta_file(vmid)
+    meta_file = get_meta_file(vmid, url)
+    if meta_file is None:
+        return
+    vmmap = get_glance_images()
     meta = metadata.MetaStratusLabXml(meta_file)
     mdata = meta.get_metadata()
 
@@ -173,7 +182,7 @@ def main(sys_argv=sys.argv[1:]):
     for vmid in vmlist:
         vmid = vmid.strip()
         if vmid:
-            handle_vm(vmid, vmmap)
+            handle_vm(vmid, vmmap, args.url)
     return True
 
 if __name__ == '__main__':
