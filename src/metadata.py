@@ -24,7 +24,9 @@ class StratusLabNS(object):
     _RETKEY_TO_NS_PREFIXES = {
         'os': 'slterms',
         'bytes': 'slreq',
+        'title': 'dcterms',
         'format': 'dcterms',
+        'version': 'slterms',
         'os-arch': 'slterms',
         'location': 'slterms',
         'algorithm': 'slreq',
