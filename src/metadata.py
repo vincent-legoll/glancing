@@ -144,7 +144,7 @@ class MetaStratusLabXml(MetaDataBase):
         try:
             self.xml_obj = et.parse(filename)
         except et.ParseError:
-            vprint('parse error')
+            vprint('XML parse error')
             self.xml_obj = None
         self.data = {'checksums': {}}
 
