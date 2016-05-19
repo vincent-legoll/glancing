@@ -88,7 +88,20 @@ def handle_vm(vmid, vmmap):
 
     if new_md5 in vmmap:
         vprint('An image with the same MD5 is already in glance: ' + vmid)
-        #~ vmmap[new_md5]['name']
+
+        # Check name
+        oldn = vmmap[new_md5]['name']
+        newn = mdata['title']
+        if oldn != newn:
+            vprint("But names differ, old: %s, new: %s" % (oldn, newn))
+
+        # Check Version
+        oldv = vmmap[new_md5]['version']
+        newv = mdata['version']
+        if oldv != newv:
+            vprint("But versions differ, old: %s, new: %s" % (oldv, newv))
+
+        # Which one is the good one ? Punt untilwe know for sure
         return
 
     if name in vmmap:
