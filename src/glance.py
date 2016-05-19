@@ -107,6 +107,14 @@ def glance_delete_ids(ids, quiet=False):
         ret &= glance_delete(image_id, quiet=quiet)
     return ret
 
+def glance_show(name, quiet=False):
+    imgid = glance_id(name)
+    if imgid is None:
+        return False
+    err_msg = 'failed to get infos from glance for image: ' + str(imgid)
+    out = glance_run('image-show', None, imgid, err_msg=err_msg, quiet=quiet)
+    return out
+
 def glance_delete(name, quiet=False):
     imgid = glance_id(name)
     if imgid is None:
