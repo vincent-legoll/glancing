@@ -1,5 +1,8 @@
 #! /usr/bin/env python
 
+'''Download cloud images, verify their checksums, store them in glance...
+'''
+
 from __future__ import print_function
 
 import os
@@ -111,35 +114,35 @@ def get_url(url):
         return None
     try:
         url_f = urlopen(url)
-    except HTTPError as e:
-        if e.code == 404 and e.reason == 'Not Found':
-            vprint(str(e))
+    except HTTPError as exc:
+        if exc.code == 404 and exc.reason == 'Not Found':
+            vprint(str(exc))
             return None
-        raise e
-    except URLError as e:
-        vprint(str(e))
+        raise exc
+    except URLError as exc:
+        vprint(str(exc))
         return None
-    except ValueError as e:
-        if e.args[0] == 'unknown url type: %s' % url:
-            vprint(str(e))
+    except ValueError as exc:
+        if exc.args[0] == 'unknown url type: %s' % url:
+            vprint(str(exc))
             return None
-        raise e
+        raise exc
     with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
         try:
             utils.block_read_filedesc(url_f, fout.write, 4096)
-        except IOError as e:
+        except IOError as exc:
             vprint('cannot write temp file: ' + fout.name)
-            os.remove(fout_name)
+            os.remove(fout.name)
             return None
     return fout.name
 
 # Add to metadata['checksums'] a new message digest to be verified
 def add_checksum(dig, metadata, overrides=False):
-    dig_len = len(dig)
-    if dig_len not in multihash._LEN_TO_HASH:
+    try:
+        halg = multihash.len2hash(len(dig))
+    except KeyError:
         vprint('unrecognized digest: ' + dig)
         return False
-    halg = multihash._LEN_TO_HASH[dig_len]
     if halg in metadata['checksums']:
         if dig == metadata['checksums'][halg]:
             vprint('duplicate digest, computing only once: ' + dig)
@@ -156,9 +159,9 @@ def add_checksum(dig, metadata, overrides=False):
 def check_digests(local_image_file, metadata, replace_bads=False):
     verified = 0
     hashes = metadata['checksums']
-    mh = multihash.multihash_hashlib(hashes)
-    mh.hash_file(local_image_file)
-    hds = mh.hexdigests()
+    mhash = multihash.multihash_hashlib(hashes)
+    mhash.hash_file(local_image_file)
+    hds = mhash.hexdigests()
     for hashfn in sorted(hashes):
         digest_computed = hds[hashfn]
         digest_expected = hashes[hashfn]
@@ -193,12 +196,12 @@ def main(sys_argv=sys.argv[1:]):
 
     # Guess which mode are we operating in
     image_type = None
-    d = args.descriptor
-    vprint('descriptor: ' + d)
-    if d.startswith('http://') or d.startswith('https://'):
+    desc = args.descriptor
+    vprint('descriptor: ' + desc)
+    if desc.startswith('http://') or desc.startswith('https://'):
         image_type = 'url'
-    elif os.path.exists(d):
-        ext = os.path.splitext(d)[1]
+    elif os.path.exists(desc):
+        ext = os.path.splitext(desc)[1]
         if ext == '.xml':
             image_type = 'xml'
         elif ext == '.json':
@@ -208,9 +211,9 @@ def main(sys_argv=sys.argv[1:]):
     else:
         if args.cernlist:
             image_type = 'cern'
-        elif len(d) == 27:
+        elif len(desc) == 27:
             try:
-                base64.decodestring(d)
+                base64.decodestring(desc)
                 image_type = 'market'
             except binascii.Error:
                 vprint('probably invalid StratusLab marketplace ID')
@@ -271,8 +274,8 @@ def main(sys_argv=sys.argv[1:]):
     # VM images are compressed, but checksums are for uncompressed files
     if 'compression' in metadata and metadata['compression']:
         chext = '.' + metadata['compression']
-        d = decompressor.Decompressor(local_image_file, ext=chext)
-        res, local_image_file = d.doit(delete=(not args.keeptemps))
+        decomp = decompressor.Decompressor(local_image_file, ext=chext)
+        res, local_image_file = decomp.doit(delete=(not args.keeptemps))
         if not res:
             vprint(local_image_file + ': cannot uncompress')
             return False
@@ -310,12 +313,12 @@ def main(sys_argv=sys.argv[1:]):
             with open(sum_file, 'rb') as sum_f:
                 vprint(sum_file + ': loading checksums...')
                 for line in sum_f:
-                    m = re_chks_line.match(line)
-                    if m and base_fn == m.group('filename'):
-                        vprint(sum_file + ': matched filenames: ' + base_fn + ' == ' + m.group('filename'))
-                        ret = add_checksum(m.group('digest'), metadata, overrides=True)
+                    match = re_chks_line.match(line)
+                    if match and base_fn == match.group('filename'):
+                        vprint(sum_file + ': matched filenames: ' + base_fn + ' == ' + match.group('filename'))
+                        ret = add_checksum(match.group('digest'), metadata, overrides=True)
                         if not ret:
-                            vprint(sum_file + ': cannot add_checksum(' + m.group('digest') + ')')
+                            vprint(sum_file + ': cannot add_checksum(' + match.group('digest') + ')')
                             return False
 
     # Populate metadata message digests to be verified, from CLI parameters
@@ -355,7 +358,7 @@ def main(sys_argv=sys.argv[1:]):
         else:
             if args.force:
                 vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
-                metadata['checksums'] = { 'md5': '0' * 32 }
+                metadata['checksums'] = {'md5': '0' * 32}
                 check_digests(local_image_file, metadata, args.force)
             else:
                 vprint(local_image_file + ': size differ, not verifying checksums')
@@ -364,8 +367,8 @@ def main(sys_argv=sys.argv[1:]):
     if not args.dryrun and glance.glance_exists(name):
         backup_dir()
         fn_local = os.path.join(_BACKUP_DIR, name)
-        ok = glance.glance_download(name, fn_local)
-        if not ok:
+        status = glance.glance_download(name, fn_local)
+        if not status:
             return False
         glance.glance_delete(name, quiet=(not utils.get_verbose()))
 
