@@ -51,6 +51,13 @@ def get_vmlist(vmlist_fn):
     ret = []
     with open(vmlist_fn, 'rb') as vmlist_f:
         for line in vmlist_f:
+            stripl = line.strip()
+            # Ignore blank lines
+            if not stripl:
+                continue
+            # Ignore commented lines
+            if stripl.startswith('#'):
+                continue
             ret.append(line)
     return ret
 
