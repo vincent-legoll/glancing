@@ -74,6 +74,10 @@ def get_glance_images():
             img = glance.glance_show(imgid)
             if img:
                 vmmap = openstack_out.map_block(img)
+                if 'mpid' in vmmap:
+                    vprint("found mpid (%s) already set on image: %s (%s)" %
+                           (vmmap['mpid'], vmmap['id'], vmmap['name']))
+                    _GLANCE_IMAGES[vmmap['mpid']] = vmmap
                 _GLANCE_IMAGES[vmmap['checksum']] = vmmap
                 _GLANCE_IMAGES[vmmap['name']] = vmmap
     return _GLANCE_IMAGES
