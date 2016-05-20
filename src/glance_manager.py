@@ -94,85 +94,162 @@ def get_meta_file(mpid, metadata_url_base):
     os.rename(fn_meta, fn_meta + '.xml')
     return fn_meta + '.xml'
 
-def handle_vm(vmid, url):
+def needs_upgrade(mpid, old, new, meta_file):
+    old_md5 = old['checksum']
+    old_name = old['name']
+    old_ver = old['version']
+
+    new_md5 = new['checksums']['md5']
+    new_name = new['title']
+    new_ver = new['version']
+
+    if new_md5 == old_md5:
+        vprint("Same image: same md5, no upload")
+        update_properties(mpid, old, new)
+    else:
+        vprint("md5 differ")
+        if new_ver > old_ver:
+            vprint("New image version")
+            if not glance.glance_rename(old_name, old_name + '_old'):
+                vprint('Cannot rename old image, will need manual intervention')
+            vprint("Previous image renamed to: " + old_name + '_old')
+            upload_image(mpid, new_name, meta_file)
+            update_properties(mpid, old, new)
+        elif new_ver < old_ver:
+            vprint("NO-OP: downgraded image")
+        else:
+            vprint("NO-OP: corrupted image (same version, md5 differ)")
+
+def upload_image(mpid, name, meta_file):
+    vprint("Uploading new image: %s (%s)" % (mpid, name))
+    glancing.main(['-v', '-n', name, meta_file])
+
+def set_properties(mpid, new):
+    vprint("Setting initial image properties: " + mpid)
+    props = []
+    vprint("Setting name")
+    props.extend(['--name', new['title']])
+    vprint("Setting version")
+    props.extend(['--property', 'version=' + new['version']])
+    vprint("Setting mpid")
+    props.extend(['--property', 'mpid=' + mpid])
+    if not glance.glance_update(new['title'], *props):
+        vprint("Could not set image properties for: ", mpid)
+
+def update_properties(mpid, old, new):
+    vprint("Updating image properties: " + mpid)
+    props = []
+    if old['name'] != new['title']:
+        # TODO: test name with spaces characters
+        vprint("Updating name")
+        props.extend(['--name', new['title']])
+    if old['version'] != new['version']:
+        vprint("Updating version")
+        props.extend(['--property', 'version=' + new['version']])
+    if ('mpid' not in old) or (old['mpid'] != mpid):
+        vprint("Updating mpid")
+        props.extend(['--property', 'mpid=' + mpid])
+    if props:
+        if not glance.glance_update(old['id'], *props):
+            vprint("Could not set image properties for: ", mpid)
+    else:
+        vprint("NO-OP: All properties have the right values")
+
+def handle_vm(mpid, url):
     '''Handle one image given by its SL marketplace ID
     '''
-    vprint('handle_vm(%s)' % vmid)
-    meta_file = get_meta_file(vmid, url)
+    vprint('handle_vm(%s)' % mpid)
+
+    meta_file = get_meta_file(mpid, url)
     if meta_file is None:
         return
+
+    new = metadata.MetaStratusLabXml(meta_file).get_metadata()
     vmmap = get_glance_images()
-    meta = metadata.MetaStratusLabXml(meta_file)
-    mdata = meta.get_metadata()
 
-    new_md5 = mdata['checksums']['md5']
-    name = mdata['title']
+    if mpid in vmmap:
+        vprint("image already in glance")
+        needs_upgrade(mpid, vmmap[mpid], new, meta_file)
+    else:
+        vprint("New image")
 
-    if new_md5 in vmmap:
-        vprint('An image with the same MD5 is already in glance: ' + vmid)
-        diff = False
+        new_md5 = new['checksums']['md5']
+        new_name = new['title']
+        new_ver = new['version']
 
-        # Check name
-        oldn = vmmap[new_md5]['name']
-        newn = name
-        if oldn != newn:
-            vprint("But names differ, old: %s, new: %s" % (oldn, newn))
-            diff = True
+        if new_md5 in vmmap:
+            vprint('An image with the same MD5 is already in glance')
 
-        # Check Version
-        oldv = vmmap[new_md5]['version']
-        newv = mdata['version']
-        if oldv != newv:
-            vprint("But versions differ, old: %s, new: %s" % (oldv, newv))
-            diff = True
+            old = vmmap[new_md5]
 
-        # Which one is the good one ? Let the admin sort it out...
-        if diff:
-            diff_msg = "differ, but we don't know which is the good one"
-        else:
-            diff_msg = "look like the same images"
-        vprint("They %s, ignoring..." % diff_msg)
+            old_md5 = old['checksum']
+            old_name = old['name']
+            old_ver = old.get('version', None)
 
-        return
+            diff = False
 
-    if name in vmmap:
-        vprint('An image with the same name is already in glance: ' + vmid)
-        diff = False
+            # Check name
+            if old_name != new_name:
+                vprint("But names differ, old: %s, new: %s" % (old_name, new_name))
+                diff = True
 
-        # Check MD5
-        oldc = vmmap[name]['checksum']
-        newc = new_md5
-        if oldc != newc:
-            vprint("But checksums differ, old: %s, new: %s" % (oldc, newc))
-            diff = True
+            # Check Version
+            if old_ver != new_ver:
+                vprint("But versions differ, old: %s, new: %s" % (old_ver, new_ver))
+                diff = True
 
-        # Check Version
-        oldv = vmmap[name]['version']
-        newv = mdata['version']
-        if oldv != newv:
-            vprint("But versions differ, old: %s, new: %s" % (oldv, newv))
-            diff = True
-            if oldv > newv:
-                vprint("Versions are going backwards, that's not good.")
-                vprint("Ignoring for now, fix the image on the market place.")
+            # Which one is the good one ? Let the admin sort it out...
+            if diff:
+                diff_msg = "differ, but we don't know which is the good one"
+            else:
+                diff_msg = "look like the same images"
+            vprint("They %s, ignoring..." % diff_msg)
+
+            return
+
+        elif new_name in vmmap:
+            old = vmmap[new_name]
+
+            old_md5 = old['checksum']
+            old_name = old['name']
+            old_ver = old['version']
+
+            vprint('An image with the same name is already in glance: ' + old_name)
+
+            diff = False
+
+            # Check MD5
+            if old_md5 != new_md5:
+                vprint("But checksums differ, old: %s, new: %s" % (old_md5, new_md5))
+                diff = True
+
+            # Check Version
+            if old_ver != new_ver:
+                vprint("But versions differ, old: %s, new: %s" % (old_ver, new_ver))
+                diff = True
+                if old_ver > new_ver:
+                    vprint("Versions are going backwards, that's not good.")
+                    vprint("Ignoring for now, fix the image on the market place.")
+                    return
+
+            # This should not happen, as it should already have been caught by
+            # earlier MD5 checking...
+            if not diff:
+                vprint("Identical images, that should not happen, please report"
+                       " as a bug.")
                 return
 
-        # This should not happen, as it should already have been caught by
-        # earlier MD5 checking...
-        if not diff:
-            vprint("Identical images, that should not happen, please report"
-                   " as a bug.")
-            return
+            if 'mpid' in old:
+                vprint("Previous image has 'mpid' property set, keeping it as-is...")
 
-        if not glance.glance_rename(name, name + '_old'):
-            vprint('Cannot rename old image, aborting update...')
-            return
+            if not glance.glance_rename(old_name, old_name + '_old'):
+                vprint('Cannot rename old image, aborting update...')
+                return
 
-        vprint("Previous image renamed to: " + name + '_old')
+            vprint("Previous image renamed to: " + old_name + '_old')
 
-    vprint("Uploading new image: " + name)
-    glancing.main(['-v', '-s', new_md5, '-n', name, meta_file])
-    glance.glance_update(name, '--property', 'version=' + mdata['version'])
+        upload_image(mpid, new_name, meta_file)
+        set_properties(mpid, new)
 
 def main(sys_argv=sys.argv[1:]):
     '''Download images specified in the given list & store them in glance
