@@ -78,7 +78,8 @@ class MultihashTestGetHashSerial(unittest.TestCase):
                        " installed, and available through your PATH environment "
                        "variable.\n%s: [Errno 2] No such file or directory\n" %
                        (sys.argv[0], nonexistent_hash, 'sum', sys.argv[0]))
-                self.assertEqual(output.getvalue(), out)
+                out = out.split("\n")[0]
+                self.assertEqual(output.getvalue().split("\n")[0], out)
 
 class MultihashTestMain(unittest.TestCase):
 
