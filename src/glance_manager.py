@@ -70,19 +70,19 @@ def get_glance_images():
     global _GLANCE_IMAGES
     if _GLANCE_IMAGES is None:
         _GLANCE_IMAGES = {}
-        for vmid in glance.glance_ids():
-            img = glance.glance_show(vmid)
+        for imgid in glance.glance_ids():
+            img = glance.glance_show(imgid)
             if img:
                 vmmap = openstack_out.map_block(img)
                 _GLANCE_IMAGES[vmmap['checksum']] = vmmap
                 _GLANCE_IMAGES[vmmap['name']] = vmmap
     return _GLANCE_IMAGES
 
-def get_meta_file(vmid, metadata_url_base):
+def get_meta_file(mpid, metadata_url_base):
     '''Retrieve image metadata from StratusLab marketplace, in XML format
     '''
     # Get XML metadata file from StratusLab marketplace
-    url_meta = metadata_url_base + vmid
+    url_meta = metadata_url_base + mpid
     fn_meta = glancing.get_url(url_meta)
     if not fn_meta:
         vprint("Cannot retrieve XML metadata from URL: " + url_meta)
