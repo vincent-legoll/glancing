@@ -13,7 +13,7 @@ from utils import devnull
 
 import metadata
 
-good_keys = set([
+good_keys_cern = set([
     'os',
     'bytes',
     'format',
@@ -24,14 +24,16 @@ good_keys = set([
     'compression',
 ])
 
-class MetaDataJsonTest(unittest.TestCase):
+good_keys_sl = good_keys_cern | set(['title', 'version'])
+
+class MetaDataStratusLabJsonTest(unittest.TestCase):
 
     def test_metadata_json(self):
         fn = 'PIDt94ySjKEHKKvWrYijsZtclxU.json'
         jsonfile = get_local_path('..', 'stratuslab', fn)
         m = metadata.MetaStratusLabJson(jsonfile)
         md = m.get_metadata()
-        self.assertEqual(set(md.keys()), good_keys)
+        self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
@@ -48,19 +50,19 @@ class MetaDataCernTest(unittest.TestCase):
         jsonfile = get_local_path('..', 'CERN', fn)
         m = metadata.MetaCern(jsonfile, 'deadbabe-f00d-beef-cafe-b1ab1ab1a666')
         md = m.get_metadata()
-        self.assertEqual(set(md.keys()), good_keys)
+        self.assertEqual(set(md.keys()), good_keys_cern)
         self.assertEqual(md['location'],
             'http://download.cirros-cloud.net/0.3.4/'
             'cirros-0.3.4-i386-disk.img')
 
-class MetaDataXmlTest(unittest.TestCase):
+class MetaDataStratusLabXmlTest(unittest.TestCase):
 
     def test_metadata_xml(self):
         fn = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml'
         xmlfile = get_local_path('..', 'stratuslab', 'download', fn)
         m = metadata.MetaStratusLabXml(xmlfile)
         md = m.get_metadata()
-        self.assertEqual(set(md.keys()), good_keys)
+        self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
             'http://www.apc.univ-paris7.fr/Downloads/comput/'
             'CentOS7.qcow2.gz')
