@@ -18,7 +18,7 @@ import openstack_out
 from utils import vprint
 
 _DEFAULT_VMLIST_FILE = os.path.join('/', 'etc', 'glancing', 'vmlist')
-_DEFAULT_SL_MARKETPLACE_URL_BASE = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
+_DEFAULT_SL_MP_URL = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
 
 def do_argparse(sys_argv):
     '''Handle CLI options
@@ -35,7 +35,7 @@ def do_argparse(sys_argv):
     parser.add_argument('-l', '--vmlist', default=_DEFAULT_VMLIST_FILE,
                         help='List of endorsed VMs to put in glance')
 
-    parser.add_argument('-u', '--url', default=_DEFAULT_SL_MARKETPLACE_URL_BASE,
+    parser.add_argument('-u', '--url', default=_DEFAULT_SL_MP_URL,
                         help='Market place base URL')
 
     args = parser.parse_args(sys_argv)
@@ -95,6 +95,8 @@ def get_meta_file(mpid, metadata_url_base):
     return fn_meta + '.xml'
 
 def needs_upgrade(mpid, old, new, meta_file):
+    '''Handle an image already put in glance in a previous run
+    '''
     old_md5 = old['checksum']
     old_name = old['name']
     old_ver = old['version']
@@ -121,10 +123,14 @@ def needs_upgrade(mpid, old, new, meta_file):
             vprint("NO-OP: corrupted image (same version, md5 differ)")
 
 def upload_image(mpid, name, meta_file):
+    '''Upload new image into glance registry, using metadata file content
+    '''
     vprint("Uploading new image: %s (%s)" % (mpid, name))
     glancing.main(['-v', '-n', name, meta_file])
 
 def set_properties(mpid, new):
+    '''Set image properties unconditionnally, accordingly to 'new' metadata
+    '''
     vprint("Setting initial image properties: " + mpid)
     props = []
     vprint("Setting name")
@@ -137,10 +143,11 @@ def set_properties(mpid, new):
         vprint("Could not set image properties for: ", mpid)
 
 def update_properties(mpid, old, new):
+    '''Update image properties as needed, accordingly to 'old' & 'new' metadata
+    '''
     vprint("Updating image properties: " + mpid)
     props = []
     if old['name'] != new['title']:
-        # TODO: test name with spaces characters
         vprint("Updating name")
         props.extend(['--name', new['title']])
     if old['version'] != new['version']:
@@ -190,12 +197,12 @@ def handle_vm(mpid, url):
 
             # Check name
             if old_name != new_name:
-                vprint("But names differ, old: %s, new: %s" % (old_name, new_name))
+                vprint("Names differ, old: %s, new: %s" % (old_name, new_name))
                 diff = True
 
             # Check Version
             if old_ver != new_ver:
-                vprint("But versions differ, old: %s, new: %s" % (old_ver, new_ver))
+                vprint("Versions differ, old: %s, new: %s" % (old_ver, new_ver))
                 diff = True
 
             # Which one is the good one ? Let the admin sort it out...
@@ -214,22 +221,24 @@ def handle_vm(mpid, url):
             old_name = old['name']
             old_ver = old['version']
 
-            vprint('An image with the same name is already in glance: ' + old_name)
+            vprint('An image with the same name is already in glance: ' +
+                   old_name)
 
             diff = False
+            err_msg = "But %s differ, old: %s, new: %s"
 
             # Check MD5
             if old_md5 != new_md5:
-                vprint("But checksums differ, old: %s, new: %s" % (old_md5, new_md5))
+                vprint(err_msg % ("checksums", old_md5, new_md5))
                 diff = True
 
             # Check Version
             if old_ver != new_ver:
-                vprint("But versions differ, old: %s, new: %s" % (old_ver, new_ver))
+                vprint(err_msg % ("versions", old_ver, new_ver))
                 diff = True
                 if old_ver > new_ver:
                     vprint("Versions are going backwards, that's not good.")
-                    vprint("Ignoring for now, fix the image on the market place.")
+                    vprint("Ignoring, fix the image on the market place.")
                     return
 
             # This should not happen, as it should already have been caught by
@@ -240,7 +249,8 @@ def handle_vm(mpid, url):
                 return
 
             if 'mpid' in old:
-                vprint("Previous image has 'mpid' property set, keeping it as-is...")
+                vprint("Previous image has 'mpid' property set, "
+                       "keeping it as-is...")
 
             if not glance.glance_rename(old_name, old_name + '_old'):
                 vprint('Cannot rename old image, aborting update...')
