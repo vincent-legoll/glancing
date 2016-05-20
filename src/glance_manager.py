@@ -49,7 +49,7 @@ def do_argparse(sys_argv):
 def get_vmlist(vmlist_fn):
     '''Get list of StratusLab ID of images to download
     '''
-    ret = []
+    ret = set()
     with open(vmlist_fn, 'rb') as vmlist_f:
         for line in vmlist_f:
             stripl = line.strip()
@@ -59,7 +59,7 @@ def get_vmlist(vmlist_fn):
             # Ignore commented lines
             if stripl.startswith('#'):
                 continue
-            ret.append(line)
+            ret.add(stripl)
     return ret
 
 _GLANCE_IMAGES = None
