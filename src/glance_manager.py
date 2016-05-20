@@ -4,8 +4,6 @@
 France Grilles marketplace.
 '''
 
-from __future__ import print_function
-
 import os
 import sys
 import textwrap
@@ -178,7 +176,7 @@ def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
     vprint('Image list: ' + args.vmlist)
     if not args.vmlist or not os.path.exists(args.vmlist):
-        print('Cannot access image list file: ' + args.vmlist)
+        vprint('Cannot access image list file: ' + args.vmlist)
         return False
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
