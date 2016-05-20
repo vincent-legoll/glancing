@@ -31,3 +31,5 @@ class GlanceManagerTest(unittest.TestCase):
     def test_glance_manager_ok(self):
         self.assertTrue(glance_manager.main(['-v', '-l',
             get_local_path('..', 'gm_list.txt')]))
+
+# TODO: test name with spaces characters (initial, update, etc...)
