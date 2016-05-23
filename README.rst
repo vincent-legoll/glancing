@@ -66,7 +66,7 @@ Both `nose` & `py.test` can be used to run the test suite
 In order to launch all the automated tests, just use the included script,
 which use `nose` to collect the tests to run:
 
-    $ ./run_tests.sh
+    $ make test
 
 or just use:
 
@@ -74,7 +74,7 @@ or just use:
 
 Or you can select only a single test to be run manually:
 
-    $ ./run_tests.sh test/src/test_utils.py:UtilsRunTest.test_utils_run_true
+    $ nosetests test/src/test_utils.py:UtilsRunTest.test_utils_run_true
 
 First you give the test module test_XXX.py file, a colon, then the class,
 a dot, then the method from that class.
@@ -85,8 +85,7 @@ The py.test way of doing manual test selection:
 
 The tests check for availability of a glance registry service to test
 images uploading. Just populate the traditionnal OpenStack variables,
-see environmentVars_. Or modify the ./test/openstack/admin.sh accordingly
-before launching the test suite.
+see environmentVars_.
 
 You can further extend the coverage of the test suite, by modifying the
 following lines from ./test/src/test_glancing.py file. They enable more
@@ -95,8 +94,8 @@ tests, but will download a lot of big (huge) image files...
     _HEAVY_TESTS = False
     _HUGE_TESTS = False
 
-In the run_tests.sh script you can also configure the usage of nose test
-plugins for code coverage, pep8 conformance checking and profiling.
+In the Makefile you can also configure the usage of nose test plugins
+for code coverage, pep8 conformance checking and profiling.
 
 The code coverage results will be located, after a test run, in:
 
