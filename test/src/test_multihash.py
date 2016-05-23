@@ -84,6 +84,10 @@ class MultihashTestGetHashSerial(unittest.TestCase):
 class MultihashTestMain(unittest.TestCase):
 
     def setUp(self):
+        self.files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
+        self.computed = multihash.main(self.files_to_hash)
+
+    def test_multihash_main(self):
         devnull_checksums = {
             'md5': 'd41d8cd98f00b204e9800998ecf8427e',
             'sha1': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
@@ -92,20 +96,19 @@ class MultihashTestMain(unittest.TestCase):
             'sha384': '38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b',
             'sha512': 'cf83e1357eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e',
         }
-        random_checksums = {
-            'md5': 'b1e40b428a6f711c6921926a579bac36',
-            'sha1': '169e4ad142d707e7d0eb1962d32ad00fcb2d6dcf',
-            'sha224': '12fc7c41885c375df0434d33e6811eb1cb66163edec5de8fdf162711',
-            'sha256': '80983784e896dbc9fd8d499d302996d005f7efdbbd4511b0052673ca9457a9ea',
-            'sha384': '3cafc50f51bde82a7994a5227e8213874ea689e20abc12bb2917ff9041b3f227c88fc32bc2a92adfe1fa76eaaea23d3c',
-            'sha512': '15dd9fa60bf907a1be9282f67ff10bd52515332488c81fa606f806380d0b0e2a2b2604ab3235ce31e6ab29d4fed751021103c3a4d35c4075f1d5b11d26a163fc',
-        }
-        self.files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
-        self.expected = dict(zip(self.files_to_hash, [devnull_checksums, random_checksums]))
-        self.computed = multihash.main(self.files_to_hash)
 
-    def test_multihash_main(self):
-        self.assertEqual(self.expected, self.computed)
+        random_1M_checksums = {}
+
+        for alg in devnull_checksums.keys():
+            fin_fn = get_local_path('..', 'data', alg.upper() + 'SUMS')
+            with open(fin_fn, 'rb') as fin:
+                for line in fin:
+                    if line.endswith('random_1M.bin\n'):
+                        random_1M_checksums[alg] = line[:multihash.hash2len(alg)]
+                        break
+
+        expected = dict(zip(self.files_to_hash, [devnull_checksums, random_1M_checksums]))
+        self.assertEqual(expected, self.computed)
 
     def test_multihash_multisum(self):
         ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
