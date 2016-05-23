@@ -13,9 +13,12 @@ operating system caches...
 import os
 import sys
 import hashlib
+import argparse
+import textwrap
 import collections
 
 import utils
+from utils import vprint
 
 try:
     _HASH_ALGOS = hashlib.algorithms
@@ -83,7 +86,7 @@ class multihash_serial_exec(object):
             return out[:_HASH_TO_LEN[hash_name]]
         return None
 
-def multisum(digs):
+def multisum(digs, args):
     '''Emulate md5sum & its family, but computing all the message
        digests in parallel, only reading each file once.
     '''
@@ -95,18 +98,53 @@ def multisum(digs):
             lst_files.append(digest + '  ' + filename + '\n')
             data[fn] = lst_files
     for (filename, lines) in data.iteritems():
-        if os.path.exists(filename):
+        vprint('Writing file: ' + filename)
+        if not args.force and os.path.exists(filename):
             raise ValueError('ERROR: file already exists:', filename)
+        filename = os.path.join(args.directory, filename)
         with open(filename, 'wb') as fout:
             fout.writelines(lines)
 
-def main(args=sys.argv[1:]):
+# Handle CLI options
+def do_argparse(sys_argv):
+    desc_help = textwrap.dedent('''
+        Emulate md5sum, sha1sum, etc... as if all were run in parallel...
+    ''')
+    parser = argparse.ArgumentParser(description=desc_help,
+        formatter_class=utils.AlmostRawFormatter)
+
+    parser.add_argument('-d', '--directory', default='.',
+        help='Directory where checksums files are output')
+
+    parser.add_argument('-f', '--force', action='store_true',
+        help='Overwrite checksum files')
+
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Display additional information')
+
+    parser.add_argument(dest='files', nargs='+',
+        help='files to comute checksums of')
+
+    args = parser.parse_args(sys_argv)
+
+    if args.verbose:
+        utils.set_verbose(True)
+        vprint('verbose mode')
+
+    return args
+
+def doit(file_args):
     ret = collections.OrderedDict()
-    for arg in args:
+    for arg in file_args:
         mhash = multihash_hashlib()
         mhash.hash_file(arg)
         ret[arg] = mhash.hexdigests()
     return ret
 
+def main(sys_argv=sys.argv[1:]):
+    args = do_argparse(sys_argv)
+    print args.files
+    multisum(doit(args.files), args)
+
 if __name__ == '__main__':
-    multisum(main())
+    main()
