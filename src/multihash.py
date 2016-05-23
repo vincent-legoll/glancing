@@ -143,7 +143,6 @@ def doit(file_args):
 
 def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
-    print args.files
     multisum(doit(args.files), args)
 
 if __name__ == '__main__':
