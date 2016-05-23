@@ -7,16 +7,18 @@ clean:
 	rm -rf $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
 	find . -type f -name .coverage -print0 | xargs -r -0 rm
 
-test_files: test_data_files test_image_files
-
-nosetests: test_files
-	./run_tests.sh
+test_files: test_data_files test_image_files test_checksum_files
 
 pytests: test_files
 	py.test -n `$(NPROC)`
 
 tox: test_files
 	tox
+
+nosetests test: test_files
+	nosetests --exe ${ALL_OPTS} $*
+
+.PHONY: nosetests test tox pytests
 
 # Download TEST_IMAGE_FILES
 TEST_IMAGE_DIR = test/images
@@ -43,12 +45,12 @@ test/images/cirros-MD5SUMS:
 	curl http://download.cirros-cloud.net/0.3.4/MD5SUMS > $@
 
 test/images/cirros-SHA1SUMS:
-	sha1sum cirros-0.3.4-* > $@
+	sha1sum test/images/cirros-0.3.4-* > $@
 
 # Create TEST_DATA_FILES
 SIZES = 1 5 10 25 50 75 100 200 300 400 500 750 1000
 TEST_DATA_FILES_SIZE = $(foreach SIZ,$(SIZES),test/data/random_$(SIZ)M.bin)
-TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M.bin.$(ALG))
+TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG))
 TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin
 TEST_DATA_FILES = $(TEST_DATA_FILES_SIZE) $(TEST_DATA_FILES_COMP) $(TEST_DATA_FILES_TINY)
 
@@ -79,6 +81,8 @@ CHECKSUM_ALGOS = md5 sha1 sha224 sha256 sha384 sha512
 CHECKSUM_FILES_MH = $(foreach ALG,$(CHECKSUM_ALGOS),test/data/$(call toupper,$(ALG))SUMS)
 CHECKSUM_FILES_SYS = $(foreach CHKSUM_FILE,$(CHECKSUM_FILES_MH),$(CHKSUM_FILE).txt)
 
+test_checksum_files: $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
+
 test/data/%SUMS.txt: $(TEST_DATA_FILES)
 	$(call tolower,$*)sum $(TEST_DATA_FILES) > $@
 
@@ -86,7 +90,7 @@ test/data/%SUMS: $(TEST_DATA_FILES)
 	src/multihash.py -d test/data -f $(TEST_DATA_FILES)
 
 # Check validity against system utilities generated files...
-test_data_check: $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
+test_data_check: test_checksum_files
 	for sum in test/data/*SUMS; do cmp $${sum} $${sum}.txt || exit 42; done
 
 # Nose testing & plugins
@@ -103,7 +107,3 @@ TISSUE_IGNORES = --tissue-ignore=E302,E501,E261,E201,E202,E241,E402,E128
 TISSUE_OPTS = # --with-tissue --cover-inclusive --tissue-package=${PACKAGES} ${TISSUE_IGNORES}
 
 ALL_OPTS = $(COVERAGE_OPTS) $(PROFILE_OPTS) $(TISSUE_OPTS)
-
-.PHONY: test
-test:
-	nosetests --exe ${ALL_OPTS} $*
