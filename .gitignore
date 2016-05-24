@@ -4,18 +4,8 @@ cover
 .tox
 Glancing.egg-info
 
-test/data/*SUMS
-test/data/*SUMS.txt
-test/data/*.bin
-test/data/*.zip
-test/data/*.bz2
-test/data/*.gz
-
-test/images/cirros-0.3.4-i386-disk.img
-test/images/cirros-0.3.4-x86_64-disk.img
-test/images/cirros-*SUMS
-test/images/coreos_production_qemu_image.img
-test/images/ttylinux-16.1-x86_64.img
+test/data/*
+test/images/*
 
 test/stratuslab/download/*.xml
 test/stratuslab/download/*.json
