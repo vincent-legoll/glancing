@@ -22,18 +22,26 @@ nosetests test: test_files
 
 # Download TEST_IMAGE_FILES
 TEST_IMAGE_DIR = test/images
+TEST_IMAGE_CHKSUMS = cirros-MD5SUMS cirros-SHA1SUMS coreos-MD5SUMS ttylinux-MD5SUMS
+TEST_IMAGE_CIRROS = cirros-0.3.4-i386-disk.img cirros-0.3.4-x86_64-disk.img
 TEST_IMAGE_FILE_NAMES = ttylinux-16.1-x86_64.img coreos_production_qemu_image.img \
-	cirros-0.3.4-i386-disk.img cirros-0.3.4-x86_64-disk.img \
-	cirros-MD5SUMS cirros-SHA1SUMS
+	$(TEST_IMAGE_CIRROS) $(TEST_IMAGE_CHKSUMS)
 TEST_IMAGE_FILES = $(foreach IMG,$(TEST_IMAGE_FILE_NAMES),$(TEST_IMAGE_DIR)/$(IMG))
+TEST_IMAGE_CIRROS_FILES = $(foreach IMG,$(TEST_IMAGE_CIRROS),$(TEST_IMAGE_DIR)/$(IMG))
 
 test_image_files: $(TEST_IMAGE_FILES)
 
 test/images/ttylinux-16.1-x86_64.img:
 	curl http://appliances.stratuslab.eu/images/base/ttylinux-16.1-x86_64-base/1.0/ttylinux-16.1-x86_64.img.gz | gzip -dc > $@
 
+test/images/ttylinux-MD5SUMS: test/images/ttylinux-16.1-x86_64.img
+	md5sum test/images/ttylinux-16.1-x86_64.img > $@
+
 test/images/coreos_production_qemu_image.img:
 	curl http://stable.release.core-os.net/amd64-usr/current/coreos_production_qemu_image.img.bz2 | bzip2 -dc > $@
+
+test/images/coreos-MD5SUMS: test/images/coreos_production_qemu_image.img
+	md5sum test/images/coreos_production_qemu_image.img > $@
 
 test/images/cirros-0.3.4-i386-disk.img:
 	curl http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img > $@
@@ -44,7 +52,7 @@ test/images/cirros-0.3.4-x86_64-disk.img:
 test/images/cirros-MD5SUMS:
 	curl http://download.cirros-cloud.net/0.3.4/MD5SUMS > $@
 
-test/images/cirros-SHA1SUMS:
+test/images/cirros-SHA1SUMS: $(TEST_IMAGE_CIRROS_FILES)
 	sha1sum test/images/cirros-0.3.4-* > $@
 
 # Create TEST_DATA_FILES
