@@ -70,7 +70,21 @@ def get_glance_images():
     global _GLANCE_IMAGES
     if _GLANCE_IMAGES is None:
         _GLANCE_IMAGES = {}
-        for imgid in glance.glance_ids():
+        add_args = []
+        if 'OS_TENANT_ID' in os.environ:
+            vprint('Using OS_TENANT_ID environment variable to list images')
+            add_args = ['--owner', os.environ['OS_TENANT_ID']]
+        elif 'OS_TENANT_NAME' in os.environ:
+            vprint('Using OS_TENANT_NAME environment variable to list images')
+            status, _, out, err = utils.run(['keystone', 'tenant-get',
+                                        os.environ['OS_TENANT_ID']], out=True)
+            if status:
+                _, block, _, _ = openstack_out.parse_block(out)
+                for prop, val in block:
+                    if prop == 'id':
+                        add_args = ['--owner', val]
+                        break
+        for imgid in glance.glance_ids(names=None, *add_args):
             img = glance.glance_show(imgid)
             if img:
                 vmmap = openstack_out.map_block(img)
