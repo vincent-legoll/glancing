@@ -13,6 +13,7 @@ import utils
 from utils import devnull, environ, test_name, run, cleanup
 
 import glancing
+import multihash
 
 # Check we have a cloud ready to import images into...
 _GLANCE_OK = False
@@ -130,8 +131,10 @@ class GlancingImageDryRunCoreosTest(unittest.TestCase):
     def test_glancing_image_coreos(self):
         fn = 'coreos_production_qemu_image.img'
         imgfile = get_local_path('..', 'images', fn)
-        md5 = '81a424a52f6775599b4e3de162f81e64'
-        self.assertTrue(glancing.main(['-d', imgfile, '-s',
+        chksumfile = get_local_path('..', 'images', 'coreos-MD5SUMS')
+        with open(chksumfile, 'rb') as fin:
+            md5 = fin.read(multihash.hash2len('md5'))
+        self.assertTrue(glancing.main(['-v', '-d', imgfile, '-s',
             md5 + ':' + md5]))
 
 class GlancingCirrosImageTest(unittest.TestCase):
