@@ -9,6 +9,7 @@ clean:
 
 test_files: test_data_files test_image_files test_checksum_files
 
+# FIXME: some tests are not parallelizable (test/src/test_decompressor.py)
 pytests: test_files
 	py.test -n `$(NPROC)`
 
@@ -53,7 +54,7 @@ test/images/cirros-MD5SUMS:
 	curl http://download.cirros-cloud.net/0.3.4/MD5SUMS > $@
 
 test/images/cirros-SHA1SUMS: $(TEST_IMAGE_CIRROS_FILES)
-	sha1sum test/images/cirros-0.3.4-* > $@
+	sha1sum $(TEST_IMAGE_CIRROS_FILES) > $@
 
 # Create TEST_DATA_FILES
 SIZES = 1 5 10 25 50 75 100 200 300 400 500 750 1000
