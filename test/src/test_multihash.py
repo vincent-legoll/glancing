@@ -85,9 +85,9 @@ class MultihashTestMain(unittest.TestCase):
 
     def setUp(self):
         self.files_to_hash = [os.devnull, get_local_path('..', 'data', 'random_1M.bin')]
-        self.computed = multihash.main(self.files_to_hash)
+        self.computed = multihash.doit(self.files_to_hash)
 
-    def test_multihash_main(self):
+    def test_multihash_doit(self):
         devnull_checksums = {
             'md5': 'd41d8cd98f00b204e9800998ecf8427e',
             'sha1': 'da39a3ee5e6b4b0d3255bfef95601890afd80709',
@@ -113,7 +113,13 @@ class MultihashTestMain(unittest.TestCase):
     def test_multihash_multisum(self):
         ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
         self.assertTrue(ok)
+        class args(object):
+            def __init__(self, directory):
+                self.force = True
+                self.directory = directory
         with utils.tempdir():
-            multihash.multisum(self.computed)
-            with open('MD5SUMS', 'rb') as md5f:
+            anargs = args(os.getcwd())
+            multihash.multisum(self.computed, anargs)
+            cksum_fn = os.path.join(anargs.directory, 'MD5SUMS')
+            with open(cksum_fn, 'rb') as md5f:
                 self.assertEqual(md5f.read(), out)
