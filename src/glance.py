@@ -70,12 +70,12 @@ def glance_run(glance_cmd=None, g_args=None, *args, **kwargs):
         return None
     return out
 
-def glance_ids(names=None):
+def glance_ids(names=None, *args):
     ret = set()
     # Single name ?
     if type(names) in (str, unicode):
         names = [names]
-    imglist = glance_run('image-list')
+    imglist = glance_run('image-list', g_args=None, *args)
     if imglist:
         _, block, _, _ = openstack_out.parse_block(imglist)
         for image_id, image_name in block:
