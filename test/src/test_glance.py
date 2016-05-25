@@ -77,15 +77,21 @@ class GlanceIdsTest(SkipGlanceNOK):
 
     def test_glance_ids_tenant(self):
         add_args = []
-        status, _, out, err = utils.run(['keystone', 'tenant-get',
-                                    os.environ['OS_TENANT_NAME']], out=True)
-        if status:
-            _, block, _, _ = openstack_out.parse_block(out)
-            for prop, val in block:
-                if prop == 'id':
-                    add_args = ['--owner', val]
-                    break
-        l1 = glance.glance_ids(names=None, *add_args)
+        if 'OS_TENANT_ID' in os.environ:
+            vprint('Using OS_TENANT_ID environment variable to list images')
+            add_args = ['--owner', os.environ['OS_TENANT_ID']]
+        elif 'OS_TENANT_NAME' in os.environ:
+            vprint('Using OS_TENANT_NAME environment variable to list images')
+            status, _, out, err = utils.run(['keystone', 'tenant-get',
+                                        os.environ['OS_TENANT_NAME']], out=True)
+            if status:
+                _, block, _, _ = openstack_out.parse_block(out)
+                for prop, val in block:
+                    if prop == 'id':
+                        add_args = ['--owner', val]
+                        break
+        self.assertTrue(len(add_args) == 2)
+        l1 = glance.glance_ids(None, *add_args)
         self.assertTrue(set() < l1)
         # We can see more images if we are administrator and don't filter on tenant
         l2 = glance.glance_ids(names=None)
