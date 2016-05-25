@@ -77,7 +77,7 @@ def get_glance_images():
         elif 'OS_TENANT_NAME' in os.environ:
             vprint('Using OS_TENANT_NAME environment variable to list images')
             status, _, out, err = utils.run(['keystone', 'tenant-get',
-                                        os.environ['OS_TENANT_ID']], out=True)
+                                        os.environ['OS_TENANT_NAME']], out=True)
             if status:
                 _, block, _, _ = openstack_out.parse_block(out)
                 for prop, val in block:
