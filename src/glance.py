@@ -30,7 +30,7 @@ def glance_import_id(base, md5=None, name=None, diskformat=None):
         # Passing in the checksum has been deprecated in API v2.x
         g_args = ['--os-image-api-version', '1']
     err_msg = 'failed to import image into glance: %s from %s' % (name, base)
-    out = glance_run('image-create', g_args, *args, err_msg=err_msg)
+    out = glance_run('image-create', glance_args=g_args, subcmd_args=args, err_msg=err_msg)
     if out:
         _, block, _, _ = openstack_out.parse_block(out)
         for property_name, value in block:
@@ -47,24 +47,27 @@ def glance_exists(name):
         raise TypeError
     return len(glance_ids([name])) > 0
 
-def glance_run(glance_cmd=None, g_args=None, *args, **kwargs):
+def glance_run(glance_cmd=None, glance_args=None, subcmd_args=None, **kwargs):
     cmd = list(_GLANCE_CMD)
-    if g_args is not None:
-        cmd.extend(g_args)
+    if glance_args is not None:
+        cmd.extend(glance_args)
     # Handle site-specific parameters (for example: "--insecure")
     os_params = os.environ.get('OS_PARAMS', None)
     if os_params:
         cmd[1:1] = os_params.split()
     if glance_cmd is not None:
         cmd += [glance_cmd]
-    cmd.extend(args)
+    if subcmd_args is not None:
+        cmd.extend(subcmd_args)
     status, _, out, err = utils.run(cmd, out=True, err=True)
     if not status:
         if not kwargs.get('quiet') is True:
             err_msg = kwargs.get('err_msg', 'failed to run "%s"' % glance_cmd)
             vprint(err_msg)
-            if args:
-                vprint('args: %s' % str(args))
+            if glance_args is not None:
+                vprint('glance_args: %s' % str(glance_args))
+            if subcmd_args is not None:
+                vprint('subcmd_args: %s' % str(subcmd_args))
             vprint_lines('stdout=' + out)
             vprint_lines('stderr=' + err)
         return None
@@ -73,9 +76,9 @@ def glance_run(glance_cmd=None, g_args=None, *args, **kwargs):
 def glance_ids(names=None, *args):
     ret = set()
     # Single name ?
-    if type(names) in (str, unicode):
+    if names is not None and type(names) in (str, unicode):
         names = [names]
-    imglist = glance_run('image-list', g_args=None, *args)
+    imglist = glance_run('image-list', glance_args=None, subcmd_args=args)
     if imglist:
         _, block, _, _ = openstack_out.parse_block(imglist)
         for image_id, image_name in block:
@@ -90,6 +93,7 @@ def glance_id(name):
     if utils.is_uuid(name):
         return name
     name = glance_ids(name)
+    # In case of multiple images, only do the first one
     if name and len(name) > 0:
         return list(name)[0]
     # Non-existent image
@@ -113,7 +117,7 @@ def glance_show(name, quiet=False):
     if imgid is None:
         return False
     err_msg = 'failed to get infos from glance for image: ' + str(imgid)
-    out = glance_run('image-show', None, imgid, err_msg=err_msg, quiet=quiet)
+    out = glance_run('image-show', glance_args=None, subcmd_args=[imgid], err_msg=err_msg, quiet=quiet)
     return out
 
 def glance_delete(name, quiet=False):
@@ -121,7 +125,7 @@ def glance_delete(name, quiet=False):
     if imgid is None:
         return False
     err_msg = 'failed to delete image from glance: ' + str(imgid)
-    out = glance_run('image-delete', None, imgid, err_msg=err_msg, quiet=quiet)
+    out = glance_run('image-delete', glance_args=None, subcmd_args=[imgid], err_msg=err_msg, quiet=quiet)
     return out is not None
 
 def glance_download(name, fn_local):
@@ -129,7 +133,7 @@ def glance_download(name, fn_local):
     if imgid is None:
         return False
     err_msg = 'failed to download image from glance: ' + str(imgid)
-    out = glance_run('image-download', None, '--file', fn_local, imgid, err_msg=err_msg)
+    out = glance_run('image-download', glance_args=None, subcmd_args=['--file', fn_local, imgid], err_msg=err_msg)
     return out is not None
 
 def glance_rename(vmid, name):
@@ -142,7 +146,7 @@ def glance_update(vmid, *args):
     err_msg = 'failed to update image from glance: ' + str(imgid)
     args = list(args)
     args.append(imgid)
-    out = glance_run('image-update', None, *args, err_msg=err_msg)
+    out = glance_run('image-update', glance_args=None, subcmd_args=args, err_msg=err_msg)
     return out is not None
 
 # Handle CLI options
