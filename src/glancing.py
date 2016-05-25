@@ -274,7 +274,7 @@ def main(sys_argv=sys.argv[1:]):
         vprint(local_image_file + ': downloaded image from: ' + url)
 
     # VM images are compressed, but checksums are for uncompressed files
-    if 'compression' in metadata and metadata['compression']:
+    if 'compression' in metadata and metadata['compression'] and metadata['compression'].lower() != 'none':
         chext = '.' + metadata['compression']
         decomp = decompressor.Decompressor(local_image_file, ext=chext)
         res, local_image_file = decomp.doit(delete=(not args.keeptemps))
