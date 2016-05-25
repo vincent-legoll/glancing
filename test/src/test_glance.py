@@ -47,6 +47,8 @@ class GlanceTest(SkipGlanceNOK):
         self.assertFalse(glance.glance_exists(u''))
         self.assertFalse(glance.glance_exists(u'Nonexistent'))
 
+class GlanceIdsTest(SkipGlanceNOK):
+
     def test_glance_ids_unfiltered(self):
         l1 = glance.glance_ids(None)
         self.assertTrue(set() <= l1)
@@ -72,6 +74,19 @@ class GlanceTest(SkipGlanceNOK):
     def test_glance_ids_list(self):
         self.assertEqual(set(), glance.glance_ids([None, True, False]))
         self.assertEqual(set(), glance.glance_ids(['', u'']))
+
+    def test_glance_ids_tenant(self):
+        add_args = []
+        status, _, out, err = utils.run(['keystone', 'tenant-get',
+                                    os.environ['OS_TENANT_NAME']], out=True)
+        if status:
+            _, block, _, _ = openstack_out.parse_block(out)
+            for prop, val in block:
+                if prop == 'id':
+                    add_args = ['--owner', val]
+                    break
+        l = glance.glance_ids(names=None, *add_args)
+        self.assertTrue(set() < l)
 
 class TestGlanceNotOkGlanceIDS(SkipGlanceNOK):
 
