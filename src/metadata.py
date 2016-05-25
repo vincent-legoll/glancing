@@ -172,5 +172,6 @@ class MetaStratusLabXml(MetaDataBase):
                 continue
             mdkey = StratusLabNS._RETKEY_TO_NS_PREFIXES[key] + ':' + key
             node = desc.find(mdkey, nsp)
-            ret[key] = node.text
+            if node is not None:
+                ret[key] = node.text
         return ret
