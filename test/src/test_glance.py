@@ -230,6 +230,8 @@ class GlanceMiscTest(TestGlanceFixture):
     def test_glance_exists_import(self):
         self.common_start()
 
+class GlanceRenameTest(TestGlanceFixture):
+
     def test_glance_rename_and_back(self):
         old = '_rename_test'
         self.common_start()
@@ -240,8 +242,42 @@ class GlanceMiscTest(TestGlanceFixture):
         self.assertTrue(glance.glance_rename(self._IMG_NAME + old, self._IMG_NAME))
         self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
-        # TODO: images with same name...
-        # TODO: rename inexistent
+
+    def test_glance_rename_inexistent(self):
+        old = '_rename_test'
+        self.common_start()
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + 'inexistent'))
+        self.assertFalse(glance.glance_rename(self._IMG_NAME + 'inexistent', self._IMG_NAME + old))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + old))
+        self.assertFalse(glance.glance_exists(self._IMG_NAME + 'inexistent'))
+
+    def test_glance_rename_to_same_name(self):
+        self.common_start()
+        # This should be a NO-OP...
+        self.assertTrue(glance.glance_rename(self._IMG_NAME, self._IMG_NAME))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+
+    def test_glance_rename_multi(self):
+        # Rename multiple images with same name...
+        self.common_start()
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        IMG_ID = glance.glance_import_id(os.devnull, name=self._IMG_NAME, diskformat='raw')
+        self.assertTrue(IMG_ID)
+        self.assertTrue(glance.glance_exists(IMG_ID))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        self.assertTrue(len(glance.glance_ids(self._IMG_NAME)) == 2)
+        self.assertTrue(glance.glance_rename(self._IMG_NAME, self._IMG_NAME + '_rename_multi'))
+        # One has been renamed, the other stayed as-is...
+        self.assertTrue(glance.glance_exists(self._IMG_NAME + '_rename_multi'))
+        self.assertTrue(glance.glance_exists(self._IMG_NAME))
+        self.assertTrue(glance.glance_exists(self._IMG_ID))
+        self.assertTrue(glance.glance_exists(IMG_ID))
+        # Get it back to its previous name, so that it is cleaned up
+        self.assertTrue(glance.glance_rename(self._IMG_NAME + '_rename_multi', self._IMG_NAME))
+
+class GlanceDownloadTest(TestGlanceFixture):
 
     def test_glance_download(self):
         _RND1M_FILE = get_local_path('..', 'data', 'random_1M.bin')
