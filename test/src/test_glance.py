@@ -85,8 +85,11 @@ class GlanceIdsTest(SkipGlanceNOK):
                 if prop == 'id':
                     add_args = ['--owner', val]
                     break
-        l = glance.glance_ids(names=None, *add_args)
-        self.assertTrue(set() < l)
+        l1 = glance.glance_ids(names=None, *add_args)
+        self.assertTrue(set() < l1)
+        # We can see more images if we are administrator and don't filter on tenant
+        l2 = glance.glance_ids(names=None)
+        self.assertTrue(set() < l1 <= l2)
 
 class TestGlanceNotOkGlanceIDS(SkipGlanceNOK):
 
