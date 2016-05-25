@@ -126,6 +126,7 @@ def get_url(url):
         return None
     except ValueError as exc:
         if exc.args[0] == 'unknown url type: %s' % url:
+            # TODO: is this secure enough ? It should only be used for testing metadata mode
             url_f = open(url, 'r')
             if not url_f:
                 vprint(str(exc))
