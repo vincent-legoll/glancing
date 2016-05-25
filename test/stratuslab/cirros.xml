@@ -48,10 +48,11 @@
         <dcterms:created>2012-01-30T08:33:23Z</dcterms:created>
         <dcterms:valid>2020-12-31T00:00:00Z</dcterms:valid>
 
+        <dcterms:title>GLANCE_MANAGER_CIRROS_TESTING_IMAGE</dcterms:title>
         <dcterms:description>XML testing metadata</dcterms:description>
 
         <dcterms:publisher>StratusLab</dcterms:publisher>
-        <slterms:location>file://../images/cirros-0.3.4-i386-disk.img</slterms:location> 
+        <slterms:location>./test/images/cirros-0.3.4-i386-disk.img</slterms:location> 
 
     </rdf:Description>
 <Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"/><DigestValue>MGqQWBnbC+tanxYzFrXUDWIz9lw=</DigestValue></Reference></SignedInfo><SignatureValue>tV/A47d0TR1/z4KkBOarXaiJgY0VbJcFpZmhVCwPcLvTYq/VMDXUf5uNXcIpnwydWW9Fpl2050Rt
