@@ -126,9 +126,12 @@ def get_url(url):
         return None
     except ValueError as exc:
         if exc.args[0] == 'unknown url type: %s' % url:
-            vprint(str(exc))
-            return None
-        raise exc
+            url_f = open(url, 'r')
+            if not url_f:
+                vprint(str(exc))
+                return None
+        else:
+            raise exc
     with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
         try:
             utils.block_read_filedesc(url_f, fout.write, 4096)
