@@ -84,7 +84,7 @@ def get_glance_images():
                     if prop == 'id':
                         add_args = ['--owner', val]
                         break
-        for imgid in glance.glance_ids(names=None, *add_args):
+        for imgid in glance.glance_ids(None, *add_args):
             img = glance.glance_show(imgid)
             if img:
                 vmmap = openstack_out.map_block(img)
