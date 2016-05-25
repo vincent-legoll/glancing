@@ -7,14 +7,18 @@ import gzip
 import zipfile
 
 import utils
+from utils import vprint
 
 class DecompressorError(Exception):
     pass
 
 def zip_opener(fn, _):
+    vprint('Opening zip archive:' + fn)
     zf = zipfile.ZipFile(fn, 'r')
     unfn, _ = os.path.splitext(fn)
-    return zf.open(os.path.basename(unfn))
+    if len(zf.namelist()) > 1:
+        vprint('Archive contains more than one file: ' + fn)
+    return zf.open(zf.namelist()[0])
 
 _EXT_MAP = {
     '.gz': gzip.open,
@@ -68,6 +72,7 @@ class Decompressor(object):
                             delout = True
                             ret = False
                     if delout:
+                        vprint('Error happened: deleting output file')
                         os.remove(self.fout_name)
                 except IOError:
                     ret = False
@@ -79,7 +84,10 @@ class Decompressor(object):
         return ret, self.fout_name
 
 def main(args=sys.argv[1:]):
+    utils.set_verbose(True)
+    vprint('verbose mode')
     for fn in args:
+        vprint('Decompressing archive: ' + fn)
         d = Decompressor(fn)
         d.doit()
     return True
