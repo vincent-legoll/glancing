@@ -140,7 +140,7 @@ def upload_image(mpid, name, meta_file):
     '''Upload new image into glance registry, using metadata file content
     '''
     vprint("Uploading new image: %s (%s)" % (mpid, name))
-    glancing.main(['-v', '-n', name, meta_file])
+    return glancing.main(['-v', '-n', name, meta_file])
 
 def set_properties(mpid, new):
     '''Set image properties unconditionnally, accordingly to 'new' metadata
@@ -153,8 +153,10 @@ def set_properties(mpid, new):
     props.extend(['--property', 'version=' + new['version']])
     vprint("Setting mpid")
     props.extend(['--property', 'mpid=' + mpid])
-    if not glance.glance_update(new['title'], *props):
+    ret = glance.glance_update(new['title'], *props)
+    if not ret:
         vprint("Could not set image properties for: ", mpid)
+    return ret
 
 def update_properties(mpid, old, new):
     '''Update image properties as needed, accordingly to 'old' & 'new' metadata
@@ -173,8 +175,10 @@ def update_properties(mpid, old, new):
     if props:
         if not glance.glance_update(old['id'], *props):
             vprint("Could not set image properties for: ", mpid)
+            return False
     else:
         vprint("NO-OP: All properties have the right values")
+    return True
 
 def handle_vm(mpid, url):
     '''Handle one image given by its SL marketplace ID
@@ -272,8 +276,10 @@ def handle_vm(mpid, url):
 
             vprint("Previous image renamed to: " + old_name + '_old')
 
-        upload_image(mpid, new_name, meta_file)
-        set_properties(mpid, new)
+        ret = upload_image(mpid, new_name, meta_file)
+        if ret:
+            ret = set_properties(mpid, new)
+        return ret
 
 def main(sys_argv=sys.argv[1:]):
     '''Download images specified in the given list & store them in glance
