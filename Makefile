@@ -74,14 +74,14 @@ test/data/one_length.bin:
 test/data/random_%M.bin:
 	dd if=/dev/urandom of="test/data/random_$*M.bin" bs=1M count=$*
 
-test/data/random_1M_gz.bin.gz:
+test/data/random_1M_gz.bin.gz: test/data/random_1M.bin
 	gzip -c < test/data/random_1M.bin > $@
 
-test/data/random_1M_bz2.bin.bz2:
+test/data/random_1M_bz2.bin.bz2: test/data/random_1M.bin
 	bzip2 -c < test/data/random_1M.bin > $@
 
-test/data/random_1M_zip.bin.zip:
-	zip $@ test/data/random_1M.bin
+test/data/random_1M_zip.bin.zip: test/data/random_1M.bin
+	zip < test/data/random_1M.bin > $@
 
 toupper = $(shell echo "$(1)" | tr -s '[:lower:]' '[:upper:]')
 tolower = $(shell echo "$(1)" | tr -s '[:upper:]' '[:lower:]')
