@@ -17,7 +17,7 @@ tox: test_files
 	tox
 
 nosetests test: test_files
-	nosetests --exe ${ALL_OPTS} $*
+	nosetests --exe ${ALL_OPTS}
 
 .PHONY: nosetests test tox pytests
 
