@@ -20,7 +20,7 @@ class DecompressorSimpleTest(unittest.TestCase):
 
     testdir = '/tmp/TestDecompressorSimple'
 
-    def setUp(self):
+    def setUp(self): # pragma: no cover
         if os.path.exists(self.testdir):
             shutil.rmtree(self.testdir)
         os.mkdir(self.testdir)
@@ -28,7 +28,7 @@ class DecompressorSimpleTest(unittest.TestCase):
             local_path = get_local_path('..', 'data', fn)
             shutil.copy(local_path, self.testdir)
 
-    def tearDown(self):
+    def tearDown(self): # pragma: no cover
         shutil.rmtree(self.testdir)
 
     def test_decompressor_simple(self):
