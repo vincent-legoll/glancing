@@ -4,6 +4,8 @@ import os
 import sys
 import unittest
 
+from functools import wraps
+
 from tutils import local_pythonpath, get_local_path
 
 # Setup project-local PYTHONPATH
@@ -12,6 +14,7 @@ local_pythonpath('..', '..', 'src')
 import utils
 from utils import devnull, environ, test_name, run, cleanup
 
+import glance
 import glancing
 import multihash
 
@@ -24,16 +27,30 @@ with devnull('stderr'):
 _HEAVY_TESTS = False # < 500 MB images, ~2 min -> ~6 min...
 _HUGE_TESTS = False # 1 x 5 GB image
 
+def glance_cleanup(name=None):
+    '''Decorator that automagically clean up after a test.
+    An image that has the 'name' name is deleted upon test exit.
+    If the 'name' parameter is not given, it defaults to the test method name
+    itself. And it tests that the image does not exists before exiting the test.
+    '''
+    def wrapper(f):
+        @wraps(f)
+        def wrapped(self, *f_args, **f_kwargs):
+            with cleanup(glance.glance_delete, name or f.func_name): 
+                f(self, *f_args, **f_kwargs)
+        return wrapped
+    return wrapper
+
 class GlancingMiscTest(unittest.TestCase):
 
     def test_glancing_main_glance_availabilityFail(self):
         with environ('PATH'):
             self.assertFalse(glancing.main([os.devnull]))
 
+    @glance_cleanup('null')
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_main_glance_availabilityOK(self):
-        with cleanup(['glance', 'image-delete', 'null']):
-            self.assertTrue(glancing.main([os.devnull]))
+        self.assertTrue(glancing.main([os.devnull]))
 
     def test_glancing_empty_cli_param(self):
         self.assertFalse(glancing.main(['']))
@@ -156,45 +173,45 @@ class GlancingCirrosImageTest(unittest.TestCase):
         self.assertTrue(glancing.main(['-d', '-n', test_name(),
             self._CIRROS_FILE, '-s', self._CIRROS_CHK, '-S', self._CIRROS_SHA1]))
 
+    @glance_cleanup()
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_file_import_good_sum(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-n', test_name(),
-                self._CIRROS_FILE, '-S', self._CIRROS_MD5]))
+        self.assertTrue(glancing.main(['-n', test_name(),
+            self._CIRROS_FILE, '-S', self._CIRROS_MD5]))
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlancingImageTest(TestGlancingImageTtylinuxBase):
 
     def test_glancing_image_import_noname(self):
         name, ext = os.path.splitext(os.path.basename(self._TTYLINUX_FILE))
-        with cleanup(['glance', 'image-delete', name]):
+        with cleanup(glance.glance_delete, name):
             self.assertTrue(glancing.main(['-f',
                 self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
 
+    @glance_cleanup()
     def test_glancing_image_import_name(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-n', test_name(),
-                self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
+        self.assertTrue(glancing.main(['-n', test_name(),
+            self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
 
+    @glance_cleanup()
     def test_glancing_image_import_name_bad_md5(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertFalse(glancing.main(['-n', test_name(),
-                self._TTYLINUX_FILE, '-s', '0' * 32]))
+        self.assertFalse(glancing.main(['-n', test_name(),
+            self._TTYLINUX_FILE, '-s', '0' * 32]))
 
+    @glance_cleanup()
     def test_glancing_image_import_name_force(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-f', '-n', test_name(),
-                self._TTYLINUX_FILE, '-s', '0' * 32]))
+        self.assertTrue(glancing.main(['-f', '-n', test_name(),
+            self._TTYLINUX_FILE, '-s', '0' * 32]))
 
 class GlancingMetadataCernTest(unittest.TestCase):
 
+    @glance_cleanup()
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_metadata_cern_cirros_import(self):
         # 12 MB
         mdfile = get_local_path('..', 'CERN', 'test_image_list')
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-v', '-n', test_name(), '-c',
-                mdfile, '-k', "deadbabe-f00d-beef-cafe-b1ab1ab1a666"]))
+        self.assertTrue(glancing.main(['-v', '-n', test_name(), '-c',
+            mdfile, '-k', "deadbabe-f00d-beef-cafe-b1ab1ab1a666"]))
 
 class GlancingMetadataTest(unittest.TestCase):
 
@@ -219,48 +236,43 @@ class GlancingMetadataTest(unittest.TestCase):
             self.assertEqual(status_market, glancing.main(['-d',
                 market_id]), market_id)
 
+    @glance_cleanup()
     @unittest.skipUnless(_HEAVY_TESTS, "image too big")
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_metadata_bad_but_force(self):
         # Size & checksum mismatch: 375 MB -> 492 MB
         market_id = 'ME4iRTemHRwhABKV5AgrkQfDerA'
         mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-vf', '-n', test_name(),
-                mdfile]))
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertFalse(glancing.main(['-vf', '-n', test_name(),
-                market_id]))
+        self.assertTrue(glancing.main(['-vf', '-n', test_name(), mdfile]))
+        self.assertTrue(glance.glance_delete(test_name()))
+        self.assertFalse(glancing.main(['-vf', '-n', test_name(), market_id]))
 
+    @glance_cleanup()
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_metadata_cirros_import(self):
         # 12 MB
         mdfile = get_local_path('..', 'stratuslab', 'cirros.json')
         with devnull('stderr'):
-            with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertTrue(glancing.main(['-v', '-n', test_name(),
-                    mdfile, '-k']))
+            self.assertTrue(glancing.main(['-v', '-n', test_name(),
+                mdfile, '-k']))
 
+    @glance_cleanup()
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_metadata_cirros_import_no_cksum(self):
         # 12 MB
         mdfile = get_local_path('..', 'stratuslab', 'cirros_no_cksum.json')
         with devnull('stderr'):
-            with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertTrue(glancing.main(['-v', '-n', test_name(),
-                    mdfile, '-k']))
+            self.assertTrue(glancing.main(['-v', '-n', test_name(),
+                mdfile, '-k']))
 
+    @glance_cleanup()
     @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
     def test_glancing_metadata_cirros_import_bad_size(self):
         # 12 MB
         mdfile = get_local_path('..', 'stratuslab', 'cirros_bad_size.json')
         with devnull('stderr'):
-            with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertFalse(glancing.main(['-v', '-n', test_name(),
-                    mdfile]))
-            with cleanup(['glance', 'image-delete', test_name()]):
-                self.assertTrue(glancing.main(['-f', '-n', test_name(),
-                    mdfile]))
+            self.assertFalse(glancing.main(['-v', '-n', test_name(), mdfile]))
+            self.assertTrue(glancing.main(['-f', '-n', test_name(), mdfile]))
 
     @unittest.skipUnless(_HUGE_TESTS, "image too big: 5.0 GB")
     def test_glancing_metadata_big(self):
@@ -303,33 +315,33 @@ class GlancingUrlImportTest(BaseGlancingUrl):
 
     def test_glancing_url_import_no_name(self):
         name, ext = os.path.splitext(os.path.basename(self._CIRROS_URL))
-        with cleanup(['glance', 'image-delete', name]):
+        with cleanup(glance.glance_delete, name):
             self.assertTrue(glancing.main([self._CIRROS_URL]))
 
+    @glance_cleanup()
     def test_glancing_url_import_bad_md5(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertFalse(glancing.main(['-n', test_name(),
-                self._CIRROS_URL, '-s', '0' * 32]))
+        self.assertFalse(glancing.main(['-n', test_name(),
+            self._CIRROS_URL, '-s', '0' * 32]))
 
+    @glance_cleanup()
     def test_glancing_url_import_bad_md5_but_force(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-f', '-n', test_name(),
-                self._CIRROS_URL, '-s', '0' * 32]))
+        self.assertTrue(glancing.main(['-f', '-n', test_name(),
+            self._CIRROS_URL, '-s', '0' * 32]))
 
+    @glance_cleanup()
     def test_glancing_url_import_no_md5(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-n', test_name(),
-                self._CIRROS_URL]))
+        self.assertTrue(glancing.main(['-n', test_name(),
+            self._CIRROS_URL]))
 
+    @glance_cleanup()
     def test_glancing_url_import_good_md5(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-n', test_name(),
-                self._CIRROS_URL, '-s', self._CIRROS_MD5]))
+        self.assertTrue(glancing.main(['-n', test_name(),
+            self._CIRROS_URL, '-s', self._CIRROS_MD5]))
 
+    @glance_cleanup()
     def test_glancing_url_import_good_sum(self):
-        with cleanup(['glance', 'image-delete', test_name()]):
-            self.assertTrue(glancing.main(['-n', test_name(),
-                self._CIRROS_URL, '-S', self._CIRROS_SUM]))
+        self.assertTrue(glancing.main(['-n', test_name(),
+            self._CIRROS_URL, '-S', self._CIRROS_SUM]))
 
 class GlancingUrlImportTest(BaseGlancingUrl):
 
