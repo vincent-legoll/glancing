@@ -255,12 +255,17 @@ class cleanup(object):
     before it exits its enclosing context.
     """
 
-    def __init__(self, cleanup_cmd):
+    def __init__(self, cleanup_cmd, *args, **kwargs):
         # Prepare
-        self._cleanup_cmd = cleanup_cmd
+        self.cleanup_cmd = cleanup_cmd
+        self.args = args
+        self.kwargs = kwargs
 
     def _cleanup(self):
-        run(self._cleanup_cmd)
+        if is_iter(self.cleanup_cmd):
+            run(self.cleanup_cmd, quiet_err=False)
+        else:
+            self.cleanup_cmd(*self.args, **self.kwargs)
 
     def __enter__(self):
         pass
