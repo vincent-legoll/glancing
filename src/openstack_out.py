@@ -170,5 +170,5 @@ def main(sys_argv=sys.argv[1:]):
     for i in get_field(args):
         print(args.sep.join(map(str, i)))
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()

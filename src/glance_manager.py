@@ -296,5 +296,5 @@ def main(sys_argv=sys.argv[1:]):
             handle_vm(vmid, args.url)
     return True
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()

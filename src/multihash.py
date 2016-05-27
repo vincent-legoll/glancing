@@ -22,7 +22,7 @@ from utils import vprint
 
 try:
     _HASH_ALGOS = hashlib.algorithms
-except AttributeError:
+except AttributeError: # pragma: no cover
     _HASH_ALGOS = hashlib.algorithms_guaranteed
 
 _hld = hashlib.__dict__
@@ -145,5 +145,5 @@ def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
     multisum(doit(args.files), args)
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()

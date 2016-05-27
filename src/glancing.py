@@ -403,5 +403,5 @@ def main(sys_argv=sys.argv[1:]):
     # That's all folks !
     return True
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()

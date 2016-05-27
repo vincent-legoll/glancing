@@ -92,5 +92,5 @@ def main(args=sys.argv[1:]):
         d.doit()
     return True
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     main()
