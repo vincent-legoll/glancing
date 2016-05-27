@@ -38,6 +38,13 @@ class MetaDataStratusLabJsonTest(unittest.TestCase):
             'http://appliances.stratuslab.eu/images/base/'
             'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
+    def test_metadata_json_no_md_matching_query(self):
+        fn = 'LHfKVPoHcv4oMirHU0KuOQc-TvI?media=json'
+        jsonfile = get_local_path('..', 'stratuslab', fn)
+        m = metadata.MetaStratusLabJson(jsonfile)
+        md = m.get_metadata()
+        self.assertIsNone(md)
+
     def test_metadata_json_bad(self):
         with devnull('stderr'):
             with self.assertRaises(ValueError):
@@ -66,6 +73,21 @@ class MetaDataStratusLabXmlTest(unittest.TestCase):
         self.assertEqual(md['location'],
             'http://www.apc.univ-paris7.fr/Downloads/comput/'
             'CentOS7.qcow2.gz')
+        self.assertEqual(m.get_name(), 'CentOS-7.0-x86_64')
+
+    def test_metadata_xml_button_vs_wget(self):
+        fn_base = 'LHfKVPoHcv4oMirHU0KuOQc-TvI.%s.xml'
+        fn = fn_base % 'button'
+        xmlfile = get_local_path('..', 'stratuslab', fn)
+        m = metadata.MetaStratusLabXml(xmlfile)
+        md = m.get_metadata()
+        self.assertEqual(set(md.keys()), good_keys_sl)
+
+        fn = fn_base % 'wget'
+        xmlfile = get_local_path('..', 'stratuslab', fn)
+        m = metadata.MetaStratusLabXml(xmlfile)
+        md = m.get_metadata()
+        self.assertEqual(set(md.keys()), good_keys_sl)
 
     def test_metadata_xml_bad(self):
         m = metadata.MetaStratusLabXml(os.devnull)
