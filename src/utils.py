@@ -165,7 +165,7 @@ class chdir(object):
         os.chdir(self.oldcwd)
 
 class tempdir(chdir):
-    """Context manager that run the code block n a temporary folder that
+    """Context manager that run the code block in a temporary folder that
     is destroyed before context exits.
     """
 
