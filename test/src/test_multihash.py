@@ -99,7 +99,7 @@ class MultihashTestMain(unittest.TestCase):
 
         random_1M_checksums = {}
 
-        for alg in devnull_checksums.keys():
+        for alg in devnull_checksums.keys(): # Just use the same algos
             fin_fn = get_local_path('..', 'data', alg.upper() + 'SUMS')
             with open(fin_fn, 'rb') as fin:
                 for line in fin:
@@ -114,12 +114,24 @@ class MultihashTestMain(unittest.TestCase):
         ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
         self.assertTrue(ok)
         class args(object):
-            def __init__(self, directory):
-                self.force = True
+            def __init__(self, directory, force):
+                self.force = force
                 self.directory = directory
         with utils.tempdir():
-            anargs = args(os.getcwd())
+            anargs = args(os.getcwd(), True)
             multihash.multisum(self.computed, anargs)
             cksum_fn = os.path.join(anargs.directory, 'MD5SUMS')
+            with open(cksum_fn, 'rb') as md5f:
+                self.assertEqual(md5f.read(), out)
+            anargs = args(os.getcwd(), False)
+            with self.assertRaises(ValueError):
+                multihash.multisum(self.computed, anargs)
+
+    def test_multihash_main(self):
+        ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
+        self.assertTrue(ok)
+        with utils.tempdir():
+            multihash.main(['-v', '-f', '-d', os.getcwd()] + self.files_to_hash)
+            cksum_fn = os.path.join(os.getcwd(), 'MD5SUMS')
             with open(cksum_fn, 'rb') as md5f:
                 self.assertEqual(md5f.read(), out)
