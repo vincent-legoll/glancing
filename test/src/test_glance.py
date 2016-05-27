@@ -78,10 +78,8 @@ class GlanceIdsTest(SkipGlanceNOK):
     def test_glance_ids_tenant(self):
         add_args = []
         if 'OS_TENANT_ID' in os.environ:
-            vprint('Using OS_TENANT_ID environment variable to list images')
             add_args = ['--owner', os.environ['OS_TENANT_ID']]
         elif 'OS_TENANT_NAME' in os.environ:
-            vprint('Using OS_TENANT_NAME environment variable to list images')
             status, _, out, err = utils.run(['keystone', 'tenant-get',
                                         os.environ['OS_TENANT_NAME']], out=True)
             if status:
