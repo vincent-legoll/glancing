@@ -67,10 +67,10 @@ class Decompressor(object):
                         try:
                             utils.block_read_filedesc(fin, fout.write, self.block_size)
                         except IOError as exc:
-                            if exc not in utils.Exceptions(IOError('Not a gzipped file')):
-                                raise exc
                             delout = True
                             ret = False
+                            if exc not in utils.Exceptions(IOError('Not a gzipped file')):
+                                raise exc
                     if delout:
                         vprint('Error happened: deleting output file')
                         os.remove(self.fout_name)
