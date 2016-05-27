@@ -2,6 +2,7 @@
 
 import os
 import sys
+import mock
 import shutil
 import unittest
 
@@ -51,6 +52,14 @@ class DecompressorSimpleTest(unittest.TestCase):
     def test_decompressor_main(self):
         test_files = [os.path.join(self.testdir, fn) for fn in _TEST_FILES]
         self.assertTrue(decompressor.main(test_files))
+
+    def test_decompressor_ioerror(self):
+        fn = os.path.join(self.testdir, _TEST_FILES[0])
+        d = decompressor.Decompressor(fn)
+        with mock.patch('utils.block_read_filedesc', mock.Mock(side_effect=IOError('Boom!'))):
+            self.assertFalse(d.doit()[0])
+        with mock.patch('utils.block_read_filedesc', mock.Mock(side_effect=IOError('Not a gzipped file'))):
+            self.assertFalse(d.doit()[0])
 
 class DecompressorErrorsTest(unittest.TestCase):
 
