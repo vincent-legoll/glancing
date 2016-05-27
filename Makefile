@@ -104,7 +104,7 @@ test_data_check: test_checksum_files
 
 # Nose testing & plugins
 
-PACKAGES = "glancing,glance,multihash,metadata,decompressor,openstack_out,utils,tutils,test_glancing,test_multihash,test_metadata,test_decompressor,test_utils,test_tutils,test_glance,test_openstack_out"
+PACKAGES = "glancing,glance,glance_manager,multihash,metadata,decompressor,openstack_out,utils,tutils,test_glancing,test_multihash,test_metadata,test_decompressor,test_utils,test_tutils,test_glance,test_openstack_out,test_glance_manager"
 
 COVERAGE_OPTS = --with-coverage --cover-branches --cover-html --cover-inclusive --cover-tests --cover-package=$(PACKAGES)
 PROFILE_OPTS = # --with-profile
