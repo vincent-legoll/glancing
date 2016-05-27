@@ -106,6 +106,6 @@ class DecompressorErrorsTest(unittest.TestCase):
         with self.assertRaises(decompressor.DecompressorError):
             d = decompressor.Decompressor('/tmp/nonexistent')
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     import pytest
     pytest.main(['-x', '--pdb', __file__])
