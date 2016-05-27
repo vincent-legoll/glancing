@@ -256,8 +256,8 @@ class environ(object):
             os.environ[self._envvar_name] = self._old_envvar_val
 
 class cleanup(object):
-    """Context manager that runs an external command as a cleanup action
-    before it exits its enclosing context.
+    """Context manager that runs an external command or python code as a cleanup
+    action before it exits its enclosing context.
     """
 
     def __init__(self, cleanup_cmd, *args, **kwargs):
