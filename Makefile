@@ -1,23 +1,31 @@
 CRUFT_HERE = .tox cover src/*.pyc test/src/*.pyc src/__pycache__ test/src/__pycache__ Glancing.egg-info
 
-NPROC = grep -c ^processor /proc/cpuinfo
-
 clean:
-	rm -rf $(CRUFT_HERE) $(TEST_DATA_FILES) $(TEST_IMAGE_FILES)
-	rm -rf $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
+	rm -rf $(CRUFT_HERE) $(TEST_FILES)
 	find . -type f -name .coverage -print0 | xargs -r -0 rm
+
+TEST_FILES = $(TEST_CHECKSUM_FILES)
 
 test_files: test_data_files test_image_files test_checksum_files
 
+# For test parallelization
+NPROC = grep -c ^processor /proc/cpuinfo
+
 # FIXME: some tests are not parallelizable (test/src/test_decompressor.py)
 pytests: test_files
-	py.test -n `$(NPROC)`
+	py.test
+#	py.test -n `$(NPROC)`
 
 tox: test_files
 	tox
 
+# Run all tests
 nosetests test: test_files
 	nosetests --exe ${ALL_OPTS}
+
+# Single-file test
+test/src/%.py: test_files
+	nosetests --exe ${ALL_OPTS} $@
 
 .PHONY: nosetests test tox pytests
 
@@ -56,8 +64,8 @@ test/images/cirros-MD5SUMS:
 test/images/cirros-SHA1SUMS: $(TEST_IMAGE_CIRROS_FILES)
 	sha1sum $(TEST_IMAGE_CIRROS_FILES) > $@
 
-# Create TEST_DATA_FILES
-SIZES = 1 5 10 25 50 75 100 200 300 400 500 750 1000
+# Create TEST_DATA_FILES, sizes are in MB (Bigger ones: 100 200 300 400 500 750 1000)
+SIZES = 1 5 10 25 50 75
 TEST_DATA_FILES_SIZE = $(foreach SIZ,$(SIZES),test/data/random_$(SIZ)M.bin)
 TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG))
 TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin
@@ -80,18 +88,22 @@ test/data/random_1M_gz.bin.gz: test/data/random_1M.bin
 test/data/random_1M_bz2.bin.bz2: test/data/random_1M.bin
 	bzip2 -c < $< > $@
 
-# Include a second file (ignored when decompressing) for more test coverage
+# Include a second file (ignored when decompressing) for more corner-case test coverage
 test/data/random_1M_zip.bin.zip: test/data/random_1M.bin test/data/zero_length.bin
 	zip - $^ > $@
 
+# Helper macros : convert string to upper- & lower-case
 toupper = $(shell echo "$(1)" | tr -s '[:lower:]' '[:upper:]')
 tolower = $(shell echo "$(1)" | tr -s '[:upper:]' '[:lower:]')
 
+# Checksum test files
 CHECKSUM_ALGOS = md5 sha1 sha224 sha256 sha384 sha512
 CHECKSUM_FILES_MH = $(foreach ALG,$(CHECKSUM_ALGOS),test/data/$(call toupper,$(ALG))SUMS)
 CHECKSUM_FILES_SYS = $(foreach CHKSUM_FILE,$(CHECKSUM_FILES_MH),$(CHKSUM_FILE).txt)
 
-test_checksum_files: $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
+TEST_CHECKSUM_FILES = $(CHECKSUM_FILES_MH) $(CHECKSUM_FILES_SYS)
+
+test_checksum_files: $(TEST_CHECKSUM_FILES)
 
 test/data/%SUMS.txt: $(TEST_DATA_FILES)
 	$(call tolower,$*)sum $(TEST_DATA_FILES) > $@
