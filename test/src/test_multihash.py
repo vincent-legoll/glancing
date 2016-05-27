@@ -135,3 +135,5 @@ class MultihashTestMain(unittest.TestCase):
             cksum_fn = os.path.join(os.getcwd(), 'MD5SUMS')
             with open(cksum_fn, 'rb') as md5f:
                 self.assertEqual(md5f.read(), out)
+            with self.assertRaises(ValueError):
+                multihash.main(['-d', os.getcwd()] + self.files_to_hash)
