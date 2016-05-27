@@ -79,7 +79,7 @@ class Decompressor(object):
         except Exception:
             ret = False
 
-        if delete:
+        if ret and delete:
             os.remove(self.fin_name)
         return ret, self.fout_name
 
