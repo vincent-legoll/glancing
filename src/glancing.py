@@ -127,10 +127,13 @@ def get_url(url):
     except ValueError as exc:
         if exc.args[0] == 'unknown url type: %s' % url:
             # TODO: is this secure enough ? It should only be used for testing metadata mode
-            url_f = open(url, 'r')
-            if not url_f:
-                vprint(str(exc))
+            if not os.path.exists(url):
                 return None
+            else:
+                url_f = open(url, 'r')
+                if not url_f:
+                    vprint(str(exc))
+                    return None
         else:
             raise exc
     with tempfile.NamedTemporaryFile(bufsize=4096, delete=False) as fout:
