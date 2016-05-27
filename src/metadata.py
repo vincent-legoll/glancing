@@ -153,8 +153,13 @@ class MetaStratusLabXml(MetaDataBase):
         ret = self.data
         root = self.xml_obj.getroot()
         # StratusLab xml metadata files are not consistent:
-        # if downloaded through the XML button or directly
-        # through the url, there's an additionnal root tag
+        # if downloaded through the website XML button or directly
+        # through the url, there's an additionnal "<metadata>" root tag
+        # SL_URI_BASE: https://marketplace.stratuslab.eu/marketplace/metadata
+        # Manually crafted URI
+        # <SL_URI_BASE>/LHfKVPoHcv4oMirHU0KuOQc-TvI?media=xml
+        # Button URI:
+        # <SL_URI_BASE>/LHfKVPoHcv4oMirHU0KuOQc-TvI/<ENDORSER>/<DATE>?media=xml
         if root.tag == 'metadata':
             rdf = root.find('rdf:RDF', nsp)
         else:
