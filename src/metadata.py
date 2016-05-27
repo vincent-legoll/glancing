@@ -72,9 +72,6 @@ class MetaStratusLabJson(MetaDataJson):
     }
 
     def get_metadata(self):
-        if not self.json_obj:
-            vprint('No JSON object')
-            return None
         ret = self.data
         # StratusLab marketplace can answer with 200/OK but error encoded
         # in json response...
