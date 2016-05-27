@@ -104,13 +104,18 @@ class abstract_size_t(object):
         return '%d%s%s' % (self.n, self._UNIT_PREFIX[self.exp], self.suffix)
 
 class size_t(abstract_size_t):
-    # This is not a S.I. compliant prefix, this is power-of-two based
+    '''This is not a S.I. compliant prefix, this is power-of-two based'''
     _UNIT_PREFIX = ['', 'K', 'M', 'G', 'T', 'P']
     _FRACTIONAL = False
     _INTERUNIT_FACTOR = 10
     _BASE = 2
 
 class small_size_t(abstract_size_t):
+    '''3 significative digits
+    does not strip trailing zeroes
+    string representation may be subject to default 6 digits precision
+    '''
+    
     _UNIT_PREFIX = ['', 'm', 'μ', 'n', 'p', 'f']
     _FRACTIONAL = True
     _INTERUNIT_FACTOR = 3
