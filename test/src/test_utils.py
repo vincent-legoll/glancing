@@ -44,7 +44,7 @@ class UtilsTestChdir(unittest.TestCase):
         self.assertEqual(os.getcwd(), oldcwd)
         with self.assertRaises(ValueError):
             with utils.chdir(os.devnull):
-                pass
+                pass # pragma: no cover
 
 @unittest.skip('FIXME')
 class UtilsTestSmallSizeT(unittest.TestCase):
@@ -341,7 +341,7 @@ class UtilsRunTest(unittest.TestCase):
 
     def test_utils_run_file(self):
         test_file = '/tmp/' + utils.test_name()
-        if os.path.exists(test_file):
+        if os.path.exists(test_file): # pragma: no cover
             os.remove(test_file)
         self.assertTrue(utils.run(['touch', test_file])[0])
         self.assertTrue(os.path.exists(test_file))
@@ -610,7 +610,7 @@ class UtilsCleanupTest(unittest.TestCase):
 
 # Incompatibility with pypy (at least the 2.2.1 version)
 zde_msg = 'integer division or modulo by zero'
-if 'pypy_version_info' in dir(sys):
+if 'pypy_version_info' in dir(sys): # pragma: no cover
     zde_msg = 'integer division by zero'
 zde = ZeroDivisionError(zde_msg)
 ae = ArithmeticError(zde_msg)
@@ -773,6 +773,6 @@ class TRSTest(unittest.TestCase):
         self.assertEqual('a', utils.tr_s('a' * 4096))
         self.assertEqual('a', utils.tr_s('a' * 4097))
 
-if __name__ == '__main__':
+if __name__ == '__main__': # pragma: no cover
     import pytest
     pytest.main(['-x', '--pdb', __file__])
