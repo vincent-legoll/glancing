@@ -1,3 +1,5 @@
+- fix tox testing
+
 - remove backup from glancing and put it into glance_manager
 
 - Add more test coverage
