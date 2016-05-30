@@ -296,19 +296,32 @@ class UtilsTest(unittest.TestCase):
     @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
     def test_utils_block_read_filename(self):
 
+        # FIXME: explain why this has to be a list
         status = [False]
 
         def set_status(x):
-            status[0] = True
+            # The ../data/one_length.bin file should only contain an empty line
+            if x == '\n':
+                status[0] = True
 
         local_path = get_local_path('..', 'data', 'one_length.bin')
         self.assertTrue(os.path.exists(local_path))
         utils.block_read_filename(local_path, set_status)
         self.assertTrue(status[0])
 
-#    @unittest.skip('TODO')
-#    def test_utils_block_read_filedesc(self):
-#        pass
+    def test_utils_block_read_filedesc(self):
+
+        # FIXME: explain why this has to be a list
+        called = [False]
+
+        def set_status(x):
+            called[0] = True
+
+        # /dev/null is an empty file, no data, so callback must *not* be called
+        with open(os.devnull, 'rb') as test_fd:
+            utils.block_read_filedesc(test_fd, set_status)
+        self.assertFalse(called[0])
+
 
 class UtilsRunTest(unittest.TestCase):
 
