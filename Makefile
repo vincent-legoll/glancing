@@ -1,12 +1,13 @@
-CRUFT_HERE = .tox cover src/*.pyc test/src/*.pyc src/__pycache__ test/src/__pycache__ Glancing.egg-info
+CRUFT_HERE = .tox src/*.pyc test/src/*.pyc src/__pycache__ test/src/__pycache__ Glancing.egg-info
 
 clean:
 	rm -rf $(CRUFT_HERE) $(TEST_FILES)
 	find . -type f -name .coverage -print0 | xargs -r -0 rm
+	find . -type d -name cover -print0 | xargs -r -0 rm -rf
 
-TEST_FILES = $(TEST_CHECKSUM_FILES)
+TEST_FILES = $(TEST_DATA_FILES) $(TEST_IMAGE_FILES) $(TEST_CHECKSUM_FILES) $(TEST_SL_MP_FILES)
 
-test_files: test_data_files test_image_files test_checksum_files
+test_files: test_data_files test_image_files test_checksum_files test_sl_mp_files
 
 # For test parallelization
 NPROC = grep -c ^processor /proc/cpuinfo
@@ -64,12 +65,32 @@ test/images/cirros-MD5SUMS:
 test/images/cirros-SHA1SUMS: $(TEST_IMAGE_CIRROS_FILES)
 	sha1sum $(TEST_IMAGE_CIRROS_FILES) > $@
 
+# Download SL marketplace test files
+
+SL_MARKETPLACE_URL_BASE = https://marketplace.stratuslab.eu/marketplace/metadata
+
+VMID_LIST = KqU_1EZFVGCDEhX9Kos9ckOaNjB \
+	PIDt94ySjKEHKKvWrYijsZtclxU \
+	JcqGhHxmTRAEpHMmRF-xhSTM3TO
+
+TEST_SL_MP_FILES_XML = $(foreach vmid,$(VMID_LIST),test/stratuslab/$(vmid).xml)
+TEST_SL_MP_FILES_JSON = $(foreach vmid,$(VMID_LIST),test/stratuslab/$(vmid).json)
+TEST_SL_MP_FILES = $(TEST_SL_MP_FILES_XML) $(TEST_SL_MP_FILES_JSON)
+
+test_sl_mp_files: $(TEST_SL_MP_FILES)
+
+test/stratuslab/%.xml:
+	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*?media=xml
+
+test/stratuslab/%.json:
+	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*?media=json
+
 # Create TEST_DATA_FILES, sizes are in MB (Bigger ones: 100 200 300 400 500 750 1000)
 SIZES = 1 5 10 25 50 75
 TEST_DATA_FILES_SIZE = $(foreach SIZ,$(SIZES),test/data/random_$(SIZ)M.bin)
 TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG))
 TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin
-TEST_DATA_FILES = $(TEST_DATA_FILES_SIZE) $(TEST_DATA_FILES_COMP) $(TEST_DATA_FILES_TINY)
+TEST_DATA_FILES = $(TEST_DATA_FILES_SIZE) $(TEST_DATA_FILES_COMP) $(TEST_DATA_FILES_TINY) $(TEST_DATA_FILES_SIZE)
 
 test_data_files: $(TEST_DATA_FILES)
 
