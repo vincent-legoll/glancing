@@ -1,14 +1,15 @@
-- filter image updates according to a subscription list
-
-- backup images to be replaced
 - remove backup from glancing and put it into glance_manager
 
-- Add more tests (see coverage reports)
+- Add more test coverage
   os.remove (--keep-temps=False) after import (--dry-run=False)
   no name for url, json, market
   size NOK + [no-]force
   -s and metadata overriding checksums
   -S with pathes inside *SUMS file instead of only filenames
+
+- test EGI Marketplace image file
+
+- Document the manual cleanup of "_old" updated images
 
 - output EGI marketplace-compliant json
 
