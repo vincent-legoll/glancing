@@ -21,7 +21,7 @@ import collections
 
 try:
     import StringIO
-except ImportError:
+except ImportError: # pragma: no cover
     import io as StringIO
 
 from contextlib import contextmanager
