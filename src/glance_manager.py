@@ -66,18 +66,20 @@ _GLANCE_IMAGES = None
 
 def get_glance_images():
     '''Get info about images already in glance
+       Cache those informations to speedup subsequent calls
     '''
     global _GLANCE_IMAGES
     if _GLANCE_IMAGES is None:
         _GLANCE_IMAGES = {}
         add_args = []
+        tenant_msg = 'Using %s environment variable to filter image list'
         if 'OS_TENANT_ID' in os.environ:
-            vprint('Using OS_TENANT_ID environment variable to list images')
+            vprint(tenant_msg % 'OS_TENANT_ID')
             add_args = ['--owner', os.environ['OS_TENANT_ID']]
         elif 'OS_TENANT_NAME' in os.environ:
-            vprint('Using OS_TENANT_NAME environment variable to list images')
-            status, _, out, err = utils.run(['keystone', 'tenant-get',
-                                        os.environ['OS_TENANT_NAME']], out=True)
+            vprint(tenant_msg % 'OS_TENANT_NAME')
+            cmd = ['keystone', 'tenant-get', os.environ['OS_TENANT_NAME']]
+            status, _, out, _ = utils.run(cmd, out=True)
             if status:
                 _, block, _, _ = openstack_out.parse_block(out)
                 for prop, val in block:
@@ -89,8 +91,8 @@ def get_glance_images():
             if img:
                 vmmap = openstack_out.map_block(img)
                 if 'mpid' in vmmap:
-                    vprint("found mpid (%s) already set on image: %s (%s)" %
-                           (vmmap['mpid'], vmmap['id'], vmmap['name']))
+                    vprint(("Found 'mpid' property (%(mpid)s) already set on " +
+                            "image: %(id)s (%(name)s)") % vmmap)
                     _GLANCE_IMAGES[vmmap['mpid']] = vmmap
                 _GLANCE_IMAGES[vmmap['checksum']] = vmmap
                 _GLANCE_IMAGES[vmmap['name']] = vmmap
@@ -145,7 +147,7 @@ def upload_image(mpid, name, meta_file):
 def set_properties(mpid, new):
     '''Set image properties unconditionnally, accordingly to 'new' metadata
     '''
-    vprint("Setting initial image properties: " + mpid)
+    vprint("Setting initial image properties for: " + mpid)
     props = []
     vprint("Setting name")
     props.extend(['--name', new['title']])
@@ -155,7 +157,7 @@ def set_properties(mpid, new):
     props.extend(['--property', 'mpid=' + mpid])
     ret = glance.glance_update(new['title'], *props)
     if not ret:
-        vprint("Could not set image properties for: ", mpid)
+        vprint("Could not set properties for image: ", mpid)
     return ret
 
 def update_properties(mpid, old, new):
@@ -183,7 +185,7 @@ def update_properties(mpid, old, new):
 def handle_vm(mpid, url):
     '''Handle one image given by its SL marketplace ID
     '''
-    vprint('handle_vm(%s)' % mpid)
+    vprint('Handle image with marketplace ID : %s' % mpid)
 
     meta_file = get_meta_file(mpid, url)
     if meta_file is None:
@@ -193,10 +195,10 @@ def handle_vm(mpid, url):
     vmmap = get_glance_images()
 
     if mpid in vmmap:
-        vprint("image already in glance")
+        vprint("Image is already in glance")
         needs_upgrade(mpid, vmmap[mpid], new, meta_file)
     else:
-        vprint("New image")
+        vprint("No image with the same marketplace ID found in glance")
 
         new_md5 = new['checksums']['md5']
         new_name = new['title']
