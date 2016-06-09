@@ -22,11 +22,11 @@ tox: test_files
 
 # Run all tests
 nosetests test: test_files
-	nosetests --exe ${ALL_OPTS}
+	nosetests --exe ${NOSE_OPTS}
 
 # Single-file test
 test/src/%.py: test_files
-	nosetests --exe ${ALL_OPTS} $@
+	nosetests --exe ${NOSE_OPTS} $@
 
 .PHONY: nosetests test tox pytests
 
@@ -149,4 +149,4 @@ PROFILE_OPTS = # --with-profile
 TISSUE_IGNORES = --tissue-ignore=E302,E501,E261,E201,E202,E241,E402,E128
 TISSUE_OPTS = # --with-tissue --cover-inclusive --tissue-package=${PACKAGES} ${TISSUE_IGNORES}
 
-ALL_OPTS = $(COVERAGE_OPTS) $(PROFILE_OPTS) $(TISSUE_OPTS)
+NOSE_OPTS = $(COVERAGE_OPTS) $(PROFILE_OPTS) $(TISSUE_OPTS)
