@@ -65,15 +65,15 @@ class MetaDataCernTest(unittest.TestCase):
 class MetaDataStratusLabXmlTest(unittest.TestCase):
 
     def test_metadata_xml(self):
-        fn = 'KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml'
-        xmlfile = get_local_path('..', 'stratuslab', 'download', fn)
+        fn = 'IzEOzeHK8-zpgSyAkhNiZujL4nZ.xml'
+        xmlfile = get_local_path('..', 'stratuslab', fn)
         m = metadata.MetaStratusLabXml(xmlfile)
         md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
-            'http://www.apc.univ-paris7.fr/Downloads/comput/'
-            'CentOS7.qcow2.gz')
-        self.assertEqual(m.get_name(), 'CentOS-7.0-x86_64')
+            'http://grand-est.fr/resources/CLOUD/'
+            'CentOS-7-x86_64-GenericCloud.qcow2')
+        self.assertEqual(m.get_name(), 'CentOS-7-x86_64')
 
     def test_metadata_xml_button_vs_wget(self):
         fn_base = 'LHfKVPoHcv4oMirHU0KuOQc-TvI.%s.xml'
