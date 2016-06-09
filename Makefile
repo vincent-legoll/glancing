@@ -82,8 +82,10 @@ test_sl_mp_files: $(TEST_SL_MP_FILES)
 test/stratuslab/%.xml:
 	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*?media=xml
 
-test/stratuslab/%.json:
-	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*?media=json
+test/stratuslab/%.json: test/stratuslab/%.xml
+	EMAIL=$(grep '<email>' $< | sed -e 's/.*<email>\(.*\)<\/email>.*/\1/') ; \
+	DATE=$(grep '<email>' $< | sed -e 's/.*<created xmlns="http://purl.org/dc/terms/">\(.*\)<\/created>.*/\1/') ; \
+	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*/$$EMAIL/$$DATE?media=json
 
 # Create TEST_DATA_FILES, sizes are in MB (Bigger ones: 100 200 300 400 500 750 1000)
 SIZES = 1 5 10 25 50 75
