@@ -8,9 +8,10 @@ test/data/*
 test/images/*
 
 test/stratuslab/JcqGhHxmTRAEpHMmRF-xhSTM3TO.xml
-test/stratuslab/KqU_1EZFVGCDEhX9Kos9ckOaNjB.xml
 test/stratuslab/PIDt94ySjKEHKKvWrYijsZtclxU.xml
+test/stratuslab/IzEOzeHK8-zpgSyAkhNiZujL4nZ.xml
 
 test/stratuslab/JcqGhHxmTRAEpHMmRF-xhSTM3TO.json
-test/stratuslab/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
 test/stratuslab/PIDt94ySjKEHKKvWrYijsZtclxU.json
+test/stratuslab/IzEOzeHK8-zpgSyAkhNiZujL4nZ.json
+
