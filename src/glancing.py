@@ -222,10 +222,11 @@ def main(sys_argv=sys.argv[1:]):
             image_type = 'cern'
         elif len(desc) == 27:
             try:
-                base64.decodestring(desc)
+                # This was assumed to be SLMP ID encoding format, apparently not
+                #base64.decodestring(desc)
                 image_type = 'market'
             except binascii.Error:
-                vprint('probably invalid StratusLab marketplace ID')
+                vprint('probably invalid StratusLab marketplace ID:', desc)
         else:
             vprint('unknown descriptor')
 
