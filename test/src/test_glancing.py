@@ -222,8 +222,8 @@ class GlancingMetadataTest(unittest.TestCase):
             ('JcqGhHxmTRAEpHMmRF-xhSTM3TO', False, False, False),
             # 102 MB, does not exists any more on SL marketplace
             ('BtSKdXa2SvHlSVTvgFgivIYDq--', True, False, False),
-            # 463 MB
-            ('KqU_1EZFVGCDEhX9Kos9ckOaNjB', True, True, True),
+            # 872 MB
+            ('IzEOzeHK8-zpgSyAkhNiZujL4nZ', True, True, True),
             # Size & checksum mismatch: 375 MB -> 492 MB
             ('ME4iRTemHRwhABKV5AgrkQfDerA', False, False, False),
         )
@@ -278,8 +278,8 @@ class GlancingMetadataTest(unittest.TestCase):
     def test_glancing_metadata_big(self):
         market_id = 'PIDt94ySjKEHKKvWrYijsZtclxU'
         mdfile = get_local_path('..', 'stratuslab', market_id + '.json')
-        self.assertFalse(glancing.main(['-d', mdfile]))
-        self.assertFalse(glancing.main(['-d', market_id]))
+        self.assertTrue(glancing.main(['-d', mdfile]))
+        self.assertTrue(glancing.main(['-d', market_id]))
 
 class GlancingUrlDryRunTest(unittest.TestCase):
 
