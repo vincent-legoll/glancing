@@ -83,8 +83,8 @@ test/stratuslab/%.xml:
 	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*?media=xml
 
 test/stratuslab/%.json: test/stratuslab/%.xml
-	EMAIL=$(grep '<email>' $< | sed -e 's/.*<email>\(.*\)<\/email>.*/\1/') ; \
-	DATE=$(grep '<email>' $< | sed -e 's/.*<created xmlns="http://purl.org/dc/terms/">\(.*\)<\/created>.*/\1/') ; \
+	EMAIL=$$(grep '<email>' $< | sed -e 's/.*<email>\(.*\)<\/email>.*/\1/') ; \
+	DATE=$$(grep '<email>' $< | sed -e 's/.*<created xmlns="http:\/\/purl.org\/dc\/terms\/">\(.*\)<\/created>.*/\1/') ; \
 	wget -O $@ $(SL_MARKETPLACE_URL_BASE)/$*/$$EMAIL/$$DATE?media=json
 
 # Create TEST_DATA_FILES, sizes are in MB (Bigger ones: 100 200 300 400 500 750 1000)
