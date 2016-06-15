@@ -119,9 +119,13 @@ The code coverage results will be located, after a test run, in:
 You can set those to configure access to your local OpenStack Glance VM
 image registry sevice:
 
-    export OS_TENANT_NAME=admin_tenant
-    export OS_USERNAME=admin_username
-    export OS_PASSWORD=ADMIN_PASSWORD
-    export OS_AUTH_URL=http://controller_node:35357/v2.0
-    export OS_REGION_NAME="IPHC"
-    export OS_CACERT="${HOME}/path/to/CNRS2.pem"
+    export OS_TENANT_NAME=
+    export OS_USERNAME=
+    export OS_PASSWORD=
+    export OS_AUTH_URL=
+    export OS_REGION_NAME=
+    export OS_CACERT="/path/to/CACERT.pem"
+    export OS_TENANT_ID=
+
+OS_TENANT_ID is used by glance_manager.py, but is not mandatory. If given, it avoids using keystone to get from OS_TENANT_NAME to OS_TENANT_ID
+
