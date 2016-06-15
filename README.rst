@@ -17,8 +17,13 @@ source metadata, as well as work directly with local files or URIs.
 
 - Backup previous versions of an image when importing the new version
 
-#. How to run
-=============
+#. How to run glance_manager.py
+===============================
+
+FIXME...
+
+#. How to run glancing.py
+=========================
 
 The following is assuming your environment contains the appropriate variables &
 values for connecting to a glance service, see in "Automated Testing" section
