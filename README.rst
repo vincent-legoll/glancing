@@ -82,11 +82,11 @@ below.
 
 - Import local image file, without checksum verification:
 
-    $ ./src/glancing.py image /tmp/cirros-0.3.4-i386-disk.img
+    $ ./src/glancing.py /tmp/cirros-0.3.4-i386-disk.img
 
 - Download image from URL, check given MD5 message digest
 
-    $ ./src/glancing.py url http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
+    $ ./src/glancing.py http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
 - Download XML metadata from StatusLab marketplace, get the URL from this
   metadata, then get the image from the URL, and verify all the checksums
@@ -94,19 +94,19 @@ below.
 
   This one is for a CentOS v7 image...
 
-    $ ./src/glancing.py market KqU_1EZFVGCDEhX9Kos9ckOaNjB
+    $ ./src/glancing.py KqU_1EZFVGCDEhX9Kos9ckOaNjB
 
 - You have browsed the StratusLab marketplace, and found the right image
   for your project, downloaded its JSON metadata locally, then want to
   get the corresponding VM image:
 
-    $ ./src/glancing.py json /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
+    $ ./src/glancing.py /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
 
 You can use the "-d" or "--dry-run" CLI parameter to only download the VM
 image file, verify the checksum(s) but not do the final import into glance
 registry.
 
-    $ ./src/glancing.py -d image /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
+    $ ./src/glancing.py -d /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
 #. Get Help
 ===========
