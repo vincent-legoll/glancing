@@ -65,6 +65,9 @@ run it like the following to see the help:
 
 Both `nose` & `py.test` can be used to run the test suite
 
+You'll need to install the `python-nose` package first (should work on debian &
+redhat based distributions)
+
 In order to launch all the automated tests, just use the following command,
 which use `nose` to collect the tests to run:
 
