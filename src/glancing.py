@@ -88,17 +88,18 @@ def do_argparse(sys_argv):
 
     descriptor_help = ('''>>>
         This can be:
-          * a local VM image file (in "raw" format)
-          * a network location (URL)
+          * a local file path:
+             - to an image file in "raw" format
+             - to a StratusLab marketplace metadata file in JSON or XML format
           * a StratusLab marketplace ID
-          * a StratusLab marketplace metadata file (in JSON or XML format)
+          * a network location (URL)
           * a CERN image list ID, with the VM image list passed in as --cern-list
 
         The StratusLab marketplace is located here:
 
           https://marketplace.stratuslab.eu
     ''')
-    parser.add_argument('descriptor', metavar='DESC', help=descriptor_help)
+    parser.add_argument('descriptor', metavar='STRING', help=descriptor_help)
 
     args = parser.parse_args(sys_argv)
 
