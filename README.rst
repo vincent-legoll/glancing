@@ -20,13 +20,64 @@ source metadata, as well as work directly with local files or URIs.
 #. How to run glance_manager.py
 ===============================
 
-FIXME...
+The tool is self documented:
+
+    glance_manager.py --help
+
+It should be used with an OpenStack account that has sufficient privileges to be
+able to upload images into the glance registry. There's no need for a full
+OpenStack administrator account. See the `_environmentVars` section below
+to setup the needed environment variables.
+
+As this tool uses the `glance` and eventually `keystone` OpenStack command line
+clients, they should be located somewhere accessible from the PATH environment
+variable.
+
+You have to create the image list file, with each line containing an image ID
+from the StratusLab marketplace (https://marketplace.stratuslab.eu/marketplace)
+
+For example, the "FG_Cloud" project image selection (`stack` unix user account):
+
+    $ cat > /home/stack/glancing/img_list.txt << EOF
+    #  Temporary list of images to download
+    # FG_Cloud-Ubuntu-14.04-x86_64
+    LHfKVPoHcv4oMirHU0KuOQc-TvI
+    # FG_Cloud-Ubuntu-12.04-x86_64
+    IU_CzEdDeCe5Vbs11ZODPAgox8n
+    # FG-Cloud Official Ubuntu 12.04 Cloud Image
+    IzEOzeHK8-zpgSyAkhNiZujL4nZ
+    # FG_Cloud-CentOS-6-x86_64
+    JXlXluzZXUYG8ugkYUX5lPPcO9E
+    EOF
+
+Then you use it like so:
+
+    glance_manager.py --verbose --vmlist /path/to/img_list.txt
+
+The default value for the market place base url option (--url) should be OK, no
+need to use that except for testing purpose.
+
+If the previous run, like above worked OK, you can automate the tool running a
+few times a day to keep the images up-to-date. You can use cron to do so.
+
+For example, using the `stack` unix user account, running at 4h intervals,
+verbosely logging to a local file:
+
+    $ cat > /etc/cron.d/glance_manager.cron << EOF
+    SHELL=/bin/bash
+    PATH=/sbin:/bin:/usr/sbin:/usr/bin
+    MAILTO=root
+    PYTHONPATH=/home/stack/glancing/src
+    0 */4 * * * stack ( date --iso-8601=seconds ; source /home/stack/glancing/fg-cloud-openrc.sh ; /home/stack/glancing/src/glance_manager.py -v -l /home/stack/glancing/img_list.txt ) >> /home/stack/glancing/img_list.log 
+
+This is assuming the OpenStack `_environmentVars` are exported from the script
+file : `/home/stack/glancing/fg-cloud-openrc.sh`.
 
 #. How to run glancing.py
 =========================
 
 The following is assuming your environment contains the appropriate variables &
-values for connecting to a glance service, see in "Automated Testing" section
+values for connecting to a glance service, see the `_environmentVars` section
 below.
 
 - Import local image file, without checksum verification:
@@ -132,5 +183,6 @@ image registry sevice:
     export OS_CACERT="/path/to/CACERT.pem"
     export OS_TENANT_ID=
 
-OS_TENANT_ID is used by glance_manager.py, but is not mandatory. If given, it avoids using keystone to get from OS_TENANT_NAME to OS_TENANT_ID
+OS_TENANT_ID is used by glance_manager.py, but is not mandatory. If given, it
+avoids using keystone to get from OS_TENANT_NAME to OS_TENANT_ID.
 
