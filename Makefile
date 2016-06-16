@@ -90,7 +90,7 @@ test/stratuslab/%.json: test/stratuslab/%.xml
 # Create TEST_DATA_FILES, sizes are in MB (Bigger ones: 100 200 300 400 500 750 1000)
 SIZES = 1 5 10 25 50 75
 TEST_DATA_FILES_SIZE = $(foreach SIZ,$(SIZES),test/data/random_$(SIZ)M.bin)
-TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG))
+TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG)) test/data/random_2files_zip.bin.zip
 TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin
 TEST_DATA_FILES = $(TEST_DATA_FILES_SIZE) $(TEST_DATA_FILES_COMP) $(TEST_DATA_FILES_TINY) $(TEST_DATA_FILES_SIZE)
 
@@ -111,8 +111,11 @@ test/data/random_1M_gz.bin.gz: test/data/random_1M.bin
 test/data/random_1M_bz2.bin.bz2: test/data/random_1M.bin
 	bzip2 -c < $< > $@
 
+test/data/random_1M_zip.bin.zip: test/data/random_1M.bin
+	zip - $^ > $@
+
 # Include a second file (ignored when decompressing) for more corner-case test coverage
-test/data/random_1M_zip.bin.zip: test/data/random_1M.bin test/data/zero_length.bin
+test/data/random_2files_zip.bin.zip: test/data/random_1M.bin test/data/zero_length.bin
 	zip - $^ > $@
 
 # Helper macros : convert string to upper- & lower-case

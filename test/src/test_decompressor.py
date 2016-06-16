@@ -14,7 +14,8 @@ local_pythonpath('..', '..', 'src')
 import utils
 import decompressor
 
-_TEST_FILES = ['random_1M_bz2.bin.bz2', 'random_1M_gz.bin.gz', 'random_1M_zip.bin.zip']
+_TEST_FILES = ['random_1M_bz2.bin.bz2', 'random_1M_gz.bin.gz',
+               'random_1M_zip.bin.zip', 'random_2files_zip.bin.zip']
 
 class DecompressorSimpleTest(unittest.TestCase):
 
