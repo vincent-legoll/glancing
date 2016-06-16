@@ -145,13 +145,18 @@ class TestGlanceFixture(SkipGlanceNOK):
     def setUp(self):
         if self._IMG_ID:
             glance.glance_delete_all(self._IMG_ID, quiet=True)
-        glance.glance_delete_all(self._IMG_NAME, quiet=True)
+        if self._IMG_NAME:
+            glance.glance_delete_all(self._IMG_NAME, quiet=True)
 
     tearDown = setUp
 
     def common_start(self, filename=os.devnull):
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
         self._IMG_ID = glance.glance_import_id(filename, name=self._IMG_NAME, diskformat='raw')
+        # Be extra careful, to avoid calling glance_delete_all with wrong parameters
+        self.assertTrue(self._IMG_ID is not None)
+        self.assertTrue(self._IMG_ID is not False)
+        self.assertTrue(len(self._IMG_ID) > 0)
         self.assertTrue(self._IMG_ID)
         self.assertTrue(glance.glance_exists(self._IMG_ID))
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
