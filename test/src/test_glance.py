@@ -47,6 +47,12 @@ class GlanceTest(SkipGlanceNOK):
         self.assertFalse(glance.glance_exists(u''))
         self.assertFalse(glance.glance_exists(u'Nonexistent'))
 
+    def test_glance_show_nok(self):
+        self.assertFalse(glance.glance_show(''))
+        self.assertFalse(glance.glance_show('Nonexistent'))
+        self.assertFalse(glance.glance_show(u''))
+        self.assertFalse(glance.glance_show(u'Nonexistent'))
+
 class GlanceIdsTest(SkipGlanceNOK):
 
     def test_glance_ids_unfiltered(self):
