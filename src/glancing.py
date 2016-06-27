@@ -61,6 +61,9 @@ def do_argparse(sys_argv):
     parser.add_argument('-c', '--cern-list', dest='cernlist',
                         help='Image list from CERN, as a JSON file')
 
+    parser.add_argument('-b', '--backup-dir', dest='backupdir',
+                        help='Backup already existing images in this directory')
+
     digests_help = ('''>>>
         A colon-separated list of message digests of the image.
 
@@ -184,15 +187,6 @@ def check_digests(local_image_file, metadata, replace_bads=False):
             if replace_bads:
                 hashes[hashfn] = digest_computed
     return verified
-
-_BACKUP_DIR = os.path.join('/', 'tmp', 'glancing')
-
-def backup_dir():
-    if not os.path.exists(_BACKUP_DIR):
-        os.mkdir(_BACKUP_DIR)
-    elif not os.path.isdir(_BACKUP_DIR):
-        vprint(_BACKUP_DIR + ' exists but is not a directory, sorry '
-            'cannot backup old images...')
 
 def main(sys_argv=sys.argv[1:]):
 
@@ -374,13 +368,26 @@ def main(sys_argv=sys.argv[1:]):
             else:
                 vprint(local_image_file + ': size differ, not verifying checksums')
 
-    # If image already exists, download it to backup directory
+    # If image already exists, download it to backup directory prior to deleting
     if not args.dryrun and glance.glance_exists(name):
-        backup_dir()
-        fn_local = os.path.join(_BACKUP_DIR, name)
-        status = glance.glance_download(name, fn_local)
-        if not status:
-            return False
+        if args.backupdir:
+            backupdir = args.backupdir
+        else:
+            backupdir = os.environ.get('GLANCING_BACKUP_DIR', '/tmp/glancing')
+
+        do_backup = True
+        if not os.path.exists(backupdir):
+            os.mkdir(backupdir)
+        elif not os.path.isdir(backupdir):
+            vprint(backupdir + ' exists but is not a directory, sorry '
+                'cannot backup old images...')
+            do_backup = False
+
+        if do_backup:
+            fn_local = os.path.join(backupdir, name)
+            status = glance.glance_download(name, fn_local)
+            if not status:
+                return False
         glance.glance_delete(name, quiet=(not utils.get_verbose()))
 
     # Import image into glance
