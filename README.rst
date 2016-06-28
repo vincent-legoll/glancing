@@ -139,6 +139,11 @@ run it like the following to see the help:
 #. Automated Testing
 ====================
 
+Be extra careful, automated tests are intended for developpers only, not for
+site administrators. The tests can have bugs, so never run the test suite in a
+production tenant, as it could destroy image(s) there (and also valuable
+snapshots). This actually happened once, you have been warned.
+
 Both ``nose`` & ``py.test`` can be used to run the test suite
 
 You'll need to install the ``python-nose`` package first (should work on debian &
