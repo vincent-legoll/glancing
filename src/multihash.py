@@ -78,8 +78,11 @@ class multihash_serial_exec(object):
             ahash = self.get_hash(filename, hash_name)
             self.hexdigests_data[hash_name] = ahash
 
-    # Compute message digest for given file name with the given algorithm
+    @staticmethod
     def get_hash(self, filename, hash_name):
+        """Compute message digest of filename's content with the given hash_name
+        algorithm
+        """
         cmd = [hash_name + 'sum', '--binary', filename]
         status, _, out, _ = utils.run(cmd, out=True)
         if status:
