@@ -42,7 +42,7 @@ def glance_import(base, md5=None, name=None, diskformat=None):
     return not not glance_import_id(base, md5, name, diskformat)
 
 def glance_exists(name):
-    if type(name) not in (str, unicode):
+    if not isinstance(name, (str, unicode)):
         vprint('glance_exists(name=%s): name is not a string, but a %s' % (name, str(type(name))))
         raise TypeError
     return len(glance_ids([name])) > 0
@@ -76,7 +76,7 @@ def glance_run(glance_cmd=None, glance_args=None, subcmd_args=None, **kwargs):
 def glance_ids(names=None, *args):
     ret = set()
     # Single name ?
-    if names is not None and type(names) in (str, unicode):
+    if names is not None and isinstance(names, (str, unicode)):
         names = [names]
     imglist = glance_run('image-list', glance_args=None, subcmd_args=args)
     if imglist:
