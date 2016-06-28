@@ -9,7 +9,6 @@ import re
 import sys
 import uuid
 import math
-import types
 import shutil
 import inspect
 import argparse
@@ -23,8 +22,6 @@ try:
     import StringIO
 except ImportError: # pragma: no cover
     import io as StringIO
-
-from contextlib import contextmanager
 
 if 'DEVNULL' not in dir(subprocess):
     subprocess.DEVNULL = open(os.devnull, 'r+b')
