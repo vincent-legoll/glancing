@@ -57,7 +57,7 @@ class MetaDataJson(MetaDataBase):
                 self.json_obj = json.loads(fileobj.read())
             except ValueError:
                 self.json_obj = None
-            if not type(self.json_obj) is dict:
+            if not isinstance(self.json_obj, dict):
                 raise ValueError('Cannnot load json data from: ' + filename)
         self.data = {'checksums': {}}
 
