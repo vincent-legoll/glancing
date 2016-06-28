@@ -22,6 +22,8 @@ source metadata, as well as work directly with local files or URIs.
 
 The tool is self documented:
 
+::
+
     glance_manager.py --help
 
 It should be used with an OpenStack account that has sufficient privileges to be
@@ -38,7 +40,9 @@ from the StratusLab marketplace (https://marketplace.stratuslab.eu/marketplace)
 
 For example, the "FG_Cloud" project image selection (`stack` unix user account):
 
-    $ cat > /home/stack/glancing/img_list.txt << EOF
+::
+
+    cat > /home/stack/glancing/img_list.txt << EOF
     #  Temporary list of images to download
     # FG_Cloud-Ubuntu-14.04-x86_64
     LHfKVPoHcv4oMirHU0KuOQc-TvI
@@ -52,6 +56,8 @@ For example, the "FG_Cloud" project image selection (`stack` unix user account):
 
 Then you use it like so:
 
+::
+
     glance_manager.py --verbose --vmlist /path/to/img_list.txt
 
 The default value for the market place base url option (--url) should be OK, no
@@ -63,7 +69,9 @@ few times a day to keep the images up-to-date. You can use cron to do so.
 For example, using the `stack` unix user account, running at 4h intervals,
 verbosely logging to a local file:
 
-    $ cat > /etc/cron.d/glance_manager.cron << EOF
+::
+
+    cat > /etc/cron.d/glance_manager.cron << EOF
     SHELL=/bin/bash
     PATH=/sbin:/bin:/usr/sbin:/usr/bin
     MAILTO=root
@@ -71,7 +79,7 @@ verbosely logging to a local file:
     0 */4 * * * stack ( date --iso-8601=seconds ; source /home/stack/glancing/fg-cloud-openrc.sh ; /home/stack/glancing/src/glance_manager.py -v -l /home/stack/glancing/img_list.txt ) >> /home/stack/glancing/img_list.log 
 
 This is assuming the OpenStack `_environmentVars` are exported from the script
-file : `/home/stack/glancing/fg-cloud-openrc.sh`.
+file : ``/home/stack/glancing/fg-cloud-openrc.sh``.
 
 #. How to run glancing.py
 =========================
@@ -82,11 +90,15 @@ below.
 
 - Import local image file, without checksum verification:
 
-    $ ./src/glancing.py /tmp/cirros-0.3.4-i386-disk.img
+::
+
+    ./src/glancing.py /tmp/cirros-0.3.4-i386-disk.img
 
 - Download image from URL, check given MD5 message digest
 
-    $ ./src/glancing.py http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
+::
+
+    ./src/glancing.py http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
 - Download XML metadata from StatusLab marketplace, get the URL from this
   metadata, then get the image from the URL, and verify all the checksums
@@ -94,11 +106,15 @@ below.
 
   This one is for a CentOS v7 image...
 
-    $ ./src/glancing.py KqU_1EZFVGCDEhX9Kos9ckOaNjB
+::
+
+    ./src/glancing.py KqU_1EZFVGCDEhX9Kos9ckOaNjB
 
 - You have browsed the StratusLab marketplace, and found the right image
   for your project, downloaded its JSON metadata locally, then want to
   get the corresponding VM image:
+
+::
 
     $ ./src/glancing.py /tmp/KqU_1EZFVGCDEhX9Kos9ckOaNjB.json
 
@@ -106,7 +122,9 @@ You can use the "-d" or "--dry-run" CLI parameter to only download the VM
 image file, verify the checksum(s) but not do the final import into glance
 registry.
 
-    $ ./src/glancing.py -d /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
+::
+
+    ./src/glancing.py -d /tmp/cirros-0.3.4-i386-disk.img -s 79b4436412283bb63c2cba4ac796bcd9
 
 #. Get Help
 ===========
@@ -114,40 +132,52 @@ registry.
 The ./src/glancing.py script CLI options are documented in-line, please
 run it like the following to see the help:
 
+::
+
     ./src/glancing.py --help
 
 #. Automated Testing
 ====================
 
-Both `nose` & `py.test` can be used to run the test suite
+Both ``nose`` & ``py.test`` can be used to run the test suite
 
-You'll need to install the `python-nose` package first (should work on debian &
-redhat based distributions), `pytest` (redhat) or `python-pytest` (debian) in
+You'll need to install the ``python-nose`` package first (should work on debian &
+redhat based distributions), ``pytest`` (redhat) or ``python-pytest`` (debian) in
 order to launch the test suite.
 
 In order to launch all the automated tests, just use the following command,
-which use `nose` to collect the tests to run:
+which use ``nose`` to collect the tests to run:
 
-    $ make test
+::
+
+    make test
 
 or just use:
 
-    $ py.test
+::
+
+    py.test
 
 Or you can select only a single test to be run manually:
 
-    $ nosetests test/src/test_utils.py:UtilsRunTest.test_utils_run_true
+::
+
+    nosetests test/src/test_utils.py:UtilsRunTest.test_utils_run_true
 
 First you give the test module test_XXX.py file, a colon, then the test class,
 a dot, then the test method from that class.
 
 The py.test way of doing manual test selection:
 
-    $ py.test test/src/test_utils.py::UtilsRunTest::test_utils_run_true
+::
+
+    py.test test/src/test_utils.py::UtilsRunTest::test_utils_run_true
 
 Or you can use make to run a single test file with code coverage 
 
-    $ make test test/src/test_utils.py
+::
+
+    make test test/src/test_utils.py
 
 The tests check for reachability of a glance registry service to test
 images uploading. Just populate the traditionnal OpenStack variables,
@@ -158,15 +188,19 @@ following lines from ./test/src/test_glancing.py file. They enable more
 tests, but will download a lot of big (huge, 100s of MBs or even GBs) image
 files...
 
+::
+
     _HEAVY_TESTS = False
     _HUGE_TESTS = False
 
 In the Makefile you can also configure the usage of nose test plugins
 for code coverage, pep8 conformance checking and profiling.
 
-The code coverage results will be located, after a test run, in:
+Display code coverage results will be located, after a test run, in:
 
-    ./cover/index.html
+::
+
+    firefox ./cover/index.html
 
 #. Environment variables
 ========================
@@ -185,4 +219,3 @@ image registry sevice:
 
 OS_TENANT_ID is used by glance_manager.py, but is not mandatory. If given, it
 avoids using keystone to get from OS_TENANT_NAME to OS_TENANT_ID.
-
