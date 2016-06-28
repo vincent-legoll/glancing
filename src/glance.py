@@ -184,10 +184,10 @@ def main(sys_argv=sys.argv[1:]):
             return False
     else:
         vprint('Listing image IDs:')
-        all_images_ids = glance_ids(names)
+        all_images_ids = glance_ids()
         if all_images_ids:
             for img_id in all_images_ids:
-                print img_id
+                print(img_id)
         else:
             vprint('Error: cannot match images named : "%s"' % str(names))
             return False
