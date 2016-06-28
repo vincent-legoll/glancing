@@ -109,7 +109,11 @@ def glance_delete_all(names, quiet=False):
 def glance_delete_ids(ids, quiet=False):
     ret = True
     for image_id in ids:
-        ret &= glance_delete(image_id, quiet=quiet)
+        if len(image_id) > 0:
+            ret &= glance_delete(image_id, quiet=quiet)
+        else:
+            vprint('Error: attempting to delete image with empty ID')
+            ret = False
     return ret
 
 def glance_show(name, quiet=False):
