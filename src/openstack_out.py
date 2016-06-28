@@ -129,7 +129,7 @@ def get_field(args):
     cmd = args.cmd
     if len(cmd) > 0:
         # Command to run, simple or multiple strings
-        if len(cmd) == 1 and type(cmd[0]) == str:
+        if len(cmd) == 1 and isinstance(cmd[0], str):
             cmd = cmd[0].split()
 
         # Handle site-specific parameters (for example: "--insecure")
