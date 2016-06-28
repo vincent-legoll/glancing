@@ -171,22 +171,29 @@ class TestGlanceFixture(SkipGlanceNOK):
 
 class GlanceNoNameTest(TestGlanceFixture):
 
+    # An empty name should be OK
     _IMG_NAME = ''
 
-    def test_glance_main_noname(self):
+    def test_glance_main_emptyname_delete_byname(self):
         self.common_start()
-        self.assertTrue(glance.main(['-d', self._IMG_NAME]))
+        self.assertTrue(self._IMG_ID is not None)
+        self.assertTrue(len(self._IMG_ID) > 0)
+        self.assertTrue(glance.main(['-v', '-d', self._IMG_NAME]))
         self.assertFalse(glance.glance_exists(self._IMG_ID))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
 
-class GlanceNoNameTestUnicode(TestGlanceFixture):
-
-    _IMG_NAME = u''
-
-    def test_glance_main_noname(self):
+    def test_glance_main_emptyname_delete_byid(self):
         self.common_start()
-        self.assertTrue(glance.main(['-d', self._IMG_NAME]))
+        self.assertTrue(self._IMG_ID is not None)
+        self.assertTrue(len(self._IMG_ID) > 0)
+        self.assertTrue(glance.main(['-v', '-d', self._IMG_ID]))
+        self.assertFalse(glance.glance_exists(self._IMG_ID))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+class GlanceNoNameTestUnicode(GlanceNoNameTest):
+
+    # An empty unicode name should be OK
+    _IMG_NAME = u''
 
 class GlanceMainTest(TestGlanceFixture):
 
