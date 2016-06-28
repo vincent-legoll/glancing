@@ -178,7 +178,8 @@ def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
     if args.delete:
         if len(args.delete) > 0:
-            glance_delete_all(args.delete)
+            vprint('Trying to delete: "%s"' % str(args.delete))
+            return glance_delete_all(args.delete)
         else:
             vprint('Error: trying to delete image named : "%s"' % str(args.delete))
             return False
