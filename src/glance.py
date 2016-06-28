@@ -177,7 +177,20 @@ def do_argparse(sys_argv):
 def main(sys_argv=sys.argv[1:]):
     args = do_argparse(sys_argv)
     if args.delete:
-        glance_delete_all(args.delete)
+        if len(args.delete) > 0:
+            glance_delete_all(args.delete)
+        else:
+            vprint('Error: trying to delete image named : "%s"' % str(args.delete))
+            return False
+    else:
+        vprint('Listing image IDs:')
+        all_images_ids = glance_ids(names)
+        if all_images_ids:
+            for img_id in all_images_ids:
+                print img_id
+        else:
+            vprint('Error: cannot match images named : "%s"' % str(names))
+            return False
     return True
 
 if __name__ == '__main__': # pragma: no cover
