@@ -190,7 +190,7 @@ def main(sys_argv=sys.argv[1:]):
             for img_id in all_images_ids:
                 print(img_id)
         else:
-            vprint('Error: cannot match images named : "%s"' % str(names))
+            vprint('Error: cannot list image IDs')
             return False
     return True
 
