@@ -79,7 +79,7 @@ class multihash_serial_exec(object):
             self.hexdigests_data[hash_name] = ahash
 
     @staticmethod
-    def get_hash(self, filename, hash_name):
+    def get_hash(filename, hash_name):
         """Compute message digest of filename's content with the given hash_name
         algorithm
         """
