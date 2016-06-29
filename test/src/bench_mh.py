@@ -2,7 +2,6 @@
 
 import os
 import sys
-import math
 import pickle
 import timeit
 import argparse
