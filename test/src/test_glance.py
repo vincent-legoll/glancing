@@ -97,9 +97,9 @@ class GlanceIdsTest(SkipGlanceNOK):
         if 'OS_TENANT_ID' in os.environ:
             add_args = ['--owner', os.environ['OS_TENANT_ID']]
         elif 'OS_TENANT_NAME' in os.environ:
-            status, _, out, err = utils.run(['keystone', 'tenant-get',
-                                        os.environ['OS_TENANT_NAME']], out=True,
-                                        err=True)
+            ret = utils.run(['keystone', 'tenant-get',
+                             os.environ['OS_TENANT_NAME']], out=True, err=True)
+            status, _, out, err = ret
             if status:
                 self.assertTrue(len(out) > 0)
                 _, block, _, _ = openstack_out.parse_block(out)
@@ -124,8 +124,9 @@ class TestGlanceNotOkGlanceIDS(SkipGlanceNOK):
 
     def test_glance_ids_uuid(self):
         glance.glance_delete_all(utils.test_name(), quiet=True)
-        self.assertTrue(glance.glance_import(os.devnull,
-                name=utils.test_name(), diskformat='raw'))
+        ret = glance.glance_import(os.devnull, name=utils.test_name(),
+                                   diskformat='raw')
+        self.assertTrue(ret)
         img_uuids_name = list(glance.glance_ids(utils.test_name()))
         self.assertEqual(len(img_uuids_name), 1)
         img_uuid = img_uuids_name[0]
@@ -137,10 +138,11 @@ class TestGlanceNotOk(SkipGlanceNOK):
 
     def test_glance_diskformat(self):
         glance.glance_delete_all(utils.test_name(), quiet=True)
-        self.assertFalse(glance.glance_import(os.devnull,
-                name=utils.test_name(), diskformat='notgood'))
-        self.assertFalse(glance.glance_import(os.devnull,
-                name=utils.test_name()))
+        ret = glance.glance_import(os.devnull, name=utils.test_name(),
+                                   diskformat='notgood')
+        self.assertFalse(ret)
+        ret = glance.glance_import(os.devnull, name=utils.test_name())
+        self.assertFalse(ret)
         glance.glance_delete_all(utils.test_name(), quiet=True)
 
     def test_glance_imglist(self):
