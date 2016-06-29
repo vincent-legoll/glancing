@@ -51,7 +51,7 @@ def test_name():
     return inspect.stack()[1][3]
 
 def is_uuid(thing):
-    if type(thing) == uuid.UUID:
+    if isinstance(thing, uuid.UUID):
         return True
     try:
         uuid.UUID(thing)
