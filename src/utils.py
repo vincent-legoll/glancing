@@ -36,7 +36,6 @@ def set_verbose(verbose=None):
         _VERBOSE = True if verbose else False
 
 def get_verbose():
-    global _VERBOSE
     return _VERBOSE
 
 def vprint(msg, prog=sys.argv[0]):
