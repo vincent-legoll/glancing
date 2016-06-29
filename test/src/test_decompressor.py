@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 
 import os
-import sys
-import mock
 import shutil
 import unittest
+
+import mock
 
 from tutils import local_pythonpath, get_local_path
 
