@@ -114,19 +114,19 @@ def do_argparse(sys_argv):
         Emulate md5sum, sha1sum, etc... as if all were run in parallel...
     ''')
     parser = argparse.ArgumentParser(description=desc_help,
-        formatter_class=utils.AlmostRawFormatter)
+                                     formatter_class=utils.AlmostRawFormatter)
 
     parser.add_argument('-d', '--directory', default='.',
-        help='Directory where checksums files are output')
+                        help='Directory where checksums files are output')
 
     parser.add_argument('-f', '--force', action='store_true',
-        help='Overwrite checksum files')
+                        help='Overwrite checksum files')
 
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display additional information')
 
     parser.add_argument(dest='files', nargs='+',
-        help='files to comute checksums of')
+                        help='files to comute checksums of')
 
     args = parser.parse_args(sys_argv)
 
