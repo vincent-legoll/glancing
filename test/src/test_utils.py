@@ -226,7 +226,7 @@ class UtilsTestSizeT(unittest.TestCase):
         # FIXME: This last one fail: 0P != 1023T
         #self.assertEqual(str(size_t(1024 * 1024 * 1024 * 1024 * 1024 - 1)), '1023T')
 
-class UtilsTest(unittest.TestCase):
+class UtilsVerbosityTest(unittest.TestCase):
 
     def test_utils_get_verbose_is_boolean(self):
         v = utils.get_verbose()
@@ -289,6 +289,9 @@ class UtilsTest(unittest.TestCase):
 
     def test_utils_vprint_lines_silent(self):
         self.vprint_lines_verbose(False, utils.test_name())
+
+
+class UtilsTest(unittest.TestCase):
 
     def test_utils_test_name(self):
         self.assertEqual(utils.test_name(), 'test_utils_test_name')
