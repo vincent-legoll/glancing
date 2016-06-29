@@ -119,7 +119,7 @@ def get_url(url):
     '''Retrieve content from URL into a temporary file.
        Return temporary file name.
     '''
-    if not url or type(url) not in (str, unicode):
+    if not url or not isinstance(url, (str, unicode)):
         return None
     try:
         url_f = urlopen(url)
