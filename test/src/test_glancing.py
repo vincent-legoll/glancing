@@ -183,7 +183,7 @@ class GlancingCirrosImageTest(unittest.TestCase):
 class GlancingImageTest(TestGlancingImageTtylinuxBase):
 
     def test_glancing_image_import_noname(self):
-        name, ext = os.path.splitext(os.path.basename(self._TTYLINUX_FILE))
+        name, _ = os.path.splitext(os.path.basename(self._TTYLINUX_FILE))
         with cleanup(glance.glance_delete, name):
             self.assertTrue(glancing.main(['-f',
                 self._TTYLINUX_FILE, '-s', self._TTYLINUX_MD5]))
