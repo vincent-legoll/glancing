@@ -157,6 +157,7 @@ class chdir(object):
     def __init__(self, dir_path):
         if not os.path.isdir(dir_path):
             raise ValueError('Not a directory')
+        self.oldcwd = None
         self.dir_path = dir_path
 
     def __enter__(self):
@@ -190,6 +191,7 @@ class redirect(object):
     def __init__(self, iodesc_name, iofile=None):
         # Prepare
         self._oldiodesc_name = iodesc_name
+        self._oldiodesc = None
         if iofile is None:
             self._opened = True
             self._iofile = open(os.devnull, 'r+b')
@@ -235,6 +237,7 @@ class environ(object):
         self._envvar_name = envvar_name
         self._envvar_val = envvar_val
         self._not_present = False
+        self._old_envvar_val = None
 
     def __enter__(self):
         # Backup current state
