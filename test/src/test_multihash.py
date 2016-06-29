@@ -2,7 +2,6 @@
 
 import os
 import sys
-import glob
 import unittest
 
 from tutils import local_pythonpath, get_local_path
