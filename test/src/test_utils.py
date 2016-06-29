@@ -521,7 +521,8 @@ class UtilsRedirectTest(unittest.TestCase):
 
 class UtilsDevnullTest(unittest.TestCase):
 
-    def _cleanup_files(self):
+    @staticmethod
+    def _cleanup_files():
         if os.path.exists('test_devnull_out.txt'):
             os.remove('test_devnull_out.txt')
         if os.path.exists('test_devnull_err.txt'):
