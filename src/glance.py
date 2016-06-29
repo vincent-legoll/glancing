@@ -40,7 +40,7 @@ def glance_import_id(base, md5=None, name=None, diskformat=None):
     return False
 
 def glance_import(base, md5=None, name=None, diskformat=None):
-    return not not glance_import_id(base, md5, name, diskformat)
+    return bool(glance_import_id(base, md5, name, diskformat))
 
 def glance_exists(name):
     if not isinstance(name, (str, unicode)):
