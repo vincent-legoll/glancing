@@ -46,12 +46,13 @@ class Decompressor(object):
             if sext not in _EXT_MAP:
                 raise DecompressorError('Unknown file extension: ' + str(ext))
         elif ext is None:
-            raise DecompressorError('No file extension, and no '
-                'decompression algorithm given: ' + filename)
+            raise DecompressorError('No file extension, and no decompression '
+                                    'algorithm given: ' + filename)
         else:
             if ext not in _EXT_MAP:
-                raise DecompressorError('No file extension, and unknown'
-                    ' decompression algorithm given: ' + filename)
+                raise DecompressorError('No file extension, and unknown '
+                                        'decompression algorithm given: ' +
+                                        filename)
             self.fout_name += '_uncompressed'
         if os.path.exists(self.fout_name):
             raise DecompressorError('File exists: ' + self.fout_name)
