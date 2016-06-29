@@ -30,8 +30,11 @@ class GlanceManagerTest(unittest.TestCase):
         glance_manager.get_meta_file = _OLDGMF
 
     def test_glance_manager_mocked_ok(self):
-        with utils.cleanup(['glance', '--os-image-api-version', '1', 'image-delete', 'GLANCE_MANAGER_CIRROS_TESTING_IMAGE']):
-            self.assertTrue(glance_manager.main(['-v', '-l',
-                get_local_path('..', 'gm_list.txt')]))
+        cln = ['glance', '--os-image-api-version', '1', 'image-delete',
+               'GLANCE_MANAGER_CIRROS_TESTING_IMAGE']
+        with utils.cleanup(cln):
+            locpath = get_local_path('..', 'gm_list.txt')
+            ret = glance_manager.main(['-v', '-l', locpath])
+            self.assertTrue(ret)
 
 # TODO: test name with spaces characters (initial, update, etc...)
