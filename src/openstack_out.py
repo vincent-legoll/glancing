@@ -165,8 +165,8 @@ def main(sys_argv=sys.argv[1:]):
     # Handle CLI arguments
     args = cli(sys_argv=sys_argv)
 
-    for i in get_field(args):
-        print(args.sep.join(map(str, i)))
+    for field in get_field(args):
+        print(args.sep.join(str(fent) for fent in field))
 
 if __name__ == '__main__': # pragma: no cover
     main()
