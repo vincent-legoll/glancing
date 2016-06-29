@@ -37,7 +37,7 @@ class DecompressorSimpleTest(unittest.TestCase):
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
             self.assertTrue(d.doit())
-            name, sext = os.path.splitext(local_path)
+            name, _ = os.path.splitext(local_path)
             self.assertTrue(os.path.exists(name))
             self.assertTrue(os.path.exists(local_path))
 
@@ -46,7 +46,7 @@ class DecompressorSimpleTest(unittest.TestCase):
             local_path = os.path.join(self.testdir, fn)
             d = decompressor.Decompressor(local_path)
             self.assertTrue(d.doit(delete=True))
-            name, sext = os.path.splitext(local_path)
+            name, _ = os.path.splitext(local_path)
             self.assertTrue(os.path.exists(name))
             self.assertFalse(os.path.exists(local_path))
 
