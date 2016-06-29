@@ -8,7 +8,7 @@ from __future__ import print_function
 import os
 import re
 import sys
-import base64
+#import base64
 import binascii
 import tempfile
 import textwrap
