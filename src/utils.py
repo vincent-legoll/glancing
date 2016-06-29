@@ -308,12 +308,16 @@ def block_read_filename(filename, callback, block_size=4096):
     """Open and then read a file in chunks, and call a function back for
     each block.
     """
+    if block_size < 1:
+        raise IOError('Wrong block_size')
     with open(filename, 'rb') as fin:
         block_read_filedesc(fin, callback, block_size)
 
 def block_read_filedesc(filedesc, callback, block_size=4096):
     """Read a file in chunks, and call a function back for each block
     """
+    if block_size < 1:
+        raise IOError('Wrong block_size')
     chunk_reader = functools.partial(filedesc.read, block_size)
     for block in iter(chunk_reader, ''):
         callback(block)
