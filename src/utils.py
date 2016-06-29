@@ -351,8 +351,7 @@ class Exceptions(object):
 
     def __contains__(self, other):
         for item in self._excs:
-            if (item.__class__ == other.__class__ and
-               item.args == other.args):
+            if item.__class__ == other.__class__ and item.args == other.args:
                 return True
         return False
 
