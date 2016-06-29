@@ -15,7 +15,6 @@ class DecompressorError(Exception):
 def zip_opener(fname, _):
     vprint('Opening zip archive:' + fname)
     zipf = zipfile.ZipFile(fname, 'r')
-    unfn, _ = os.path.splitext(fname)
     if len(zipf.namelist()) > 1:
         vprint('Archive contains more than one file: ' + fname)
     return zipf.open(zipf.namelist()[0])
