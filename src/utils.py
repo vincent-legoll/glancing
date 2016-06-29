@@ -112,7 +112,7 @@ class small_size_t(abstract_size_t):
     does not strip trailing zeroes
     string representation may be subject to default 6 digits precision
     '''
-    
+
     _UNIT_PREFIX = ['', 'm', 'μ', 'n', 'p', 'f']
     _FRACTIONAL = True
     _INTERUNIT_FACTOR = 3
