@@ -314,7 +314,7 @@ class GlancingUrlDryRunCirrosTest(BaseGlancingUrl):
 class GlancingUrlImportTest(BaseGlancingUrl):
 
     def test_glancing_url_import_no_name(self):
-        name, ext = os.path.splitext(os.path.basename(self._CIRROS_URL))
+        name, _ = os.path.splitext(os.path.basename(self._CIRROS_URL))
         with cleanup(glance.glance_delete, name):
             self.assertTrue(glancing.main([self._CIRROS_URL]))
 
