@@ -111,7 +111,7 @@ class MultihashTestMain(unittest.TestCase):
         self.assertEqual(expected, self.computed)
 
     def test_multihash_multisum(self):
-        ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
+        ok, _, out, _ = utils.run(['md5sum'] + self.files_to_hash, out=True)
         self.assertTrue(ok)
         class args(object):
             def __init__(self, directory, force):
@@ -128,7 +128,7 @@ class MultihashTestMain(unittest.TestCase):
                 multihash.multisum(self.computed, anargs)
 
     def test_multihash_main(self):
-        ok, ret, out, err = utils.run(['md5sum'] + self.files_to_hash, out=True)
+        ok, _, out, _ = utils.run(['md5sum'] + self.files_to_hash, out=True)
         self.assertTrue(ok)
         with utils.tempdir():
             multihash.main(['-v', '-f', '-d', os.getcwd()] + self.files_to_hash)
