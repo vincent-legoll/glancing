@@ -30,7 +30,8 @@ def glance_import_id(base, md5=None, name=None, diskformat=None):
         # Passing in the checksum has been deprecated in API v2.x
         g_args = ['--os-image-api-version', '1']
     err_msg = 'failed to import image into glance: %s from %s' % (name, base)
-    out = glance_run('image-create', glance_args=g_args, subcmd_args=args, err_msg=err_msg)
+    out = glance_run('image-create', glance_args=g_args, subcmd_args=args,
+                     err_msg=err_msg)
     if out:
         _, block, _, _ = openstack_out.parse_block(out)
         for property_name, value in block:
@@ -43,7 +44,8 @@ def glance_import(base, md5=None, name=None, diskformat=None):
 
 def glance_exists(name):
     if not isinstance(name, (str, unicode)):
-        vprint('glance_exists(name=%s): name is not a string, but a %s' % (name, str(type(name))))
+        vprint('glance_exists(name=%s): name is not a string, but a %s' %
+               (name, str(type(name))))
         raise TypeError
     return len(glance_ids([name])) > 0
 
@@ -84,7 +86,7 @@ def glance_ids(names=None, *args):
         for image_id, image_name in block:
             # Filtering or not ?
             if (names is None or (utils.is_iter(names) and
-                    (image_name in names or image_id in names))):
+                                  (image_name in names or image_id in names))):
                 ret.add(image_id)
     return ret
 
@@ -121,7 +123,8 @@ def glance_show(name, quiet=False):
     if imgid is None:
         return False
     err_msg = 'failed to get infos from glance for image: ' + str(imgid)
-    out = glance_run('image-show', glance_args=None, subcmd_args=[imgid], err_msg=err_msg, quiet=quiet)
+    out = glance_run('image-show', glance_args=None, subcmd_args=[imgid],
+                     err_msg=err_msg, quiet=quiet)
     return out
 
 def glance_delete(name, quiet=False):
@@ -129,7 +132,8 @@ def glance_delete(name, quiet=False):
     if imgid is None:
         return False
     err_msg = 'failed to delete image from glance: ' + str(imgid)
-    out = glance_run('image-delete', glance_args=None, subcmd_args=[imgid], err_msg=err_msg, quiet=quiet)
+    out = glance_run('image-delete', glance_args=None, subcmd_args=[imgid],
+                     err_msg=err_msg, quiet=quiet)
     return out is not None
 
 def glance_download(name, fn_local):
@@ -137,7 +141,8 @@ def glance_download(name, fn_local):
     if imgid is None:
         return False
     err_msg = 'failed to download image from glance: ' + str(imgid)
-    out = glance_run('image-download', glance_args=None, subcmd_args=['--file', fn_local, imgid], err_msg=err_msg)
+    out = glance_run('image-download', glance_args=None,
+                     subcmd_args=['--file', fn_local, imgid], err_msg=err_msg)
     return out is not None
 
 def glance_rename(vmid, name):
@@ -150,7 +155,8 @@ def glance_update(vmid, *args):
     err_msg = 'failed to update image from glance: ' + str(imgid)
     args = list(args)
     args.append(imgid)
-    out = glance_run('image-update', glance_args=None, subcmd_args=args, err_msg=err_msg)
+    out = glance_run('image-update', glance_args=None, subcmd_args=args,
+                     err_msg=err_msg)
     return out is not None
 
 # Handle CLI options
@@ -164,7 +170,7 @@ def do_argparse(sys_argv):
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-d', '--delete', dest='delete', metavar='NAME',
                        nargs='+', help='delete all images with the same '
-                            'name as the specified VM')
+                       'name as the specified VM')
 
     args = parser.parse_args(sys_argv)
 
@@ -181,7 +187,8 @@ def main(sys_argv=sys.argv[1:]):
             vprint('Trying to delete: "%s"' % str(args.delete))
             return glance_delete_all(args.delete)
         else:
-            vprint('Error: trying to delete image named : "%s"' % str(args.delete))
+            vprint('Error: trying to delete image named : "%s"' %
+                   str(args.delete))
             return False
     else:
         vprint('Listing image IDs:')
