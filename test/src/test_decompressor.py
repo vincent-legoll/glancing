@@ -57,13 +57,16 @@ class DecompressorSimpleTest(unittest.TestCase):
     def test_decompressor_ioerror(self):
         fn = os.path.join(self.testdir, _TEST_FILES[0])
         d = decompressor.Decompressor(fn)
-        with mock.patch('utils.block_read_filedesc', mock.Mock(side_effect=IOError('Boom!'))):
+        with mock.patch('utils.block_read_filedesc',
+                        mock.Mock(side_effect=IOError('Boom!'))):
             self.assertFalse(d.doit()[0])
             self.assertTrue(os.path.exists(fn))
-        with mock.patch('utils.block_read_filedesc', mock.Mock(side_effect=IOError('Not a gzipped file'))):
+        with mock.patch('utils.block_read_filedesc',
+                        mock.Mock(side_effect=IOError('Not a gzipped file'))):
             self.assertFalse(d.doit()[0])
             self.assertTrue(os.path.exists(fn))
-        with mock.patch('utils.block_read_filedesc', mock.Mock(side_effect=IOError('Not a gzipped file'))):
+        with mock.patch('utils.block_read_filedesc',
+                        mock.Mock(side_effect=IOError('Not a gzipped file'))):
             self.assertFalse(d.doit(True)[0])
             self.assertTrue(os.path.exists(fn))
 
