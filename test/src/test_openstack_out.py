@@ -139,7 +139,7 @@ class OpenstackOutGetFieldTest(unittest.TestCase):
         self.assertEqual(uuid.UUID, type(u))
 
     def test_openstack_out_get_field_ok_uuids(self):
-        header, rows, garbin, garbout = openstack_out.parse_block(neutron_agent_list)
+        _, rows, _, _ = openstack_out.parse_block(neutron_agent_list)
         for row in rows:
             u = uuid.UUID(row[0])
             self.assertEqual(uuid.UUID, type(u))
@@ -195,19 +195,19 @@ class OpenstackOutMainTest(unittest.TestCase):
 class OpenstackOutPBTest(unittest.TestCase):
 
     def test_openstack_out_parse_block_header_pb(self):
-        h, b, _, _ = openstack_out.parse_block(pb)
+        h, _, _, _ = openstack_out.parse_block(pb)
         self.assertEqual(len(h), 2)
         self.assertEqual(h[0], '1')
         self.assertEqual(h[1], '2')
 
     def test_openstack_out_parse_block_header_gl(self):
-        h, b, _, _ = openstack_out.parse_block(glance_image_show)
+        h, _, _, _ = openstack_out.parse_block(glance_image_show)
         self.assertEqual(len(h), 2)
         self.assertEqual(h[0], 'Property')
         self.assertEqual(h[1], 'Value')
 
     def test_openstack_out_parse_block_header_ne(self):
-        h, b, _, _ = openstack_out.parse_block(neutron_agent_list)
+        h, _, _, _ = openstack_out.parse_block(neutron_agent_list)
         self.assertEqual(len(h), 5)
         self.assertEqual(h[0], 'id')
         self.assertEqual(h[1], 'agent_type')
@@ -216,19 +216,19 @@ class OpenstackOutPBTest(unittest.TestCase):
         self.assertEqual(h[4], 'admin_state_up')
 
     def test_openstack_out_parse_block_body_pb(self):
-        h, b, _, _ = openstack_out.parse_block(pb)
+        _, b, _, _ = openstack_out.parse_block(pb)
         self.assertEqual(len(b), 3)
         self.assertEqual(b[0], ['', ''])
         self.assertEqual(b[1], ['', ''])
         self.assertEqual(b[2], ['UN', 'DEUX'])
 
     def test_openstack_out_parse_block_body_gl(self):
-        h, b, _, _ = openstack_out.parse_block(glance_image_show)
+        _, b, _, _ = openstack_out.parse_block(glance_image_show)
         self.assertEqual(len(b), 15)
         self.assertEqual(b[0], ['checksum', 'ee1eca47dc88f4879d8a229cc70a07c6'])
         self.assertEqual(b[1], ['container_format', 'bare'])
 
     def test_openstack_out_parse_block_body_ne(self):
-        h, b, _, _ = openstack_out.parse_block(neutron_agent_list)
+        _, b, _, _ = openstack_out.parse_block(neutron_agent_list)
         self.assertEqual(len(b), 5)
         self.assertEqual(b[3], ['75b1db74-fea4-46ed-8133-2eefe1155074', 'L3 agent', 'c7-netw', 'xxx', 'True'])
