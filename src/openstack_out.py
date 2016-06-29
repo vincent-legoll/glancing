@@ -68,14 +68,12 @@ def map_block(block, key_index=0):
     head, pblock, _, _ = parse_block(block)
     # Only two columns: direct mapping
     if len(head) == 2:
-        for i in range(len(pblock)):
-            #if len(head) == len(b[i]): # Useless, parse_block ensures that
-            ret[pblock[i][key_index]] = pblock[i][1]
+        for bline in pblock:
+            ret[bline[key_index]] = bline[1]
     # More than two columns: map to lists
     else: # if len(head) > 2:
-        for i in range(len(pblock)):
-            #if len(head) == len(pblock[i]): # Useless, parse_block ensures that
-            ret[pblock[i][key_index]] = (pblock[i][:key_index] + pblock[i][key_index+1:])
+        for bline in pblock:
+            ret[bline[key_index]] = (bline[:key_index] + bline[key_index+1:])
     return ret
 
 def cli(sys_argv=sys.argv[1:]):
