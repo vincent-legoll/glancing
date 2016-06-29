@@ -10,6 +10,7 @@ local_pythonpath('..', '..', 'src')
 
 import glance
 import utils
+import openstack_out
 
 # Always verbose messages during tests
 utils.set_verbose(True)
