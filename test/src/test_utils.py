@@ -297,19 +297,44 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(utils.test_name(), 'test_utils_test_name')
 
     @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
+    def test_utils_block_read_filename_zero_size(self):
+        local_path = get_local_path('..', 'data', 'two_lines.txt')
+        self.assertTrue(os.path.exists(local_path))
+        with self.assertRaises(IOError):
+            utils.block_read_filename(local_path, lambda x: None, block_size=0)
+
+    @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
+    def test_utils_block_read_filedesc_zero_size(self):
+        with open(os.devnull, 'rb') as test_fd:
+            with self.assertRaises(IOError):
+                utils.block_read_filedesc(test_fd, lambda x: None, block_size=0)
+
+    @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
     def test_utils_block_read_filename(self):
 
         # FIXME: explain why this has to be a list
         status = [False]
 
+        # Very simple callback (not really useful)
         def set_status(x):
-            # The ../data/one_length.bin file should only contain an empty line
             if x == '\n':
                 status[0] = True
 
+        # The ../data/one_length.bin file should only contain an empty line
         local_path = get_local_path('..', 'data', 'one_length.bin')
         self.assertTrue(os.path.exists(local_path))
+        self.assertFalse(status[0])
         utils.block_read_filename(local_path, set_status)
+        self.assertTrue(status[0])
+
+        status[0] = False
+
+        # This file contains multiple lines but eventually an empty one
+        local_path = get_local_path('..', 'data', 'two_lines.txt')
+        self.assertTrue(os.path.exists(local_path))
+        self.assertFalse(status[0])
+        # Must read file in one-char-sized blocks for set_status to work
+        utils.block_read_filename(local_path, set_status, block_size=1)
         self.assertTrue(status[0])
 
     @unittest.skipIf(sys.version_info >= (3,), 'does not work on py3')
@@ -776,7 +801,16 @@ class AlphaNumSortTest(unittest.TestCase):
     def test_alphanum_sort(self):
         a = ['aze42rty', 'azerty', 'aze1rty', 'aze01rty', 'aze100rty', 'aze10rty', 'aze1.0rty', 'aze00rty', 'aze0rty']
         expected = ['azerty', 'aze0rty', 'aze00rty', 'aze1rty', 'aze01rty', 'aze1.0rty', 'aze10rty', 'aze42rty', 'aze100rty', ]
-        self.assertEqual(expected, utils.alphanum_sort(a, 'aze', 'rty'))
+        alnum_sorted, bad = utils.alphanum_sort(a, 'aze', 'rty')
+        self.assertEqual(expected, alnum_sorted)
+        self.assertEqual(bad, [])
+
+    def test_alphanum_sort_bad_elem(self):
+        a = ['aze42rty', 'azerty', 'aze1rty', 'aze01rty', 'BADELEM1', 'aze100rty', 'aze10rty', 'aze1.0rty', 'BADELEM2', 'aze00rty', 'aze0rty']
+        expected = ['azerty', 'aze0rty', 'aze00rty', 'aze1rty', 'aze01rty', 'aze1.0rty', 'aze10rty', 'aze42rty', 'aze100rty', ]
+        alnum_sorted, bad = utils.alphanum_sort(a, 'aze', 'rty')
+        self.assertEqual(expected, alnum_sorted)
+        self.assertEqual(bad, ['BADELEM1', 'BADELEM2'])
 
 class TRSTest(unittest.TestCase):
 
