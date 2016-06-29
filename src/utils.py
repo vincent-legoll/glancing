@@ -384,8 +384,10 @@ def alphanum_sort(iterable, prefix='', suffix=''):
     '''
 
     res = {}
+    bad = []
     for item in iterable:
         if not item.startswith(prefix):
+            bad.append(item)
             continue
         i = item[len(prefix):-len(suffix)]
         if not i:
@@ -403,7 +405,7 @@ def alphanum_sort(iterable, prefix='', suffix=''):
         # Then for identical number values, sort according to string length
         for str_val in sorted(res[num], key=lambda x: len(x)):
             result.append(prefix + str_val + suffix)
-    return result
+    return result, bad
 
 def tr_s(datastr):
     '''
