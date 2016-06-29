@@ -714,7 +714,7 @@ class ComparableExcTest(unittest.TestCase):
     def test_utils_cexc_hashes(self):
 
         to_test_in = [{zde: 1}, {ae: 1, zde: 2}, {zde: False, None: 0, True: 1, False: 0}]
-        to_test_not_in = [{1: zde}, {1: zde, 1: ae}, {ae: False, None: 0, True: 1, False: 0}, {ae: 1}, {1: ae}]
+        to_test_not_in = [{1: zde}, {1: zde, 2: ae}, {ae: False, None: 0, True: 1, False: 0}, {ae: 1}, {1: ae}]
 
         for it in to_test_in:
             self.assertIn(self.e, utils.Exceptions(it))
