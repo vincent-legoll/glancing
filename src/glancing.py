@@ -38,11 +38,12 @@ def do_argparse(sys_argv):
         Backup old images being replaced.
     ''')
     parser = argparse.ArgumentParser(description=desc_help,
-        formatter_class=utils.AlmostRawFormatter)
+                                     formatter_class=utils.AlmostRawFormatter)
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-f', '--force', action='store_true',
-                       help='Import image into glance even if checksum verification failed')
+                       help=('Import image into glance even if checksum '
+                             'verification failed'))
     group.add_argument('-d', '--dry-run', dest='dryrun', action='store_true',
                        help='Do not import image into glance')
 
@@ -53,9 +54,11 @@ def do_argparse(sys_argv):
                         help='Display additional information')
 
     parser.add_argument('-n', '--name', dest='name', default=None,
-                        help='Name of the image in glance registry. Default value derived from image file name.')
+                        help=('Name of the image in glance registry. Default '
+                              'value derived from image file name.'))
 
-    parser.add_argument('-k', '--keep-temps', dest='keeptemps', action='store_true',
+    parser.add_argument('-k', '--keep-temps', dest='keeptemps',
+                        action='store_true',
                         help='Keep temporary files (VM image & other)')
 
     parser.add_argument('-c', '--cern-list', dest='cernlist',
@@ -87,7 +90,7 @@ def do_argparse(sys_argv):
         Algorithms are deduced from checksum lengths.
     ''')
     parser.add_argument('-S', '--sums-files', dest='sums_files', nargs='*',
-        help=digests_files_help)
+                        help=digests_files_help)
 
     descriptor_help = ('''>>>
         This can be:
@@ -130,7 +133,8 @@ def get_url(url):
         return None
     except ValueError as exc:
         if exc.args[0] == 'unknown url type: %s' % url:
-            # TODO: is this secure enough ? It should only be used for testing metadata mode
+            # TODO: is this secure enough ? It should only be used for testing
+            #       metadata mode
             if not os.path.exists(url):
                 return None
             else:
@@ -182,8 +186,10 @@ def check_digests(local_image_file, metadata, replace_bads=False):
             verified += 1
             vprint('%s: %s: OK' % (local_image_file, hashfn))
         else:
-            vprint('%s: %s: expected: %s' % (local_image_file, hashfn, digest_expected))
-            vprint('%s: %s: computed: %s' % (local_image_file, hashfn, digest_computed))
+            fmt_ex = (local_image_file, hashfn, digest_expected)
+            fmt_co = (local_image_file, hashfn, digest_computed)
+            vprint('%s: %s: expected: %s' % fmt_ex)
+            vprint('%s: %s: computed: %s' % fmt_co)
             if replace_bads:
                 hashes[hashfn] = digest_computed
     return verified
@@ -277,7 +283,9 @@ def main(sys_argv=sys.argv[1:]):
         vprint(local_image_file + ': downloaded image from: ' + url)
 
     # VM images are compressed, but checksums are for uncompressed files
-    if 'compression' in metadata and metadata['compression'] and metadata['compression'].lower() != 'none':
+    compressed = ('compression' in metadata and metadata['compression'] and
+                  metadata['compression'].lower() != 'none')
+    if compressed:
         chext = '.' + metadata['compression']
         decomp = decompressor.Decompressor(local_image_file, ext=chext)
         res, local_image_file = decomp.doit(delete=(not args.keeptemps))
@@ -313,17 +321,21 @@ def main(sys_argv=sys.argv[1:]):
                 if not local_sum_file or not os.path.exists(local_sum_file):
                     vprint('cannot download from: ' + sum_file)
                     return False
-                vprint(local_sum_file + ': downloaded checksum file from: ' + sum_file)
+                vprint(local_sum_file + ': downloaded checksum file from: ' +
+                       sum_file)
                 sum_file = local_sum_file
             with open(sum_file, 'rb') as sum_f:
                 vprint(sum_file + ': loading checksums...')
                 for line in sum_f:
                     match = re_chks_line.match(line)
                     if match and base_fn == match.group('filename'):
-                        vprint(sum_file + ': matched filenames: ' + base_fn + ' == ' + match.group('filename'))
-                        ret = add_checksum(match.group('digest'), metadata, overrides=True)
+                        vprint(sum_file + ': matched filenames: ' + base_fn +
+                               ' == ' + match.group('filename'))
+                        ret = add_checksum(match.group('digest'), metadata,
+                                           overrides=True)
                         if not ret:
-                            vprint(sum_file + ': cannot add_checksum(' + match.group('digest') + ')')
+                            vprint(sum_file + ': cannot add_checksum(' +
+                                   match.group('digest') + ')')
                             return False
 
     # Populate metadata message digests to be verified, from CLI parameters
@@ -357,16 +369,20 @@ def main(sys_argv=sys.argv[1:]):
                 vprint(local_image_file + ': verifying checksums')
                 verified = check_digests(local_image_file, metadata, args.force)
             elif image_type not in ('xml', 'json', 'market', 'cern'):
-                vprint(local_image_file + ': no checksum to verify (forgot "-s" CLI option ?)')
+                vprint(local_image_file +
+                       ': no checksum to verify (forgot "-s" CLI option ?)')
             else:
-                vprint(local_image_file + ': no checksum to verify found in metadata...')
+                vprint(local_image_file +
+                       ': no checksum to verify found in metadata...')
         else:
             if args.force:
-                vprint(local_image_file + ': size differ, but forcing the use of recomputed md5')
+                vprint(local_image_file +
+                       ': size differ, but forcing the use of recomputed md5')
                 metadata['checksums'] = {'md5': '0' * 32}
                 check_digests(local_image_file, metadata, args.force)
             else:
-                vprint(local_image_file + ': size differ, not verifying checksums')
+                vprint(local_image_file +
+                       ': size differ, not verifying checksums')
 
     # If image already exists, download it to backup directory prior to deleting
     if not args.dryrun and glance.glance_exists(name):
@@ -380,7 +396,7 @@ def main(sys_argv=sys.argv[1:]):
             os.mkdir(backupdir)
         elif not os.path.isdir(backupdir):
             vprint(backupdir + ' exists but is not a directory, sorry '
-                'cannot backup old images...')
+                   'cannot backup old images...')
             do_backup = False
 
         if do_backup:
@@ -393,15 +409,18 @@ def main(sys_argv=sys.argv[1:]):
     # Import image into glance
     if not args.dryrun:
         if (size_ok and len(metadata['checksums']) == verified) or args.force:
-            vprint(local_image_file + ': importing into glance as "%s"' % name or '')
+            vprint(local_image_file + ': importing into glance as "%s"' %
+                   str(name))
             md5 = metadata['checksums'].get('md5', None)
-            ret = glance.glance_import(local_image_file, md5, name, metadata['format'])
+            ret = glance.glance_import(local_image_file, md5, name,
+                                       metadata['format'])
             if not ret:
                 return False
         else:
             return False
     else:
-        if not args.force and (not size_ok or not len(metadata['checksums']) == verified):
+        if not args.force and (not size_ok or
+                               not len(metadata['checksums']) == verified):
             return False
 
     # Keep downloaded image file
