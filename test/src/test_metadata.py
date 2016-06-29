@@ -107,4 +107,4 @@ class MetaDataJsonFixtureTest(unittest.TestCase):
             jsonf.write('""\n')
         with devnull('stderr'):
             with self.assertRaises(ValueError):
-                m = metadata.MetaStratusLabJson(self.fn)
+                metadata.MetaStratusLabJson(self.fn)
