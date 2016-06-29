@@ -366,14 +366,14 @@ class UtilsRunTest(unittest.TestCase):
     def test_utils_run_wrong(self):
         good, retcode, out, err = utils.run(['ls', '--format'], out=True, err=True)
         self.assertFalse(good)
-        self.assertFalse(0 == retcode)
+        self.assertFalse(retcode == 0)
         self.assertEqual('', out)
         self.assertEqual(err, "ls: option '--format' requires an argument\nTry 'ls --help' for more information.\n")
 
     def test_utils_run_wrong_not_quiet(self):
         good, retcode, out, err = utils.run(['ls', '--format'], out=True, err=True, quiet_out=False, quiet_err=False)
         self.assertFalse(good)
-        self.assertFalse(0 == retcode)
+        self.assertFalse(retcode == 0)
         self.assertEqual(out, '')
         self.assertEqual(err, "ls: option '--format' requires an argument\nTry 'ls --help' for more information.\n")
 
