@@ -36,7 +36,7 @@ def glance_cleanup(name=None):
     def wrapper(f):
         @wraps(f)
         def wrapped(self, *f_args, **f_kwargs):
-            with cleanup(glance.glance_delete, name or f.func_name): 
+            with cleanup(glance.glance_delete, name or f.func_name):
                 f(self, *f_args, **f_kwargs)
         return wrapped
     return wrapper
