@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import os
-import sys
 import unittest
 
 from tutils import local_pythonpath, get_local_path
