@@ -12,13 +12,13 @@ from utils import vprint
 class DecompressorError(Exception):
     pass
 
-def zip_opener(fn, _):
-    vprint('Opening zip archive:' + fn)
-    zf = zipfile.ZipFile(fn, 'r')
-    unfn, _ = os.path.splitext(fn)
-    if len(zf.namelist()) > 1:
-        vprint('Archive contains more than one file: ' + fn)
-    return zf.open(zf.namelist()[0])
+def zip_opener(fname, _):
+    vprint('Opening zip archive:' + fname)
+    zipf = zipfile.ZipFile(fname, 'r')
+    unfn, _ = os.path.splitext(fname)
+    if len(zipf.namelist()) > 1:
+        vprint('Archive contains more than one file: ' + fname)
+    return zipf.open(zipf.namelist()[0])
 
 _EXT_MAP = {
     '.gz': gzip.open,
@@ -87,10 +87,10 @@ class Decompressor(object):
 def main(args=sys.argv[1:]):
     utils.set_verbose(True)
     vprint('verbose mode')
-    for fn in args:
-        vprint('Decompressing archive: ' + fn)
-        d = Decompressor(fn)
-        d.doit()
+    for fname in args:
+        vprint('Decompressing archive: ' + fname)
+        decomp = Decompressor(fname)
+        decomp.doit()
     return True
 
 if __name__ == '__main__': # pragma: no cover
