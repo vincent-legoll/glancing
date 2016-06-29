@@ -25,11 +25,11 @@ try:
 except AttributeError: # pragma: no cover
     _HASH_ALGOS = hashlib.algorithms_guaranteed
 
-_hld = hashlib.__dict__
+_HLD = hashlib.__dict__
 
 # Mapping from algorithm to digest length
 _HASH_TO_LEN = {
-    hash_name: _hld[hash_name]().digest_size * 2 for hash_name in _HASH_ALGOS
+    hash_name: _HLD[hash_name]().digest_size * 2 for hash_name in _HASH_ALGOS
 }
 
 def hash2len(ahash):
@@ -37,7 +37,7 @@ def hash2len(ahash):
 
 # Mapping from digest length to algorithm
 _LEN_TO_HASH = {
-    _hld[hash_name]().digest_size * 2: hash_name for hash_name in _HASH_ALGOS
+    _HLD[hash_name]().digest_size * 2: hash_name for hash_name in _HASH_ALGOS
 }
 
 def len2hash(alen):
@@ -48,7 +48,7 @@ class multihash_hashlib(object):
     '''
 
     def __init__(self, hash_names=_HASH_ALGOS, block_size=4096):
-        self.data = {hash_name: _hld[hash_name]() for hash_name in hash_names}
+        self.data = {hash_name: _HLD[hash_name]() for hash_name in hash_names}
         self.block_size = block_size
 
     def update(self, data):
@@ -96,10 +96,10 @@ def multisum(digs, args):
     data = collections.OrderedDict()
     for (filename, digests) in digs.iteritems():
         for (hash_alg, digest) in digests.iteritems():
-            fn = hash_alg.upper() + 'SUMS'
-            lst_files = data.get(fn, [])
+            fname = hash_alg.upper() + 'SUMS'
+            lst_files = data.get(fname, [])
             lst_files.append(digest + '  ' + filename + '\n')
-            data[fn] = lst_files
+            data[fname] = lst_files
     for (filename, lines) in data.iteritems():
         vprint('Writing file: ' + filename)
         if not args.force and os.path.exists(filename):
