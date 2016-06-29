@@ -22,14 +22,15 @@ import multihash
 mh = multihash.multihash_%s(%s)
 '''
 
-def bench_one(fn, setup, repeats=1):
-    return timeit.timeit('mh.hash_file("%s")' % fn, setup=setup, number=repeats)
+def bench_one(fname, setup, repeats=1):
+    return timeit.timeit('mh.hash_file("%s")' % fname, setup=setup,
+                         number=repeats)
 
 def bench_files(files):
     lengths = []
     times_sh = []
     times_mh = {
-# Uninteresting buffer sizes: too small
+        # Uninteresting buffer sizes: too small
         32: [],
         64: [],
         128: [],
@@ -39,11 +40,12 @@ def bench_files(files):
         1024 * 1024: [],
         10 * 1024 * 1024: [],
     }
-    for fn in files:
-        lengths.append(os.path.getsize(fn) / (1024 * 1024))
-        times_sh.append(bench_one(fn, _SETUP % ('serial_exec', '')))
+    for fname in files:
+        lengths.append(os.path.getsize(fname) / (1024 * 1024))
+        times_sh.append(bench_one(fname, _SETUP % ('serial_exec', '')))
         for size, res in times_mh.iteritems():
-            res.append(bench_one(fn, _SETUP % ('hashlib', 'block_size=%d' % size)))
+            res.append(bench_one(fname, _SETUP %
+                                 ('hashlib', 'block_size=%d' % size)))
     return lengths, times_sh, times_mh
 
 def plotit(lengths, times_sh, times_mh, image_file, display):
@@ -68,7 +70,7 @@ def plotit(lengths, times_sh, times_mh, image_file, display):
     # Plot parallel hashlib data, for each block size
     for size in sorted(times_mh.keys()):
         plotter(lengths, times_mh[size], marker=mks.pop(),
-                 label='parallel hashlib, bs=%s' % (utils.size_t(size),))
+                label='parallel hashlib, bs=%s' % (utils.size_t(size),))
 
     # Give some horizontal room
     #xmin, xmax = plt.xlim()
