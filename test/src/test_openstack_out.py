@@ -83,7 +83,8 @@ pb = '''\
 
 class OpenstackOutGetFieldTest(unittest.TestCase):
 
-    def get_field(self, args_list):
+    @staticmethod
+    def get_field(args_list):
         args = openstack_out.cli(args_list)
         if args is None:
             return None
