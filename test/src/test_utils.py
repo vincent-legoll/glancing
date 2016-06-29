@@ -343,7 +343,7 @@ class UtilsTest(unittest.TestCase):
         # FIXME: explain why this has to be a list
         called = [False]
 
-        def set_status(x):
+        def set_status(_):
             called[0] = True
 
         # /dev/null is an empty file, no data, so callback must *not* be called
