@@ -28,12 +28,12 @@ if 'DEVNULL' not in dir(subprocess):
 
 _VERBOSE = False
 
-def set_verbose(v=None):
+def set_verbose(verbose=None):
     global _VERBOSE
-    if v is None:
+    if verbose is None:
         _VERBOSE = not _VERBOSE
     else:
-        _VERBOSE = True if v else False
+        _VERBOSE = True if verbose else False
 
 def get_verbose():
     global _VERBOSE
@@ -50,19 +50,19 @@ def vprint_lines(msg, prog=sys.argv[0]):
 def test_name():
     return inspect.stack()[1][3]
 
-def is_uuid(x):
-    if type(x) == uuid.UUID:
+def is_uuid(thing):
+    if type(thing) == uuid.UUID:
         return True
     try:
-        uuid.UUID(x)
+        uuid.UUID(thing)
         return True
     except Exception:
         pass
     return False
 
-def is_iter(x):
+def is_iter(thing):
     try:
-        it = iter(x)
+        iter(thing)
         return True
     except TypeError:
         pass
@@ -141,11 +141,11 @@ def run(cmd, out=False, err=False, quiet_out=None, quiet_err=None):
         stdoutdata, stderrdata = subp.communicate()
         return (subp.returncode == 0, subp.returncode,
                 stdoutdata if out else None, stderrdata if err else None)
-    except OSError as e:
+    except OSError as exc:
         vprint("'%s': Cannot execute, please check it is properly"
                " installed, and available through your PATH environment "
                "variable." % (cmd[0],))
-        vprint(e)
+        vprint(exc)
     return False, None, None, None
 
 class chdir(object):
@@ -306,8 +306,8 @@ def block_read_filename(filename, callback, block_size=4096):
     """Open and then read a file in chunks, and call a function back for
     each block.
     """
-    with open(filename, 'rb') as f:
-        block_read_filedesc(f, callback, block_size)
+    with open(filename, 'rb') as fin:
+        block_read_filedesc(fin, callback, block_size)
 
 def block_read_filedesc(filedesc, callback, block_size=4096):
     """Read a file in chunks, and call a function back for each block
@@ -363,7 +363,8 @@ class AlmostRawFormatter(argparse.HelpFormatter):
 
     def _split_lines(self, text, width):
         if text.strip().startswith(self._PREFIX):
-            return textwrap.dedent(text[len(self._PREFIX):]).strip().splitlines()
+            dedented = textwrap.dedent(text[len(self._PREFIX):])
+            return dedented.strip().splitlines()
         return super(AlmostRawFormatter, self)._split_lines(text, width)
 
 def alphanum_sort(iterable, prefix='', suffix=''):
