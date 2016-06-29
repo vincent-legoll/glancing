@@ -91,7 +91,7 @@ test/stratuslab/%.json: test/stratuslab/%.xml
 SIZES = 1 5 10 25 50 75
 TEST_DATA_FILES_SIZE = $(foreach SIZ,$(SIZES),test/data/random_$(SIZ)M.bin)
 TEST_DATA_FILES_COMP = $(foreach ALG,gz bz2 zip,test/data/random_1M_$(ALG).bin.$(ALG)) test/data/random_2files_zip.bin.zip
-TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin
+TEST_DATA_FILES_TINY = test/data/zero_length.bin test/data/one_length.bin test/data/two_lines.txt
 TEST_DATA_FILES = $(TEST_DATA_FILES_SIZE) $(TEST_DATA_FILES_COMP) $(TEST_DATA_FILES_TINY) $(TEST_DATA_FILES_SIZE)
 
 test_data_files: $(TEST_DATA_FILES)
@@ -101,6 +101,10 @@ test/data/zero_length.bin:
 
 test/data/one_length.bin:
 	echo > $@
+
+test/data/two_lines.txt:
+	echo '# First line' > $@
+	echo >> $@
 
 test/data/random_%M.bin:
 	dd if=/dev/urandom of="$@" bs=1M count=$*
