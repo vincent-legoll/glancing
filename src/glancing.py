@@ -340,7 +340,8 @@ def main(sys_argv=sys.argv[1:]):
 
     # Populate metadata message digests to be verified, from CLI parameters
     if args.digests:
-        for dig in filter(None, args.digests.split(':')):
+        digs = [dig for dig in args.digests.split(':') if dig]
+        for dig in digs:
             ret = add_checksum(dig, metadata, overrides=True)
             if not ret:
                 return False
