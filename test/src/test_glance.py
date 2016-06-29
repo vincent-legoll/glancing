@@ -53,6 +53,13 @@ class GlanceTest(SkipGlanceNOK):
         self.assertFalse(glance.glance_show(u''))
         self.assertFalse(glance.glance_show(u'Nonexistent'))
 
+    def test_glance_import_id_ok(self):
+        vmid = glance.glance_import_id(os.devnull, name=None)
+        self.assertFalse(vmid)
+        vmid = glance.glance_import_id(os.devnull, name=None, diskformat='raw')
+        self.assertTrue(vmid)
+        self.assertTrue(glance.glance_delete_ids([vmid]))
+
     def test_glance_import_id_nok(self):
         self.assertFalse(glance.glance_import_id(os.devnull, md5='0', name='devnull'))
 
@@ -219,6 +226,10 @@ class GlanceMainTest(TestGlanceFixture):
                 glance.main(['-d'])
         self.assertTrue(glance.glance_exists(self._IMG_NAME))
 
+    def test_glance_main_fail_listing_ids(self):
+        with utils.environ('OS_PASSWORD', ''):
+            self.assertFalse(glance.main([]))
+
     def test_glance_main_fail_wrong_param_name(self):
         self.common_start()
         with self.assertRaises(SystemExit):
@@ -250,6 +261,19 @@ class GlanceDeleteTest(TestGlanceFixture):
         self.common_start()
         self.assertTrue(glance.glance_delete(self._IMG_NAME))
         self.assertFalse(glance.glance_exists(self._IMG_NAME))
+
+    def test_glance_delete_ids_empty(self):
+        self.assertTrue(glance.glance_delete_ids([]))
+        self.assertFalse(glance.glance_delete_ids(['']))
+        self.assertFalse(glance.glance_delete_ids(['', '']))
+
+    def test_glance_delete_ids_combined_before(self):
+        self.common_start()
+        self.assertFalse(glance.glance_delete_ids([self._IMG_ID, '']))
+
+    def test_glance_delete_ids_combined_after(self):
+        self.common_start()
+        self.assertFalse(glance.glance_delete_ids(['', self._IMG_ID]))
 
     def test_glance_delete_id(self):
         self.common_start()
