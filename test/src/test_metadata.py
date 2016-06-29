@@ -35,8 +35,8 @@ class MetaDataStratusLabJsonTest(unittest.TestCase):
         md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
-            'http://appliances.stratuslab.eu/images/base/'
-            'CentOS-7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
+                         'http://appliances.stratuslab.eu/images/base/CentOS-'
+                         '7-Server-x86_64/1.1/CentOS-7-Server-x86_64.dsk.gz')
 
     def test_metadata_json_no_md_matching_query(self):
         fn = 'LHfKVPoHcv4oMirHU0KuOQc-TvI?media=json'
@@ -59,8 +59,8 @@ class MetaDataCernTest(unittest.TestCase):
         md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys_cern)
         self.assertEqual(md['location'],
-            'http://download.cirros-cloud.net/0.3.4/'
-            'cirros-0.3.4-i386-disk.img')
+                         'http://download.cirros-cloud.net/0.3.4/'
+                         'cirros-0.3.4-i386-disk.img')
 
 class MetaDataStratusLabXmlTest(unittest.TestCase):
 
@@ -71,8 +71,8 @@ class MetaDataStratusLabXmlTest(unittest.TestCase):
         md = m.get_metadata()
         self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
-            'http://grand-est.fr/resources/CLOUD/'
-            'CentOS-7-x86_64-GenericCloud.qcow2')
+                         'http://grand-est.fr/resources/CLOUD/'
+                         'CentOS-7-x86_64-GenericCloud.qcow2')
         self.assertEqual(m.get_name(), 'CentOS-7-x86_64')
 
     def test_metadata_xml_button_vs_wget(self):
