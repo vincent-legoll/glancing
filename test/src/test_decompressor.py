@@ -80,37 +80,37 @@ class DecompressorErrorsTest(unittest.TestCase):
         fn = '/tmp/' + utils.test_name() + '.ext'
         open(fn, 'wb+').close()
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor(fn)
+            decompressor.Decompressor(fn)
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor(fn, '.zip')
+            decompressor.Decompressor(fn, '.zip')
 
     def test_decompressor_no_ext_existent(self):
         fn = '/tmp/' + utils.test_name()
         open(fn, 'wb+').close()
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor(fn)
+            decompressor.Decompressor(fn)
         open(fn + '.zip', 'wb+').close()
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor(fn + '.zip')
+            decompressor.Decompressor(fn + '.zip')
 
     def test_decompressor_good_ext_not_existent(self):
         for ext in decompressor._EXT_MAP:
             with self.assertRaises(decompressor.DecompressorError):
-                d = decompressor.Decompressor('/tmp/nonexistent', ext)
+                decompressor.Decompressor('/tmp/nonexistent', ext)
             with self.assertRaises(decompressor.DecompressorError):
-                d = decompressor.Decompressor('/tmp/nonexistent' + ext)
+                decompressor.Decompressor('/tmp/nonexistent' + ext)
 
     def test_decompressor_bad_ext_param(self):
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor(os.devnull, '.txt')
+            decompressor.Decompressor(os.devnull, '.txt')
 
     def test_decompressor_bad_ext(self):
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor('/tmp/nonexistent.txt')
+            decompressor.Decompressor('/tmp/nonexistent.txt')
 
     def test_decompressor_nonexistent(self):
         with self.assertRaises(decompressor.DecompressorError):
-            d = decompressor.Decompressor('/tmp/nonexistent')
+            decompressor.Decompressor('/tmp/nonexistent')
 
 if __name__ == '__main__': # pragma: no cover
     import pytest
