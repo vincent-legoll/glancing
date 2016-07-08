@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-# coding: utf-8
 
 # Copyright © 2016 Vincent Legoll <vincent.legoll@gmail.com>
 
