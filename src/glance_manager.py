@@ -49,10 +49,10 @@ def do_argparse(sys_argv):
 
     parser.add_argument('-l', '--vmlist', default=_DEFAULT_VMLIST_FILE,
                         action='append',
-                        help='List of endorsed VMs to put in glance')
+                        help='List of endorsed VM image marketplace IDs to put in glance')
 
     parser.add_argument('-u', '--url', default=_DEFAULT_SL_MP_URL,
-                        help='Market place base URL')
+                        help='Market place base URL (default should be OK)')
 
     args = parser.parse_args(sys_argv)
 
