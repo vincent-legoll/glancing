@@ -18,6 +18,9 @@
 
 ''' Utility script to automatically distribute cloud images from the
 France Grilles marketplace.
+
+Manage the list of endorsed images to be distributed across all
+IdGC / France-Grilles sites.
 '''
 
 import os
@@ -39,11 +42,7 @@ _DEFAULT_SL_MP_URL = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
 def do_argparse(sys_argv):
     '''Handle CLI options
     '''
-    desc_help = textwrap.dedent('''
-        Manage the list of endorsed images to be distributed across all
-        IdGC / France-Grilles sites.
-    ''')
-    parser = argparse.ArgumentParser(description=desc_help)
+    parser = argparse.ArgumentParser(description=__doc__)
 
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Display additional information')
