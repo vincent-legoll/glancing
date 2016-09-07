@@ -163,7 +163,12 @@ def upload_image(mpid, name, meta_file):
     '''Upload new image into glance registry, using metadata file content
     '''
     vprint("Uploading new image: %s (%s)" % (mpid, name))
-    return glancing.main(['-v', '-n', name, meta_file])
+    ret = glancing.main(['-v', '-n', name, meta_file])
+    # Invalidate glance image cache
+    # TODO: maybe just add the new one
+    global _GLANCE_IMAGES
+    _GLANCE_IMAGES = None
+    return ret
 
 def set_properties(mpid, new):
     '''Set image properties unconditionnally, accordingly to 'new' metadata
