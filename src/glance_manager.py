@@ -48,6 +48,7 @@ def do_argparse(sys_argv):
                         help='Display additional information')
 
     parser.add_argument('-l', '--vmlist', default=_DEFAULT_VMLIST_FILE,
+                        action='append',
                         help='List of endorsed VMs to put in glance')
 
     parser.add_argument('-u', '--url', default=_DEFAULT_SL_MP_URL,
@@ -61,20 +62,25 @@ def do_argparse(sys_argv):
 
     return args
 
-def get_vmlist(vmlist_fn):
+def get_vmlist(vmlist):
     '''Get list of StratusLab ID of images to download
     '''
     ret = set()
-    with open(vmlist_fn, 'rb') as vmlist_f:
-        for line in vmlist_f:
-            stripl = line.strip()
-            # Ignore blank lines
-            if not stripl:
-                continue
-            # Ignore commented lines
-            if stripl.startswith('#'):
-                continue
-            ret.add(stripl)
+    for img_list_fn in vmlist:
+        with open(img_list_fn, 'rb') as vmlist_f:
+            for line in vmlist_f:
+                stripl = line.strip()
+                # Ignore blank lines
+                if not stripl:
+                    continue
+                # Ignore commented lines
+                if stripl.startswith('#'):
+                    continue
+                if stripl in ret:
+                    vprint('WARNING, image "%s" duplicated in file "%s".' %
+                           (stripl, img_list_fn))
+                # Assume one image ID per line
+                ret.add(stripl)
     return ret
 
 _GLANCE_IMAGES = None
@@ -302,10 +308,14 @@ def main(sys_argv=sys.argv[1:]):
     '''Download images specified in the given list & store them in glance
     '''
     args = do_argparse(sys_argv)
-    vprint('Image list: ' + args.vmlist)
-    if not args.vmlist or not os.path.exists(args.vmlist):
-        vprint('Cannot access image list file: ' + args.vmlist)
+    vprint('Image list(s): ' + str(args.vmlist))
+    if not args.vmlist:
+        vprint('No image list specified')
         return False
+    for img in args.vmlist:
+        if not os.path.exists(img):
+            vprint('Cannot access image list file: ' + img)
+            return False
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
         vmid = vmid.strip()
