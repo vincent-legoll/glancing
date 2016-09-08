@@ -79,8 +79,12 @@ def get_vmlist(vmlist):
                 if stripl.startswith('#'):
                     continue
                 if stripl in ret:
-                    vprint('WARNING, image "%s" duplicated in file "%s".' %
+                    vprint('WARNING, ignoring image "%s" duplicated in file "%s".' %
                            (stripl, img_list_fn))
+                    continue
+                if ' ' in stripl:
+                    vprint('Warning, ignoring line in file "%s" containing whitespace:\n%s' % (img_list_fn, stripl))
+                    continue
                 # Assume one image ID per line
                 ret.add(stripl)
     return ret
