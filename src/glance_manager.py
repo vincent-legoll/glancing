@@ -64,6 +64,8 @@ def do_argparse(sys_argv):
 
 def get_vmlist(vmlist):
     '''Get list of StratusLab ID of images to download
+
+    vmlist is a list of files containing VM image marketplace IDs
     '''
     ret = set()
     for img_list_fn in vmlist:
@@ -216,6 +218,8 @@ def handle_vm(mpid, url):
     meta_file = get_meta_file(mpid, url)
     if meta_file is None:
         return
+
+    # TODO: delete meta_file to avoid filling /tmp
 
     new = metadata.MetaStratusLabXml(meta_file).get_metadata()
     vmmap = get_glance_images()
