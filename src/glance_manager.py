@@ -79,11 +79,11 @@ def get_vmlist(vmlist):
                 if stripl.startswith('#'):
                     continue
                 if stripl in ret:
-                    vprint('WARNING, ignoring image "%s" duplicated in file "%s".' %
+                    vprint('Warning: ignoring image "%s" duplicated in file "%s".' %
                            (stripl, img_list_fn))
                     continue
                 if ' ' in stripl:
-                    vprint('Warning, ignoring line in file "%s" containing whitespace:\n%s' % (img_list_fn, stripl))
+                    vprint('Warning: ignoring line in file "%s" containing whitespace:\n%s' % (img_list_fn, stripl))
                     continue
                 # Assume one image ID per line
                 ret.add(stripl)
@@ -156,7 +156,7 @@ def needs_upgrade(mpid, old, new, meta_file):
         if new_ver > old_ver:
             vprint("New image version")
             if not glance.glance_rename(old_name, old_name + '_old'):
-                vprint('Cannot rename old image, will need manual intervention')
+                vprint('Warning: Cannot rename old image, will need manual intervention')
             vprint("Previous image renamed to: " + old_name + '_old')
             upload_image(mpid, new_name, meta_file)
             update_properties(mpid, old, new)
