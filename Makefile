@@ -69,7 +69,7 @@ test/images/cirros-SHA1SUMS: $(TEST_IMAGE_CIRROS_FILES)
 
 SL_MARKETPLACE_URL_BASE = https://marketplace.stratuslab.eu/marketplace/metadata
 
-VMID_LIST = IzEOzeHK8-zpgSyAkhNiZujL4nZ \
+VMID_LIST = Buh-tYElvOEvst1HDyTq_6v-1si\
 	PIDt94ySjKEHKKvWrYijsZtclxU \
 	JcqGhHxmTRAEpHMmRF-xhSTM3TO
 

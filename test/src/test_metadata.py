@@ -64,7 +64,7 @@ class MetaDataCernTest(unittest.TestCase):
 class MetaDataStratusLabXmlTest(unittest.TestCase):
 
     def test_metadata_xml(self):
-        fn = 'IzEOzeHK8-zpgSyAkhNiZujL4nZ.xml'
+        fn = 'Buh-tYElvOEvst1HDyTq_6v-1si.xml'
         xmlfile = get_local_path('..', 'stratuslab', fn)
         self.assertTrue(os.path.exists(xmlfile))
         m = metadata.MetaStratusLabXml(xmlfile)
@@ -74,8 +74,8 @@ class MetaDataStratusLabXmlTest(unittest.TestCase):
         self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
                          'http://grand-est.fr/resources/CLOUD/'
-                         'CentOS-7-x86_64-GenericCloud.qcow2')
-        self.assertEqual(m.get_name(), 'CentOS-7-x86_64')
+                         'precise-server-cloudimg-amd64-disk1.img')
+        self.assertEqual(m.get_name(), 'Ubuntu-12.04-x86_64')
 
     def test_metadata_xml_button_vs_wget(self):
         fn_base = 'LHfKVPoHcv4oMirHU0KuOQc-TvI.%s.xml'
