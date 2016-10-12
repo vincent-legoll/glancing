@@ -187,10 +187,10 @@ class MetaStratusLabXml(MetaDataBase):
             algo = cksum.find('slreq:algorithm', nsp)
             val = cksum.find('slreq:value', nsp)
             ret['checksums'][sl_to_hashlib(algo.text)] = val.text
-        for key in StratusLabNS._RETKEY_TO_NS_PREFIXES.keys():
+        for key, val in StratusLabNS._RETKEY_TO_NS_PREFIXES.items():
             if key == 'algorithm':
                 continue
-            mdkey = StratusLabNS._RETKEY_TO_NS_PREFIXES[key] + ':' + key
+            mdkey = val + ':' + key
             node = desc.find(mdkey, nsp)
             if node is not None:
                 ret[key] = node.text
