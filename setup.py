@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+# TODO: finish this setup, it is currently only half baked
+
 import sys
 
 from setuptools import setup, find_packages
