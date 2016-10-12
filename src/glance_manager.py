@@ -25,7 +25,6 @@ IdGC / France-Grilles sites.
 
 import os
 import sys
-import textwrap
 import argparse
 
 import utils
