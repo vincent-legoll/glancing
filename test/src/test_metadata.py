@@ -66,8 +66,11 @@ class MetaDataStratusLabXmlTest(unittest.TestCase):
     def test_metadata_xml(self):
         fn = 'IzEOzeHK8-zpgSyAkhNiZujL4nZ.xml'
         xmlfile = get_local_path('..', 'stratuslab', fn)
+        self.assertTrue(os.path.exists(xmlfile))
         m = metadata.MetaStratusLabXml(xmlfile)
+        self.assertTrue(m is not None)
         md = m.get_metadata()
+        self.assertTrue(md is not None)
         self.assertEqual(set(md.keys()), good_keys_sl)
         self.assertEqual(md['location'],
                          'http://grand-est.fr/resources/CLOUD/'
