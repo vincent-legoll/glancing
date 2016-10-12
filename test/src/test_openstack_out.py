@@ -123,7 +123,7 @@ class OpenstackOutGetFieldTest(unittest.TestCase):
         self.assertEqual([['default']], f)
 
         f = self.get_field(['-p', 'default', '-c', '2', '--', 'nova', 'secgroup-list'])
-        self.assertEqual([['default']], f)
+        self.assertEqual([['IPHC Default security group']], f)
 
         f = self.get_field(['-p', 'default', '-c', '0', '--', 'nova', 'secgroup-list'])
         u = uuid.UUID(f[0][0])
