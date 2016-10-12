@@ -417,7 +417,7 @@ def alphanum_sort(iterable, prefix='', suffix=''):
     # First sort by number value
     for num in sorted(res):
         # Then for identical number values, sort according to string length
-        for str_val in sorted(res[num], key=lambda x: len(x)):
+        for str_val in sorted(res[num], key=len):
             result.append(prefix + str_val + suffix)
     return result, bad
 
