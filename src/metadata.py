@@ -159,6 +159,8 @@ class MetaStratusLabXml(MetaDataBase):
         except et.ParseError:
             vprint('XML parse error')
             self.xml_obj = None
+        except:
+            vprint('Parsed OK, but still no XML object from:' + str(filename))
         self.data = {'checksums': {}}
 
     def get_metadata(self):
