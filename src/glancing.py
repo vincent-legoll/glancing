@@ -440,6 +440,8 @@ def main(sys_argv=sys.argv[1:]):
                                not len(metadata['checksums']) == verified):
             return False
 
+    # TODO: the following should be done even if something went wrong...
+
     # Keep downloaded image file
     if not image_type == 'image' and not args.keeptemps:
         vprint(local_image_file + ': deleting temporary file')
