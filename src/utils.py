@@ -283,6 +283,8 @@ class cleanup(object):
         if is_iter(self.cleanup_cmd):
             run(self.cleanup_cmd, quiet_err=False)
         else:
+            # TODO/TOTEST: Be consistent with the above run() call
+            #self.kwargs['quiet_err'] = False
             self.cleanup_cmd(*self.args, **self.kwargs)
 
     def __enter__(self):
