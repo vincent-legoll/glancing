@@ -232,6 +232,7 @@ def handle_vm(mpid, url):
     if mpid in vmmap:
         vprint("Image is already in glance")
         needs_upgrade(mpid, vmmap[mpid], new, meta_file)
+        # TODO: check other image properties, they should match perfectly
     else:
         vprint("No image with the same marketplace ID found in glance")
 
