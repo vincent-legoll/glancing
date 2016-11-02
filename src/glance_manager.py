@@ -289,6 +289,8 @@ def handle_vm(mpid, url):
                 diff = True
 
             # Check Version
+            assert isinstance(old_ver, int)
+            assert isinstance(new_ver, int)
             if old_ver != new_ver:
                 vprint(err_msg % ("versions", old_ver, new_ver))
                 diff = True
