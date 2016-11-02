@@ -308,6 +308,7 @@ def handle_vm(mpid, url):
                 vprint("Previous image has 'mpid' property set, "
                        "keeping it as-is...")
 
+            # Backup old image by renaming
             if not glance.glance_rename(old_name, old_name + '_old'):
                 vprint('Cannot rename old image, aborting update...')
                 return
