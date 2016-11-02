@@ -51,4 +51,12 @@ class GlanceManagerTest(unittest.TestCase):
             ret = glance_manager.main(['-v', '-l', locpath])
             self.assertTrue(ret)
 
+    def test_glance_manager_mocked_ok_double(self):
+        cln = ['glance', '--os-image-api-version', '1', 'image-delete',
+               'GLANCE_MANAGER_CIRROS_TESTING_IMAGE']
+        with utils.cleanup(cln):
+            locpath = get_local_path('..', 'gm_list.txt')
+            ret = glance_manager.main(['-v', '-l', locpath, '-l', locpath])
+            self.assertTrue(ret)
+
 # TODO: test name with spaces characters (initial, update, etc...)
