@@ -158,7 +158,8 @@ def needs_upgrade(mpid, old, new, meta_file):
         if new_ver > old_ver:
             vprint("New image version")
             if not glance.glance_rename(old_name, old_name + '_old'):
-                vprint('Warning: Cannot rename old image, will need manual intervention')
+                vprint('Warning: Cannot rename old image, will need manual '
+                       'intervention')
             vprint("Previous image renamed to: " + old_name + '_old')
             upload_image(mpid, new_name, meta_file)
             update_properties(mpid, old, new)
