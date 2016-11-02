@@ -327,9 +327,9 @@ def main(sys_argv=sys.argv[1:]):
     if not args.vmlist:
         vprint('No image list specified')
         return False
-    for img in args.vmlist:
-        if not os.path.exists(img):
-            vprint('Cannot access image list file: ' + img)
+    for img_list_file in args.vmlist:
+        if not os.path.exists(img_list_file):
+            vprint('Cannot access image list file: ' + img_list_file)
             return False
     vmlist = get_vmlist(args.vmlist)
     for vmid in vmlist:
