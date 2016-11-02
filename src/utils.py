@@ -89,17 +89,21 @@ class abstract_size_t(object):
         self.unit = ''
         self.shift = 0
         self.around = math.ceil if self._FRACTIONAL else math.floor
+        iuf = self._INTERUNIT_FACTOR
         if unit is not None and n != 0:
             self.unit = unit
             self.shift = self._UNIT_PREFIX.index(unit)
-            self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.shift)
-        self.exp = abs(int(self.around(self._log(self.n) / self._INTERUNIT_FACTOR))) if self.n != 0 else 0
+            self.n *= self._BASE ** (iuf * self.shift)
+        if self.n == 0:
+            self.exp = 0
+        else:
+            self.exp = abs(int(self.around(self._log(self.n) / iuf)))
         if self._FRACTIONAL and type(self._n) == float:
-            self.n *= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
+            self.n *= self._BASE ** (iuf * self.exp)
             digits = abs(int(math.floor(self._log(self._n))))
             self.fmt = '%1.' + str(digits) + 'f%s%s'
         else:
-            self.n /= self._BASE ** (self._INTERUNIT_FACTOR * self.exp)
+            self.n /= self._BASE ** (iuf * self.exp)
             self.fmt = '%d%s%s'
 
     def _log(self, n):
@@ -107,7 +111,8 @@ class abstract_size_t(object):
 
     def __repr__(self):
         '''Represents the size_t with its construction-time passed parameters'''
-        return ('<%s ' + self.fmt + '>') % (self.__class__.__name__, self._n, self.unit, self.suffix)
+        return (('<%s ' + self.fmt + '>') %
+                (self.__class__.__name__, self._n, self.unit, self.suffix))
 
     def __str__(self):
         '''Represents the size_t with "optimized" units (for example: 1024KB => 1MB'''
