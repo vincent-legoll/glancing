@@ -378,7 +378,7 @@ class UtilsRunTest(unittest.TestCase):
         self.assertEqual(err, "ls: option '--format' requires an argument\nTry 'ls --help' for more information.\n")
 
     def test_utils_run_not_in_path(self):
-        with utils.environ('PATH'):
+        with utils.environ('PATH', ''):
             self.assertFalse(utils.run(['true'])[0])
 
     def test_utils_run_file(self):
