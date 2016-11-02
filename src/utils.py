@@ -245,7 +245,7 @@ class environ(object):
     they'll get back their old values after the context is exited.
     """
 
-    def __init__(self, envvar_name, envvar_val=''):
+    def __init__(self, envvar_name, envvar_val=None):
         # Prepare
         self._envvar_name = envvar_name
         self._envvar_val = envvar_val
@@ -259,12 +259,17 @@ class environ(object):
         else:
             self._old_envvar_val = os.environ[self._envvar_name]
         # Modify
-        os.environ[self._envvar_name] = self._envvar_val
+        if self._envvar_val is None:
+            if not self._not_present:
+                del os.environ[self._envvar_name]
+        else:
+            os.environ[self._envvar_name] = self._envvar_val
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Restore
         if self._not_present:
-            del os.environ[self._envvar_name]
+            if self._envvar_name in os.environ: # ou alors : self._envvar_val is not None
+                del os.environ[self._envvar_name]
         else:
             os.environ[self._envvar_name] = self._old_envvar_val
 
