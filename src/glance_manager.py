@@ -71,7 +71,7 @@ def get_vmlist(vmlist):
     ret = set()
     for img_list_fn in vmlist:
         with open(img_list_fn, 'rb') as vmlist_f:
-            for line in vmlist_f:
+            for lineno, line in enumerate(vmlist_f):
                 stripl = line.strip()
                 # Ignore blank lines
                 if not stripl:
@@ -80,13 +80,14 @@ def get_vmlist(vmlist):
                 if stripl.startswith('#'):
                     continue
                 if stripl in ret:
-                    vprint('Warning: ignoring image "%s" duplicated in file "%s".' %
-                           (stripl, img_list_fn))
+                    vprint('Warning @ %s:%d: ignoring duplicated image "%s".' %
+                           (img_list_fn, lineno, stripl))
                     continue
                 if ' ' in stripl:
-                    vprint('Warning: ignoring line in file "%s" containing whitespace:\n%s' % (img_list_fn, stripl))
+                    vprint('Warning @ %s:%d: ignoring line containing '
+                           'whitespace:\n%s' % (img_list_fn, lineno, stripl))
                     continue
-                # Assume one image ID per line
+                # Assume one valid image ID per line
                 ret.add(stripl)
     return ret
 
