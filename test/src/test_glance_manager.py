@@ -22,16 +22,16 @@ _OLDGMF = glance_manager.get_meta_file
 class GlanceManagerBasicTest(unittest.TestCase):
 
     def test_glance_manager_nolist(self):
-            ret = glance_manager.main([])
-            self.assertFalse(ret)
+        ret = glance_manager.main([])
+        self.assertFalse(ret)
 
     def test_glance_manager_badlistpath(self):
-            ret = glance_manager.main(['-l', '/nonexistent'])
-            self.assertFalse(ret)
+        ret = glance_manager.main(['-l', '/nonexistent'])
+        self.assertFalse(ret)
 
     def test_glance_manager_nolist_verbose(self):
-            ret = glance_manager.main(['-v'])
-            self.assertFalse(ret)
+        ret = glance_manager.main(['-v'])
+        self.assertFalse(ret)
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceManagerTest(unittest.TestCase):
