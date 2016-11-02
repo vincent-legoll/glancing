@@ -611,7 +611,35 @@ class UtilsEnvironTest(unittest.TestCase):
     def test_utils_environ_not_existent_no_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         with utils.environ('TOTO'):
+            # This is not redundant with the above or below identical lines
+            self.assertTrue('TOTO' not in os.environ)
+        self.assertTrue('TOTO' not in os.environ)
+
+    def test_utils_environ_not_existent_empty_val(self):
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
+        with utils.environ('TOTO', ''):
             self.assertEqual('', os.environ['TOTO'])
+        self.assertTrue('TOTO' not in os.environ)
+
+    def test_utils_environ_delete_implicit_nonexistent(self):
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
+        with utils.environ('TOTO'):
+            self.assertTrue('TOTO' not in os.environ)
+        self.assertTrue('TOTO' not in os.environ)
+
+    def test_utils_environ_delete_implicit(self):
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
+        os.environ['TOTO'] = 'tutu'
+        self.assertEqual('tutu', os.environ['TOTO'])
+        with utils.environ('TOTO'):
+            self.assertTrue('TOTO' not in os.environ)
+        self.assertEqual('tutu', os.environ['TOTO'])
+
+    def test_utils_environ_delete_explicit(self):
+        self.assertTrue('TOTO' not in os.environ) # Paranoid
+        with utils.environ('TOTO', None):
+            # This is not redundant with the above or below identical lines
+            self.assertTrue('TOTO' not in os.environ)
         self.assertTrue('TOTO' not in os.environ)
 
     def test_utils_environ_existent_val(self):
@@ -622,11 +650,11 @@ class UtilsEnvironTest(unittest.TestCase):
             self.assertEqual('titi', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
 
-    def test_utils_environ_existent_no_val(self):
+    def test_utils_environ_existent_empty_val(self):
         self.assertTrue('TOTO' not in os.environ) # Paranoid
         os.environ['TOTO'] = 'tutu'
         self.assertEqual('tutu', os.environ['TOTO'])
-        with utils.environ('TOTO'):
+        with utils.environ('TOTO', ''):
             self.assertEqual('', os.environ['TOTO'])
         self.assertEqual('tutu', os.environ['TOTO'])
 
