@@ -16,6 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+'''
+Collection of classes & helper functions to help handle uniformly compressed
+bnary data files
+'''
+
 import os
 import sys
 import bz2
@@ -26,9 +31,10 @@ import utils
 from utils import vprint
 
 class DecompressorError(Exception):
-    pass
+    '''Class to allow catching exceptions from this module'''
 
 def zip_opener(fname, _):
+    '''Open a .zip file and return a file-like object for it'''
     vprint('Opening zip archive:' + fname)
     zipf = zipfile.ZipFile(fname, 'r')
     if len(zipf.namelist()) > 1:
@@ -74,6 +80,7 @@ class Decompressor(object):
         self.opener = _EXT_MAP[sext or ext]
 
     def doit(self, delete=False):
+        '''Decompress the file's data, in self.block_size chunks'''
         ret = True
         try:
             with self.opener(self.fin_name, 'rb') as fin:
@@ -100,6 +107,7 @@ class Decompressor(object):
         return ret, self.fout_name
 
 def main(args=sys.argv[1:]):
+    '''Decompress all files given as CLI arguments'''
     utils.set_verbose(True)
     vprint('verbose mode')
     for fname in args:
