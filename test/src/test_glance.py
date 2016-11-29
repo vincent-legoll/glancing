@@ -18,7 +18,7 @@ utils.set_verbose(True)
 # Check we have a cloud ready to import images into...
 _GLANCE_OK = False
 with utils.devnull('stderr'):
-    _GLANCE_OK = utils.run(['glance', 'image-list'])[0]
+    _GLANCE_OK = glance.glance_run('image-list') is not None
 
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class SkipGlanceNOK(unittest.TestCase):
