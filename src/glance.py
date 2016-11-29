@@ -31,7 +31,7 @@ _GLANCE_CMD = ['glance']
 
 # Check glance availability early
 def glance_ok():
-    return glance_run(quiet=True) is not None
+    return glance_run('--version', quiet=True) is not None
 
 # Import VM image into glance
 def glance_import_id(base, md5=None, name=None, diskformat=None):
