@@ -1,4 +1,4 @@
-- fix tox testing
+- use "glance image-create --visibility False" during tests
 
 - remove backup from glancing and put it into glance_manager
 
