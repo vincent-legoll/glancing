@@ -30,8 +30,9 @@ from utils import vprint, vprint_lines
 _GLANCE_CMD = ['glance']
 
 # Check glance availability early
+# Warning: glance --version outputs to stderr
 def glance_ok():
-    return glance_run('--version', quiet=True) is not None
+    return glance_run('--version', stderr=True, quiet=True) is not None
 
 # Import VM image into glance
 def glance_import_id(base, md5=None, name=None, diskformat=None):
@@ -89,6 +90,9 @@ def glance_run(glance_cmd=None, glance_args=None, subcmd_args=None, **kwargs):
             vprint_lines('stdout=' + (out or ''))
             vprint_lines('stderr=' + (err or ''))
         return None
+    # This is for glance --version which outputs only to stderr...
+    if kwargs.get('stderr'):
+        return err
     return out
 
 def glance_ids(names=None, *args):
