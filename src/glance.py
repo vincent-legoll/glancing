@@ -86,8 +86,8 @@ def glance_run(glance_cmd=None, glance_args=None, subcmd_args=None, **kwargs):
                 vprint('glance_args: %s' % str(glance_args))
             if subcmd_args is not None:
                 vprint('subcmd_args: %s' % str(subcmd_args))
-            vprint_lines('stdout=' + out)
-            vprint_lines('stderr=' + err)
+            vprint_lines('stdout=' + (out or ''))
+            vprint_lines('stderr=' + (err or ''))
         return None
     return out
 
