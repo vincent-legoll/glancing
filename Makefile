@@ -1,4 +1,5 @@
-CRUFT_HERE = .tox src/*.pyc test/src/*.pyc src/__pycache__ test/src/__pycache__ Glancing.egg-info
+CRUFT_HERE = src/*.pyc test/src/*.pyc src/__pycache__ test/src/__pycache__ \
+             Glancing.egg-info .tox .cache
 
 clean:
 	rm -rf $(CRUFT_HERE) $(TEST_FILES)
