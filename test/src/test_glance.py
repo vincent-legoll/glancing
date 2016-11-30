@@ -31,6 +31,7 @@ class GlanceTest(SkipGlanceNOK):
         with utils.devnull('stderr'):
             with utils.environ('PATH', 'not_the_one'):
                 self.assertFalse(glance.glance_ok())
+        self.assertTrue(glance.glance_ok())
 
     def test_glance_exists_raise(self):
         with self.assertRaises(TypeError):
