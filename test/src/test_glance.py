@@ -20,11 +20,8 @@ _GLANCE_OK = False
 with utils.devnull('stderr'):
     _GLANCE_OK = glance.glance_run('image-list') is not None
 
-@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
-class SkipGlanceNOK(unittest.TestCase):
-    pass
-
-class GlanceTest(SkipGlanceNOK):
+# This one should never be skipped because of !_GLANCE_OK
+class GlanceTestNoSkip(unittest.TestCase):
 
     def test_glance_ok(self):
         self.assertTrue(glance.glance_ok())
@@ -32,6 +29,12 @@ class GlanceTest(SkipGlanceNOK):
             with utils.environ('PATH', 'not_the_one'):
                 self.assertFalse(glance.glance_ok())
         self.assertTrue(glance.glance_ok())
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class SkipGlanceNOK(unittest.TestCase):
+    pass
+
+class GlanceTest(SkipGlanceNOK):
 
     def test_glance_exists_raise(self):
         with self.assertRaises(TypeError):
