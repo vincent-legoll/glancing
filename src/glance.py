@@ -79,7 +79,7 @@ def glance_run(glance_cmd=None, glance_args=None, subcmd_args=None, **kwargs):
         cmd.extend(subcmd_args)
     status, _, out, err = utils.run(cmd, out=True, err=True)
     if not status:
-        if not kwargs.get('quiet') is True:
+        if (not kwargs.get('quiet')) is True:
             err_msg = kwargs.get('err_msg', 'failed to run "%s"' % glance_cmd)
             vprint(err_msg)
             if glance_args is not None:
