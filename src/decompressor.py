@@ -47,6 +47,9 @@ _EXT_MAP = {
     '.zip': zip_opener,
 }
 
+def get_ext_map():
+    return _EXT_MAP
+
 class Decompressor(object):
     '''A class to handle differently-compressed file formats in an
     uniform way.

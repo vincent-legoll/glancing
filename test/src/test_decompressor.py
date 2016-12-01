@@ -73,7 +73,7 @@ class DecompressorSimpleTest(unittest.TestCase):
 class DecompressorErrorsTest(unittest.TestCase):
 
     def test_decompressor_good_ext_devnull(self):
-        for ext in decompressor._EXT_MAP:
+        for ext in decompressor.get_ext_map():
             d = decompressor.Decompressor(os.devnull, ext)
             ret, fn = d.doit()
             self.assertFalse(ret)
@@ -97,7 +97,7 @@ class DecompressorErrorsTest(unittest.TestCase):
             decompressor.Decompressor(fn + '.zip')
 
     def test_decompressor_good_ext_not_existent(self):
-        for ext in decompressor._EXT_MAP:
+        for ext in decompressor.get_ext_map():
             with self.assertRaises(decompressor.DecompressorError):
                 decompressor.Decompressor('/tmp/nonexistent', ext)
             with self.assertRaises(decompressor.DecompressorError):
