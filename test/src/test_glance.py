@@ -101,8 +101,9 @@ class GlanceIdsTest(SkipGlanceNOK):
         if 'OS_TENANT_ID' in os.environ:
             add_args = ['--owner', os.environ['OS_TENANT_ID']]
         elif 'OS_TENANT_NAME' in os.environ:
-            ret = utils.run(['keystone', 'tenant-get',
-                             os.environ['OS_TENANT_NAME']], out=True, err=True)
+            tenant_name = os.environ['OS_TENANT_NAME']
+            ret = utils.run(['keystone', 'tenant-get', tenant_name],
+                            out=True, err=True)
             status, _, out, err = ret
             if status:
                 self.assertTrue(len(out) > 0)
@@ -112,11 +113,11 @@ class GlanceIdsTest(SkipGlanceNOK):
                     if prop == 'id':
                         add_args = ['--owner', val]
                         break
-                self.assertTrue(False, 'TENANT not found by keystone...')
+                self.fail('TENANT "%s" not found by keystone...' % tenant_name)
             else:
                 print 'OUT:', out
                 print 'ERR:', err
-                self.assertTrue(False)
+                self.fail('Unable to run keystone tenant-get %s' % tenant_name)
         self.assertTrue(len(add_args) == 2)
         l1 = glance.glance_ids(None, *add_args)
         self.assertTrue(set() < l1)
