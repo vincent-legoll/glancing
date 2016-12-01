@@ -98,7 +98,7 @@ class MultihashTestMain(unittest.TestCase):
 
         random_1M_checksums = {}
 
-        for alg in devnull_checksums.keys(): # Just use the same algos
+        for alg in devnull_checksums: # Just use the same algos
             fin_fn = get_local_path('..', 'data', alg.upper() + 'SUMS')
             with open(fin_fn, 'rb') as fin:
                 for line in fin:
