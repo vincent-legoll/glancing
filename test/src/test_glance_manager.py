@@ -49,6 +49,17 @@ class GlanceManagerBasicTest(unittest.TestCase):
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceManagerTest(unittest.TestCase):
 
+    def test_glance_manager_ok(self):
+        cln = ['glance', '--os-image-api-version', '1', 'image-delete',
+               'GLANCE_MANAGER_CIRROS_TESTING_IMAGE']
+        with utils.cleanup(cln):
+            locpath = get_local_path('..', 'gm_list.txt')
+            ret = glance_manager.main(['-v', '-l', locpath])
+            self.assertTrue(ret)
+
+@unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
+class GlanceManagerTestMocked(unittest.TestCase):
+
     def setUp(self):
         gmf = lambda mpid, url: get_local_path('..', 'stratuslab', 'cirros.xml')
         glance_manager.get_meta_file = gmf
