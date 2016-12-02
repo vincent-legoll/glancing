@@ -108,13 +108,17 @@ def get_glance_images():
         elif 'OS_TENANT_NAME' in os.environ:
             vprint(tenant_msg % 'OS_TENANT_NAME')
             cmd = ['keystone', 'tenant-get', os.environ['OS_TENANT_NAME']]
-            status, _, out, _ = utils.run(cmd, out=True)
+            status, _, out, err = utils.run(cmd, out=True, err=True)
             if status:
                 _, block, _, _ = openstack_out.parse_block(out)
                 for prop, val in block:
                     if prop == 'id':
                         add_args = ['--owner', val]
                         break
+            else:
+                vprint('Failed to run : %s' % ' '.join(cmd))
+                vprint('OUT: ' + str(out))
+                vprint('ERR: ' + str(err))
         for imgid in glance.glance_ids(None, *add_args):
             img = glance.glance_show(imgid)
             if img:
