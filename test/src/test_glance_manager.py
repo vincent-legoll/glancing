@@ -34,6 +34,18 @@ class GlanceManagerBasicTest(unittest.TestCase):
         ret = glance_manager.main(['-v'])
         self.assertFalse(ret)
 
+    def test_glance_manager_gmf(self):
+        with self.assertRaises(TypeError):
+            glance_manager.get_meta_file(None, None)
+        with self.assertRaises(TypeError):
+            glance_manager.get_meta_file(None, '')
+        with self.assertRaises(TypeError):
+            glance_manager.get_meta_file(None, 'http://8.8.8.8')
+        ret = glance_manager.get_meta_file('Buh-tYElvOEvst1HDyTq_6v-1si', 'http://8.8.8.8/')
+        self.assertFalse(ret)
+        ret = glance_manager.get_meta_file('Buh-tYElvOEvst1HDyTq_6v-1si', glance_manager._DEFAULT_SL_MP_URL)
+        self.assertTrue(ret)
+
 @unittest.skipUnless(_GLANCE_OK, "glance not properly configured")
 class GlanceManagerTest(unittest.TestCase):
 
