@@ -37,7 +37,7 @@ import openstack_out
 from utils import vprint
 
 _DEFAULT_VMLIST_FILE = os.path.join('/', 'etc', 'glancing', 'vmlist')
-_DEFAULT_SL_MP_URL = 'https://marketplace.stratuslab.eu/marketplace/metadata/'
+_DEFAULT_SL_MP_URL = 'https://marketplace.stratuslab.eu/marketplace/metadata'
 
 def do_argparse(sys_argv):
     '''Handle CLI options
@@ -135,6 +135,8 @@ def get_meta_file(mpid, metadata_url_base):
     '''Retrieve image metadata from StratusLab marketplace, in XML format
     '''
     # Get XML metadata file from StratusLab marketplace
+    if not metadata_url_base.endswith('/'):
+        metadata_url_base += '/'
     url_meta = metadata_url_base + mpid
     fn_meta = glancing.get_url(url_meta)
     if not fn_meta:
